@@ -5,9 +5,9 @@
 
 | Phase | Nama | Status | Bukti / Keterangan |
 |---|---|---|---|
-| 0 | Audit repository & lock control baseline | **IN PROGRESS → selesai pada run ini; DONE menunggu konfirmasi owner** | Output: `PHASE_0_AUDIT_REPORT.md`, `PHASE_0_GAP_REGISTER.md`, `PHASE_0_OPEN_DECISIONS.md`, `PHASE_0_ACCEPTANCE.md`, 12 control files kanonik. Exit criteria terpenuhi kecuali 2 item (lihat `PHASE_0_ACCEPTANCE.md`). Verifikasi standar ISO `BLOCKED` (akses katalog resmi dilarang dari sandbox). |
-| 1 | Discovery, personas, use cases, requirements & acceptance criteria | NOT STARTED | Menunggu keputusan terbuka OD-01..OD-05 (lihat `PHASE_0_OPEN_DECISIONS.md`); `REQUIREMENTS.md` baru berisi seed dari Master Control. |
-| 2 | Architecture/domain model, threat model, data model & ADR | NOT STARTED | — |
+| 0 | Audit repository & lock control baseline | **DONE** (owner-approved; ADR-004) | Output: `PHASE_0_AUDIT_REPORT.md`, `PHASE_0_GAP_REGISTER.md`, `PHASE_0_OPEN_DECISIONS.md`, `PHASE_0_ACCEPTANCE.md`, 12 control files. Baseline ter-commit `03293b6`. Verifikasi standar ISO `BLOCKED` (kelanjutan: STANDARD_REGISTER + OD-160). |
+| 1 | Discovery, personas, use cases, requirements & acceptance criteria | **DONE — baseline tersedia; efektif setelah owner approval requirement & OD-01/02/116** | 15 artefak Phase 1 (lihat `PHASE_1_REPORT.md`): REQ-001..100, USE_CASES (55 UC), PERSONAS_AND_JOURNEYS (P-01..12), PROCESS_MAP, DOCUMENT_EVIDENCE_MODEL, STANDARD_REGISTER, LICENSE_MATRIX revisi, UX_REQUIREMENTS, NON_FUNCTIONAL_REQUIREMENTS, RISK_REGISTER, OPEN_DECISIONS, TRACEABILITY_MATRIX. |
+| 2 | Architecture/domain model, threat model, data model & ADR | NOT STARTED | Prasyarat: approval baseline Phase 1; jawaban OD-01 (database), OD-02 (mobile strategy), OD-116 (DATA_MODEL_CONCEPT). |
 | 3 | Repository foundations, design system, i18n & CI/testing foundation | NOT STARTED | — |
 | 4 | Identity, authentication, workspace/tenant, memberships & permissions | NOT STARTED | next-auth terpasang tapi tanpa implementasi (`NOT FOUND`); WhatsApp vendor review belum ada. |
 | 5 | Licensing, entitlements, renewal/expiry & extensions model | NOT STARTED | — |

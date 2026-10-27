@@ -1,12 +1,12 @@
 # PHASE STATUS — epicRider
 
-**Sumber kebenaran:** bukti di repository. Tanggal update terakhir: 2026-05-22 (Phase 0).
+**Sumber kebenaran:** bukti di repository. Tanggal update terakhir: 2026-10-27 (Phase 1).
 **Aturan:** status hanya diubah dengan bukti baru (Master Control §3.6, §15).
 
 | Phase | Nama | Status | Bukti / Blocker |
 |---|---|---|---|
-| 0 | Audit repository & lock control baseline | **SELESAI (audit run 2026-05-22) — `DONE` menunggu konfirmasi owner atas 2 exit criteria yang tersisa:** (1) commit baseline git oleh owner/agen berikutnya, (2) keputusan atas open decisions yang tidak menghalangi Phase 1. | Laporan: `PHASE_0_AUDIT_REPORT.md`, `PHASE_0_GAP_REGISTER.md`, `PHASE_0_OPEN_DECISIONS.md`, `PHASE_0_ACCEPTANCE.md`; 12 control files kanonik dibuat; audit UI: `audit/evidence/`; lint exit 0; verifikasi ISO `BLOCKED` (akses katalog ditolak — HTTP 403/000). |
-| 1 | Discovery, personas, use cases, requirements & acceptance criteria | NOT STARTED | Menunggu jawaban owner atas OD (lihat open decisions); seed requirement tersedia. |
+| 0 | Audit repository & lock control baseline | **DONE** (disetujui owner: baseline ter-commit `03293b6` + instruksi owner melanjutkan Phase 1; lihat ADR-004) | Laporan: `PHASE_0_AUDIT_REPORT.md`, `PHASE_0_GAP_REGISTER.md`, `PHASE_0_OPEN_DECISIONS.md`, `PHASE_0_ACCEPTANCE.md` (9/9 exit criteria); 12 control files kanonik; verifikasi ISO `BLOCKED` (kelanjutan: STANDARD_REGISTER + OD-160). |
+| 1 | Discovery, personas, use cases, requirements & acceptance criteria | **DONE — baseline tersedia & konsisten; efektif penuh setelah owner menyetujui requirement (PROPOSED→APPROVED) dan menjawab OD-01/02/116** | 15 artefak: `PHASE_1_REPORT.md` + 13 artefak discovery + update kontrol; REQ-001..100, 55 UC, P-01..12/J-01..12, PROC/KPI, STD register (BLOCKED jujur), UXR-01..20, NFR-01..16, RSK-101..125, OPEN_DECISIONS terkonsolidasi; consistency check grep lolos (2 defect diperbaiki: OD-168, typo OD-109). |
 | 2 | Architecture/domain model, threat model, data model & ADR | NOT STARTED | — |
 | 3 | Repository foundations, design system, i18n & CI/testing foundation | NOT STARTED | — |
 | 4 | Identity, authentication, workspace/tenant, memberships & permissions | NOT STARTED | — |
@@ -34,5 +34,5 @@
 | 26 | Pilot, production launch, support, measurement | NOT STARTED | — |
 
 **Catatan integritas:**
-- Sebelum Phase 0, tidak ada bukti pekerjaan fase apa pun di repository (baseline = scaffold; bukti di `PHASE_0_AUDIT_REPORT.md` §3). Tidak ada fase yang ditandai DONE berdasarkan nomor phase/prompt lama.
+- Fase hanya ditandai DONE dengan bukti (Master Control §15). Status standar ISO tetap NOT VERIFIED — BLOCKED (kelanjutan terlacak via STANDARD_REGISTER + OD-160).
 - Perubahan status berikutnya wajib menyertakan: command/test dijalankan, hasil aktual, dan referensi acceptance criteria.

@@ -29,17 +29,22 @@ Aturan (Master Control §5, §14): pemilihan/penggantian framework, database, ar
 - **Keputusan:** Register berisi 46 seed requirement ber-status `PROPOSED`, diturunkan per bagian MC. Refinement, personas, use case, acceptance criteria final = Phase 1.
 - **Dampak:** Jangan menganggap REQ-xxx final sampai Phase 1 menyetujui.
 
+## ADR-004 — Exit gate Phase 0 disetujui; baseline git ter-commit
+- **Tanggal:** 2026-10-27 · **Status:** ACCEPTED
+- **Konteks:** PHASE_0_ACCEPTANCE.md mencatat 9/9 exit criteria terpenuhi pada working tree dengan 2 keterbukaan (commit baseline, review open decisions). Owner kemudian memberikan instruksi eksplisit melanjutkan ke Phase 1, dan baseline repository ter-commit sebagai `03293b6` (terverifikasi `git log`).
+- **Keputusan:** Phase 0 ditandai **DONE** — bukti: commit `03293b6` + instruksi owner. Keterbukaan residual (verifikasi ISO BLOCKED; keputusan bisnis OD) dibawa ke register `OPEN_DECISIONS.md` dan STANDARD_REGISTER, bukan diabaikan.
+- **Dampak:** Phase 1 sah dimulai; residuals terlacak via OD-160 (ISO) dan tabel open decisions.
+
+## ADR-005 — Baseline Phase 1 dihasilkan (desk analysis); semua requirement PROPOSED menunggu approval
+- **Tanggal:** 2026-10-27 · **Status:** ACCEPTED (pelaksanaan prompt Phase 1; substansi menunggu owner)
+- **Konteks:** Prompt Phase 1 mewajibkan 15 artefak discovery tanpa coding. Gate: `DATA_MODEL_CONCEPT.md` NOT FOUND (dicatat OD-116); Phase 0 evidence lengkap.
+- **Keputusan:** Menghasilkan baseline Phase 1 lengkap (lihat PHASE_1_REPORT.md): REQ-001..100, 55 UC, 12 persona/journey, process map, document/evidence model, standard register, license matrix revisi, UXR-01..20, NFR-01..16, RSK-101..125, OPEN_DECISIONS terkonsolidasi, TRACEABILITY_MATRIX. Seluruh requirement/UXR/NFR berstatus **PROPOSED** — approval owner wajib sebelum Phase 2. Keputusan bisnis tidak diambil atas nama owner (semua berlabel OPEN / OWNER APPROVAL REQUIRED).
+- **Dampak:** Phase 2 memakai baseline ini sebagai input; perubahan requirement lewat revisi REQUIREMENTS.md dengan ID baru (>REQ-100), tanpa daur ulang ID.
+
 ## Keputusan terbuka (menunggu owner) — ringkas
 
 | ID | Keputusan | Menghalangi | Detail |
 |---|---|---|---|
-| OD-01 | Database produksi (SQLite vs PostgreSQL/ lain) | Phase 2–3 | `PHASE_0_OPEN_DECISIONS.md` |
-| OD-02 | Strategi mobile/tablet/Windows (PWA vs native/cross-platform) | Phase 2 (kontrak API), Phase 23 | idem |
-| OD-03 | Vendor/mekanisme verifikasi WhatsApp OTP | Phase 4 | idem |
-| OD-04 | Kebijakan `ignoreBuildErrors` / `reactStrictMode` | Phase 3 | idem |
-| OD-05 | Definisi kuota seat (owner dihitung?) | Phase 5 (billing enforcement) | idem |
-| OD-06 | Harga, billing, pajak, refund, payment gateway | Phase 5, 14, 22 | idem |
-| OD-07 | Strategi offline-first untuk workflow lapangan | Phase 13, 24 | idem |
-| OD-08 | Relevansi scope standar ISO per target pelanggan Indonesia | Phase 17–21 | idem |
+| OD-01..OD-12, OD-101..116, + 36 kandidat workstream (OD-12x/13x/14x/16x/18x) | Register aktif | Lihat tabel per fase | **`OPEN_DECISIONS.md` (register aktif terkonsolidasi)** — `PHASE_0_OPEN_DECISIONS.md` adalah riwayat Phase 0 |
 
-Detail opsi/trade-off/pemilik keputusan: lihat `PHASE_0_OPEN_DECISIONS.md`. Phase 0 tidak memutuskan item di atas atas nama owner.
+Detail opsi/trade-off/pemilik keputusan: lihat `OPEN_DECISIONS.md` (register aktif). Tidak ada item di atas yang diputuskan engineer/agent atas nama owner.
