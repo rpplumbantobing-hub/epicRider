@@ -1,42 +1,47 @@
 # ROADMAP — epicRider
 
-**Sumber urutan:** `MASTER_CONTROL.md` §12 (urutan target, tidak diubah pada Phase 0).
-**Aturan status:** Hanya status berbasis bukti. `NOT STARTED` = tidak ada bukti pekerjaan; `IN PROGRESS` = pekerjaan berjalan dengan bukti parsial; `DONE` = seluruh acceptance criteria terbukti (Master Control §15). Fase lain `NOT STARTED` kecuali terbukti sebaliknya.
+## Status rule
 
-| Phase | Nama | Status | Bukti / Keterangan |
-|---|---|---|---|
-| 0 | Audit repository & lock control baseline | **DONE** (owner-approved; ADR-004) | Output: `PHASE_0_AUDIT_REPORT.md`, `PHASE_0_GAP_REGISTER.md`, `PHASE_0_OPEN_DECISIONS.md`, `PHASE_0_ACCEPTANCE.md`, 12 control files. Baseline ter-commit `03293b6`. Verifikasi standar ISO `BLOCKED` (kelanjutan: STANDARD_REGISTER + OD-160). |
-| 1 | Discovery, personas, use cases, requirements & acceptance criteria | **DONE — baseline tersedia; efektif setelah owner approval requirement & OD-01/02/116** | 15 artefak Phase 1 (lihat `PHASE_1_REPORT.md`): REQ-001..100, USE_CASES (55 UC), PERSONAS_AND_JOURNEYS (P-01..12), PROCESS_MAP, DOCUMENT_EVIDENCE_MODEL, STANDARD_REGISTER, LICENSE_MATRIX revisi, UX_REQUIREMENTS, NON_FUNCTIONAL_REQUIREMENTS, RISK_REGISTER, OPEN_DECISIONS, TRACEABILITY_MATRIX. |
-| 2 | Architecture/domain model, threat model, data model & ADR | NOT STARTED | Prasyarat: approval baseline Phase 1; jawaban OD-01 (database), OD-02 (mobile strategy), OD-116 (DATA_MODEL_CONCEPT). |
-| 3 | Repository foundations, design system, i18n & CI/testing foundation | NOT STARTED | — |
-| 4 | Identity, authentication, workspace/tenant, memberships & permissions | NOT STARTED | next-auth terpasang tapi tanpa implementasi (`NOT FOUND`); WhatsApp vendor review belum ada. |
-| 5 | Licensing, entitlements, renewal/expiry & extensions model | NOT STARTED | — |
-| 6 | Home/dashboard & event foundation | NOT STARTED | — |
-| 7 | Technical rider & templates | NOT STARTED | — |
-| 8 | Asset foundation & asset/set templates | NOT STARTED | — |
-| 9 | Media kit/templates | NOT STARTED | — |
-| 10 | Team/event workspace, chat, rundown, reports, notifications baseline | NOT STARTED | — |
-| 11 | Developer Equipment Store (miniRider only) | NOT STARTED | — |
-| 12 | maxRider CRM | NOT STARTED | — |
-| 13 | maxRider asset/rental lifecycle, QR/barcode, printing, scanning, maintenance | NOT STARTED | — |
-| 14 | maxRider finance/commercial | NOT STARTED | — |
-| 15 | Advanced roles/workflow, HSE/risk/readiness/operational controls | NOT STARTED | — |
-| 16 | hiRider marketplace/recruitment | NOT STARTED | — |
-| 17 | IMS foundation, process architecture, controlled document library | NOT STARTED | — |
-| 18 | Forms/checklists, evidence, sign-off/signatures, Audit Mode | NOT STARTED | — |
-| 19 | Sustainability, environmental, HSE, infosec, continuity, risk workflows | NOT STARTED | — |
-| 20 | Audit programmes, NCR/CAPA, management review, continual improvement | NOT STARTED | — |
-| 21 | End-to-end IMS integration, compliance mapping, project/event dossier | NOT STARTED | — |
-| 22 | Public landing, Developer Portal, license/extension shop, notification governance | NOT STARTED | — |
-| 23 | Extensions, workspace landing pages, mobile/tablet/Windows delivery | NOT STARTED | — |
-| 24 | Integrations, import/export, offline & sync hardening | NOT STARTED | — |
-| 25 | Security/performance/reliability/backup-restore/DR/accessibility/UAT | NOT STARTED | — |
-| 26 | Pilot, production launch, support, measurement, continuous improvement | NOT STARTED | — |
+`NOT STARTED` = no evidence of work.
+`IN PROGRESS` = partial evidence.
+`PARTIAL` = work/evidence incomplete.
+`BLOCKED` = specific scope cannot proceed because a dependency is required.
+`DONE` = all phase acceptance criteria are evidenced.
 
-## Dependency usulan hasil audit (tidak mengubah urutan; menunggu keputusan owner)
+## Phase state
 
-1. **Verifikasi status/edisi ISO** (baseline ISOrider, Phase 17–21) saat ini `BLOCKED` karena katalog resmi ISO tidak dapat diakses dari lingkungan pengembangan; harus dijalankan dari lingkungan dengan akses `www.iso.org` sebelum desain IMS.
-2. **Keputusan database produksi** (OD-01) sebaiknya diputuskan paling lambat awal Phase 2 agar data model tidak dirancang dua kali.
-3. **Strategi mobile/delivery** (OD-02) sebaiknya diputuskan pada Phase 2 (ADR) karena mempengaruhi kontrak API.
-4. **Vendor WhatsApp OTP** (OD-03) sebaiknya berjalan paralel dengan Phase 1–3 agar Phase 4 tidak tertahan.
-5. **Kuota seat (owner dihitung atau tidak, OD-05)** wajib diputuskan sebelum Phase 5 (billing/enforcement) sesuai Master Control §2.
+| Phase | Name | Status |
+|---|---|---|
+| 0 | Audit repository & control baseline | DONE — existing evidence |
+| 1 | Discovery/personas/use cases/requirements/acceptance | DONE/BASELINE — existing Phase 1 artifacts; revalidated for Phase 2 |
+| 2 | Architecture/domain model/threat model/data model/ADR | **DONE — architecture baseline 2026-10-27** (evidence: `PHASE_2_ACCEPTANCE.md` A–G 7/7 checked; `PHASE_2_REPORT.md`; owner follow-ups: ratify 7 PROPOSED ADRs, decide OD-01/OD-02 — non-blocking) |
+| 3–26 | Subsequent roadmap | NOT STARTED unless evidence says otherwise |
+
+## Phase 2 entry correction
+
+The following are NOT full Phase 2 blockers:
+- OD-02 mobile strategy;
+- OD-03 WhatsApp vendor;
+- OD-05 owner seat semantics;
+- OD-06 billing;
+- OD-09 legal validation;
+- OD-116 DATA_MODEL_CONCEPT.
+
+OD-01 production database may constrain the final physical database decision, but it does not block logical architecture/data modeling.
+
+## Phase 2 dependencies
+
+| Dependency | Phase 2 impact | Rule |
+|---|---|---|
+| OD-01 database | PARTIAL | logical model proceeds; final physical DB may remain open |
+| OD-02 mobile | NON-BLOCKING | client-neutral API/domain contracts required |
+| OD-03 WhatsApp | NON-BLOCKING | provider abstraction required |
+| OD-05 owner seat | NON-BLOCKING | model seat concept; defer final counting rule |
+| OD-06 billing | NON-BLOCKING | model commercial states/catalog abstractions; defer charging |
+| OD-09 legal | NON-BLOCKING | record obligations/uncertainty; no legal claims |
+| OD-116 data model concept | PHASE 2 WORK | must be produced/refined in Phase 2 |
+| OD-160 ISO verification | NON-BLOCKING for generic architecture | IMS mapping may remain provisional |
+
+## Phase 2 completion
+
+Phase 2 completion is determined by `PHASE_2_ACCEPTANCE.md`, not by the existence of files alone.

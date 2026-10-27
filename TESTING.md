@@ -1,42 +1,70 @@
 # TESTING — epicRider
 
-## 1. CURRENT STATE — audit Phase 0 (2026-05-22)
+## Canonical statuses
 
-| Aspek | Fakta | Status |
-|---|---|---|
-| Test framework aplikasi | Tidak terpasang (tidak ada vitest/jest/playwright di `package.json`) | `NOT FOUND` |
-| Test suite aplikasi | Tidak ada; `tests/` berisi 3 script infrastruktur sandbox (`python-runtime-build.sh`, `database-runtime-build.sh`, `python-runtime-container.sh`) yang BUKAN test aplikasi | `NOT FOUND` |
-| Lint | `bun run lint` (eslint .) → exit 0, bersih, dijalankan 2026-05-22 | `VERIFIED` (dijalankan) |
-| Dev server smoke | `GET / 200` di `dev.log`; render terverifikasi via headless browser (screenshot `audit/evidence/current-home-*.png`) | `VERIFIED` (dijalankan) |
-| Build produksi | `bun run build` TIDAK dijalankan pada Phase 0 (dilarang oleh batasan lingkungan; sandbox memakai dev server) | `NOT RUN` |
-| Migration/test DB | Tidak ada migrations folder; tidak dijalankan perubahan schema pada Phase 0 | `NOT RUN` (sesuai batasan) |
-| Security scan | Tidak ada tool/scanner; tidak dijalankan | `NOT RUN` |
-| Aksesibilitas otomatis | Tidak ada; layar yang ada hanya placeholder logo | `NOT TESTED` |
+Evidence:
+`VERIFIED`, `PARTIAL`, `NOT FOUND`, `NOT TESTED`, `BLOCKED`, `PROPOSED`, `UNKNOWN / NEEDS DECISION`.
 
-## 2. TARGET STATE — strategi testing (PROPOSED, dirinci per fase)
+## Current Phase 0 evidence
 
-### 2.1 Level & tooling usulan (keputusan tooling final = ADR saat Phase 3, jangan mengunci sekarang)
-- **Unit/integration:** runner test TypeScript (mis. vitest) untuk domain logic: permission, entitlement, workflow states.
-- **API/contract:** test endpoint via HTTP untuk kontrak web+mobile.
-- **E2E:** browser automation untuk golden path (login, event, rider, aset, evidence).
-- **Aksesibilitas:** axe/serupa + keyboard manual check per layar kunci (UX_UI_STANDARD).
-- **Visual regression:** bila tersedia, untuk design system.
-- **Security:** dependency audit + threat-model-driven test (Phase 2+).
+- no application test framework;
+- no application test suite;
+- lint verified;
+- dev smoke verified;
+- production build not run;
+- security scan not run;
+- accessibility not tested.
 
-### 2.2 Definition of Done per fase (dari Master Control §15)
-Fase hanya boleh `DONE` jika: acceptance criteria terpenuhi; test relevan dijalankan & hasilnya dicatat; regresi diperiksa; keamanan/tenant isolation/entitlement diperiksa sesuai scope; migrasi aman; dokumentasi diperbarui; tanpa blocker kritis tersembunyi. Build sukses ≠ penerimaan; screenshot ≠ bukti business logic.
+## Phase 2 testing purpose
 
-### 2.3 Test wajib pertama kali muncul (per domain, dipetakan dari REQUIREMENTS)
-| Domain | Test minimum |
-|---|---|
-| Auth (REQ-021/022) | Validasi OTP sekali pakai/expiry/anti-replay; OIDC state/nonce/aud; account-linking |
-| Tenancy (REQ-023) | Isolasi lintas workspace (CRUP lintas-tenant ditolak) |
-| Entitlement (REQ-024, 010) | Akses fitur diblokir server-side untuk tier tanpa hak |
-| Permission (REQ-026) | Matrix aktor×objek×aksi×konteks |
-| Rider/Media kit (REQ-004/005) | Relasi ke event ditegakkan |
-| Seat limit (REQ-009) | Penolakan kru ke-6 sesuai keputusan kuota |
-| Evidence/Sign-off (REQ-043) | Record locked setelah approval; koreksi via amendment |
-| QR/Scan (REQ-036) | Generate→print→scan→lookup end-to-end |
+Phase 2 is primarily architecture/documentation/evidence work.
 
-## 3. Bukti pengujian akan dicatat per fase
-Setiap fase wajib menulis: command yang dijalankan, hasil aktual, lingkup, dan yang tidak dijalankan (`NOT RUN`) — pola sama dengan `PHASE_0_ACCEPTANCE.md`.
+Required checks:
+1. terminology consistency;
+2. requirement traceability;
+3. architecture consistency;
+4. domain invariants;
+5. threat-model coverage;
+6. authorization matrix completeness;
+7. entitlement matrix completeness;
+8. API boundary consistency;
+9. dependency/ADR consistency;
+10. contradiction search across control files.
+
+## Mandatory domain invariants to test/review
+
+### Identity
+`User != Membership != Role != Event Assignment`
+
+### hiRider
+`Application != Membership`
+`Application != Event Assignment`
+`Acceptance != Automatic Workspace Access`
+
+### License
+`hiRider != LicenseTier`
+
+### Store
+`Public Store access requires basic miniRider license`
+`Developer Equipment Store = miniRider only`
+
+### Authorization
+No capability is protected only by frontend/UI visibility.
+
+## Typo correction
+
+Previous `CRUP lintas-tenant ditolak` is corrected to:
+`CRUD lintas-tenant ditolak`.
+
+## Phase 2 evidence
+
+Each check records:
+- ID;
+- source;
+- expected;
+- actual;
+- result;
+- evidence path;
+- limitations.
+
+No test may be claimed as executed unless it actually was.

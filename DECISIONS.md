@@ -1,50 +1,96 @@
-# DECISIONS / ADR — epicRider
+# DECISIONS — epicRider
 
-Format: ADR ringkas. Status: `PROPOSED` (usulan menunggu owner) / `ACCEPTED` (disetujui) / `SUPERSEDED`.
-Aturan (Master Control §5, §14): pemilihan/penggantian framework, database, arsitektur, auth provider, build system, routing, design system wajib lewat ADR. Keputusan bisnis penting tidak boleh diambil diam-diam atas nama owner.
+## ADR register
 
----
+Architectural Decision Records live in **`ADR_REGISTER.md`** (register + conventions) and
+**`adr/ADR-xxx-*.md`** (individual files). Historical ADR-000..ADR-005 (Phase 0/1) are summarized
+in the register §2 with evidence in `audit/superseded/phase1-era-control/DECISIONS.md` + git history.
+Phase 2 produced ADR-006..ADR-017 (3 ACCEPTED — evidence: owner reconciled baseline attachment
+2026-10-27; 7 PROPOSED — awaiting owner ratification; 2 OPEN — OD-01/OD-02). Next free ID: ADR-018.
+When an OD in this file is decided by the owner, record the reasoning as an ADR there (never renumber OD or ADR IDs).
 
-## ADR-000 — Adopsi control baseline Phase 0
-- **Tanggal:** 2026-05-22 · **Status:** ACCEPTED (pelaksanaan prompt Phase 0 oleh owner via lampiran)
-- **Konteks:** Master Control, prompt Phase 0 diberikan sebagai lampiran; repository belum memiliki control files.
-- **Keputusan:** Membuat 12 control files kanonik di root (`MASTER_CONTROL.md`, `ARCHITECTURE.md`, `ROADMAP.md`, `REQUIREMENTS.md`, `LICENSE_MATRIX.md`, `DECISIONS.md`, `SECURITY.md`, `TESTING.md`, `OPERATIONS.md`, `UX_UI_STANDARD.md`, `ISO_IMS_BLUEPRINT.md`, `PHASE_STATUS.md`) + 4 laporan Phase 0. Isi Master Control diadopsi tanpa perubahan substansi; laporan memisahkan CURRENT vs TARGET.
-- **Dampak:** Semua fase berikutnya wajib membaca control files sebelum coding (Master Control §3).
+## Status taxonomy
 
-## ADR-001 — Tidak ada perubahan stack pada Phase 0
-- **Tanggal:** 2026-05-22 · **Status:** ACCEPTED (sesuai batasan keras prompt Phase 0)
-- **Konteks:** Repository adalah scaffold Next.js 16 + Prisma + SQLite + Tailwind 4 + shadcn/ui (bukti di ARCHITECTURE.md §1). Batasan keras Phase 0 melarang penggantian stack.
-- **Keputusan:** Stack tetap apa adanya. Evaluasi kesesuaian stack terhadap target (MC §5) dilakukan sebagai input Phase 2, bukan penggantian sekarang.
-- **Dampak:** Tidak ada perubahan dependency/arsitektur pada Phase 0.
+ADR/decision status:
+`OPEN` / `PROPOSED` / `ACCEPTED` / `REJECTED` / `SUPERSEDED`
 
-## ADR-002 — Verifikasi standar ISO ditangguhkan (BLOCKED dari sandbox)
-- **Tanggal:** 2026-05-22 · **Status:** ACCEPTED (kondisi lingkungan), verifikasi tetap wajib
-- **Konteks:** Akses ke `www.iso.org` dan `catalog.iso.org` dari lingkungan audit mengembalikan HTTP 403/000 (diblokir). Prompt Phase 0 Checkpoint D melarang klaim status standar tanpa sumber resmi.
-- **Keputusan:** Seluruh status standar dicatat `NOT VERIFIED`; daftar verifikasi disiapkan di `ISO_IMS_BLUEPRINT.md` untuk dieksekusi dari lingkungan dengan akses katalog resmi.
-- **Dampak:** ISOrider design (Phase 17+) tidak boleh mengunci edisi/amendment sebelum verifikasi.
+Evidence status:
+`VERIFIED` / `PARTIAL` / `NOT FOUND` / `NOT TESTED` / `BLOCKED` / `PROPOSED` / `UNKNOWN / NEEDS DECISION`
 
-## ADR-003 — Seed requirement dari Master Control tanpa discovery
-- **Tanggal:** 2026-05-22 · **Status:** ACCEPTED
-- **Konteks:** REQUIREMENTS.md wajib ada (MC §13), tetapi Phase 0 bukan fase discovery.
-- **Keputusan:** Register berisi 46 seed requirement ber-status `PROPOSED`, diturunkan per bagian MC. Refinement, personas, use case, acceptance criteria final = Phase 1.
-- **Dampak:** Jangan menganggap REQ-xxx final sampai Phase 1 menyetujui.
+Requirement status:
+`PROPOSED` / `APPROVED` / `IMPLEMENTED` / `VERIFIED` / `SUPERSEDED`
 
-## ADR-004 — Exit gate Phase 0 disetujui; baseline git ter-commit
-- **Tanggal:** 2026-10-27 · **Status:** ACCEPTED
-- **Konteks:** PHASE_0_ACCEPTANCE.md mencatat 9/9 exit criteria terpenuhi pada working tree dengan 2 keterbukaan (commit baseline, review open decisions). Owner kemudian memberikan instruksi eksplisit melanjutkan ke Phase 1, dan baseline repository ter-commit sebagai `03293b6` (terverifikasi `git log`).
-- **Keputusan:** Phase 0 ditandai **DONE** — bukti: commit `03293b6` + instruksi owner. Keterbukaan residual (verifikasi ISO BLOCKED; keputusan bisnis OD) dibawa ke register `OPEN_DECISIONS.md` dan STANDARD_REGISTER, bukan diabaikan.
-- **Dampak:** Phase 1 sah dimulai; residuals terlacak via OD-160 (ISO) dan tabel open decisions.
+Phase status:
+`NOT STARTED` / `IN PROGRESS` / `BLOCKED` / `PARTIAL` / `DONE`
 
-## ADR-005 — Baseline Phase 1 dihasilkan (desk analysis); semua requirement PROPOSED menunggu approval
-- **Tanggal:** 2026-10-27 · **Status:** ACCEPTED (pelaksanaan prompt Phase 1; substansi menunggu owner)
-- **Konteks:** Prompt Phase 1 mewajibkan 15 artefak discovery tanpa coding. Gate: `DATA_MODEL_CONCEPT.md` NOT FOUND (dicatat OD-116); Phase 0 evidence lengkap.
-- **Keputusan:** Menghasilkan baseline Phase 1 lengkap (lihat PHASE_1_REPORT.md): REQ-001..100, 55 UC, 12 persona/journey, process map, document/evidence model, standard register, license matrix revisi, UXR-01..20, NFR-01..16, RSK-101..125, OPEN_DECISIONS terkonsolidasi, TRACEABILITY_MATRIX. Seluruh requirement/UXR/NFR berstatus **PROPOSED** — approval owner wajib sebelum Phase 2. Keputusan bisnis tidak diambil atas nama owner (semua berlabel OPEN / OWNER APPROVAL REQUIRED).
-- **Dampak:** Phase 2 memakai baseline ini sebagai input; perubahan requirement lewat revisi REQUIREMENTS.md dengan ID baru (>REQ-100), tanpa daur ulang ID.
+## Critical correction
 
-## Keputusan terbuka (menunggu owner) — ringkas
+The Phase 1 repository uses a larger decision namespace (including OD-116, OD-160, etc.). Do NOT renumber those decisions to fit an older OD-01..OD-09-only model.
 
-| ID | Keputusan | Menghalangi | Detail |
-|---|---|---|---|
-| OD-01..OD-12, OD-101..116, + 36 kandidat workstream (OD-12x/13x/14x/16x/18x) | Register aktif | Lihat tabel per fase | **`OPEN_DECISIONS.md` (register aktif terkonsolidasi)** — `PHASE_0_OPEN_DECISIONS.md` adalah riwayat Phase 0 |
+Existing Phase 1 decision IDs are preserved.
 
-Detail opsi/trade-off/pemilik keputusan: lihat `OPEN_DECISIONS.md` (register aktif). Tidak ada item di atas yang diputuskan engineer/agent atas nama owner.
+The decisions below define the canonical meaning of the key decisions relevant to Phase 2. If the repository contains a more detailed existing OD entry, retain its ID and merge this dependency rule into it rather than creating a duplicate.
+
+## OD-01 — Production database
+Status: OPEN unless repository evidence shows otherwise.
+
+Effect:
+- may block final production database selection;
+- may block final physical migration implementation.
+
+Does not block:
+- logical domain model;
+- logical data model;
+- bounded contexts;
+- threat model;
+- API architecture;
+- authorization model.
+
+## OD-02 — Mobile/client delivery strategy
+Status: OPEN unless owner-approved decision exists.
+
+Effect:
+- does NOT block Phase 2;
+- Phase 2 must remain client-neutral;
+- final delivery strategy belongs in ADR;
+- Phase 23 delivery remains dependent on final decision.
+
+## OD-03 — WhatsApp provider
+Status: OPEN unless owner-approved decision exists.
+
+Effect:
+- only provider-specific integration/configuration/production tests are blocked;
+- identity domain, session architecture, auth abstraction, recovery and authorization remain unblocked.
+
+## OD-05 — Owner seat semantics
+Status: OPEN unless owner-approved decision exists.
+
+Effect:
+- only final seat counting/quota/billing semantics are blocked;
+- membership, role, entitlement and seat-domain modeling can proceed.
+
+## OD-06 — Billing/commercial
+Status: OPEN unless owner-approved decision exists.
+
+Effect:
+- catalog, license, entitlement, extension lifecycle and abstract pricing can proceed;
+- production payment/charging/final commercial values remain blocked.
+
+## OD-09 — Indonesian legal/regulatory obligations
+Status: OPEN.
+
+Effect:
+- legal applicability/compliance assertions blocked until validated;
+- generic architecture is not blocked.
+
+Required artifact:
+`LEGAL_REGULATORY_REGISTER.md`
+
+## OD-116 — DATA_MODEL_CONCEPT
+If this ID exists in the Phase 1 repository, it must NOT be treated as a prerequisite that blocks Phase 2. It is a Phase 2 architecture/data-model workstream/output.
+
+Phase 2 must resolve it through evidence and ADRs.
+
+## OD-160 — ISO verification
+ISO verification remains independent from generic Phase 2 architecture.
+It must not be used as a blocker for non-IMS domain architecture.

@@ -89,7 +89,20 @@ Catatan penomoran: OD-129/OD-149/OD-169 hanya penanda batas range workstream (bu
 
 ## 4. Ringkasan untuk owner (baca sebelum Phase 2)
 
-1. **Menghalangi Phase 2 jika tak dijawab:** OD-01 (database), OD-02 (strategi mobile → kontrak API), OD-116 (konsep data model).
+> **KOREKSI BASELINE 2026-10-27 (owner, lampiran `epicRider_phase2_control_replacement.zip`):**
+> Poin 1 di bawah **SUPERSEDED**. OD-01/OD-02/OD-116 **bukan** blocker penuh Phase 2 —
+> lihat `DECISIONS.md` (rekonsiliasi) dan `PHASE_2_DEPENDENCY_MATRIX.md`:
+> OD-01 hanya memblokir finalisasi database fisik/migrasi produksi; OD-02 tidak memblokir
+> Phase 2 (arsitektur wajib client-neutral); OD-116 adalah **workstream/output Phase 2**,
+> bukan prasyarat. Register OD (§1–§3) tetap valid; hanya penilaian dampak per-fase dikoreksi.
+>
+> Poin 2–4 berlaku **pada level sub-scope, bukan fase penuh**: OD-03 hanya memblokir
+> integrasi/konfigurasi/production test spesifik vendor (bukan Phase 4 keseluruhan);
+> OD-05 hanya memblokir final counting kuota seat/billing (bukan Phase 5 keseluruhan);
+> OD-06 hanya memblokir production charging/harga final/gateway/commercial launch
+> (bukan arsitektur katalog/entitlement). Definisi kanonik: `DECISIONS.md` versi 2026-10-27.
+
+1. ~~**Menghalangi Phase 2 jika tak dijawab:** OD-01 (database), OD-02 (strategi mobile → kontrak API), OD-116 (konsep data model).~~ **[SUPERSEDED — lihat koreksi di atas]**
 2. **Menghalangi Phase 4:** OD-03 (WhatsApp vendor), OD-115 (param sesi bisa PROPOSED dulu).
 3. **Menghalangi Phase 5:** OD-05, OD-06, OD-108.
 4. **Menghalangi Phase 11/22:** OD-06, OD-101, OD-102.

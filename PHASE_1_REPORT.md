@@ -2,6 +2,17 @@
 
 Tanggal: 2026-10-27 (sesi audit/baseline: 2026-05-22; baseline git ter-commit `03293b6`) · Sifat fase: **documentation-only** (discovery & spesifikasi) — tanpa kode produk, tanpa perubahan schema, tanpa dependency baru.
 
+> **ADDENDUM 2026-10-27 (pasca-rekonsiliasi baseline oleh owner):** Laporan ini adalah
+> **riwayat Phase 1** dan tetap menjadi baseline evidence. Dua penyebutannya kini
+> **SUPERSEDED** oleh lampiran owner `epicRider_phase2_control_replacement.zip`:
+> (1) frasa *"license matrix revisi (4 tier …)"* — taksonomi final: **hanya 3 license tier**
+> (miniRider/maxRider/ISOrider); hiRider adalah portal/capability rekrutmen, bukan license
+> (lihat `MASTER_CONTROL.md`/`LICENSE_MATRIX.md` versi 2026-10-27; matriks lama diarsipkan
+> di `audit/superseded/phase1-era-control/`); (2) klaim *"OD-01/OD-02/OD-116 memblokir
+> Phase 2"* — kini **non-blocking untuk Phase 2** pada level arsitektur (lihat
+> `DECISIONS.md`, `PHASE_2_DEPENDENCY_MATRIX.md`). Owner telah memberi instruksi eksplisit
+> melanjutkan Phase 2, sehingga anjuran "tunggu instruksi owner" pada §10 terpenuhi.
+
 ---
 
 ## 1. Ringkasan
