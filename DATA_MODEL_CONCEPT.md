@@ -229,7 +229,9 @@ Conventions for this section:
 
 ### 3.7 hiRider Recruitment
 
-**Purpose:** the recruitment portal/capability connecting candidate users and workspaces. **hiRider is a portal/capability — it is NOT a license and NOT a tier value** (MC §1; §4.4 of this document). Core chain (ARCHITECTURE.md §2): `User Profile → Recruitment Opening → Application → Recruitment Decision → Membership/Assignment` — with Application never collapsed into Membership.
+**Purpose:** the crew services marketplace connecting candidate users and workspaces — profile, skills, portfolio, **service offers (penawaran jasa)**, open recruitment, applications, selection, and assignment. **hiRider is a portal/capability — it is NOT a license and NOT a tier value** (MC §1; §4.4 of this document). Core chain (ARCHITECTURE.md §2): `User Profile → Recruitment Opening → Application → Recruitment Decision → Membership/Assignment` — with Application never collapsed into Membership.
+
+> **Remediasi F-01 (audit konsistensi Phase 3, 2026-10-28; `adr/ADR-021-hirider-service-offer-scope.md`):** scope hiRider **termasuk penawaran jasa** per baseline Master Control ("Marketplace layanan kru"). `ServiceOffer` ditambahkan di bawah sebagai objek yang **direncanakan** — lifecycle/ownership/visibility/permission/API/audit detail berstatus `PROPOSED` (desain final Phase 16). Keberadaan ServiceOffer di scope BUKAN keputusan terbuka (OD-185 CLOSED — DECIDED BY BASELINE).
 
 Detailed domain model in §5. Entities (owner: this context):
 
@@ -243,9 +245,10 @@ Detailed domain model in §5. Entities (owner: this context):
 | `ApplicationStatusHistory` | Append-only history of every application transition + actor + reason | id, application_id, from/to status, actor, timestamp, note | N—1 `Application` | — (append-only) | Immutable; every decision auditable (REQ-064) |
 | `Shortlist` | Shortlist entry (opening × application) | id, opening_id, application_id, added_by/at, note | N—1 `RecruitmentOpening`; N—1 `Application` | ACTIVE, REMOVED (`PROPOSED`) | Shortlist is a selection state, not a decision (ARCHITECTURE.md §6) |
 | `RecruitmentDecision` | Final accept/reject decision with actor + reason | id, application_id, decision, decided_by/at, reason | 1—1 `Application` | ACCEPTED, REJECTED (`PROPOSED`) | Decision does NOT create membership (§4.3); accept may be followed by a separate `Invitation` (UC-6004 a1) |
+| `ServiceOffer` *(planned — ADR-021)* | A crew service offering (penawaran jasa) published by a candidate/kru within hiRider scope (MC baseline "Marketplace layanan kru"; REQ-013 amended) | id, provider user_id, title, description, service category, terms, visibility setting, status, version — **detail atribut `PROPOSED`** | N—1 `User` (ref, provider); relasi ke `CandidateProfile`/`RecruitmentOpening` = desain Phase 16 | Lifecycle **`PROPOSED`** — belum ada status final yang disetujui (ADR/desain Phase 16) | Bukan license/tier; bukan `Application` dan tidak menciptakan membership/assignment; visibility/privacy server-side (OD-109 analog); audit trail per transisi (MC auditability); detail permission + API boundary direncanakan di AUTHORIZATION_MODEL/API_ARCHITECTURE saat desain Phase 16 |
 | `AbuseReport` | Marketplace abuse report (profile/listing/message) and moderation outcome (UC-6005) | id, reporter user_id, target ref, context, status, action, moderator | N—1 `User` (reporter) | OPEN, REVIEWING, ACTIONED, DISMISSED (`PROPOSED`) | Note: no dedicated REQ exists yet (USE_CASES §gap); privacy of reporter protected (OD-09, OD-109) |
 
-- **Tenant boundary:** `RecruitmentOpening` is tenant-owned (workspace_id) but portal-visible per status; `CandidateProfile`, `Skill`, `PortfolioItem` are user-global; `Application` bridges both (opening→tenant, candidate→user) and must enforce visibility rules of both sides (application privacy = SECURITY.md hiRider section; contact-data policy = OD-134).
+- **Tenant boundary:** `RecruitmentOpening` is tenant-owned (workspace_id) but portal-visible per status; `CandidateProfile`, `Skill`, `PortfolioItem` are user-global; `Application` bridges both (opening→tenant, candidate→user) and must enforce visibility rules of both sides (application privacy = SECURITY.md hiRider section; contact-data policy = OD-134). `ServiceOffer` (planned, ADR-021) adalah objek user-global (provider-side) dengan visibility eksplisit — tenant-relasi final ditetapkan saat desain Phase 16.
 - **Auditability:** all transitions + decisions + moderation actions → `AuditEvent` (REQ-064; "mass decisions without trace" is an abuse case — audited).
 - **Access patterns & logical indexes:** openings visible to candidates by (status=OPEN) filtered by access criteria; "my applications" by (candidate user_id, status); applications for an opening by (opening_id, status); unique (opening_id, candidate user_id) active-application constraint (duplicate policy, UC-6003 F2); shortlist by (opening_id).
 
@@ -479,12 +482,13 @@ Source invariants: `MASTER_CONTROL.md` §1/§2/§4, `ARCHITECTURE.md` §4/§5/§
 
 ## 5. hiRider domain model (per Phase 2 prompt §7; ARCHITECTURE.md §6)
 
-**Reminder:** hiRider is a portal/capability — NOT a license, NOT a tier value (see §4.4). The objects below are the minimum conceptual set from ARCHITECTURE.md §6. Entities marked *(ref)* are owned by other contexts and listed here only to show the chain.
+**Reminder:** hiRider is a portal/capability — NOT a license, NOT a tier value (see §4.4). The objects below are the minimum conceptual set from ARCHITECTURE.md §6, **plus `ServiceOffer` (planned — remediasi F-01/ADR-021, 2026-10-28: penawaran jasa in-scope per baseline Master Control)**. Entities marked *(ref)* are owned by other contexts and listed here only to show the chain.
 
 ```
 User (ref: Identity)
  └─ CandidateProfile ──< Skill
                      ──< PortfolioItem
+                     ──< ServiceOffer (planned — ADR-021; lifecycle PROPOSED)
 Workspace (ref: Workspace/Tenant)
  └─ RecruitmentOpening ──< Application ──< ApplicationStatusHistory
                         │              └─ Shortlist (entry)
@@ -506,6 +510,7 @@ Chain (canonical, ARCHITECTURE.md §2): `User Profile → Recruitment Opening �
 | `ApplicationStatusHistory` | hiRider | Append-only transition log with actor+reason (REQ-064) |
 | `Shortlist` | hiRider | Selection state within an opening |
 | `RecruitmentDecision` | hiRider | Accept/reject with actor + reason; no membership side-effect (§4.3) |
+| `ServiceOffer` *(planned — ADR-021)* | hiRider | Penawaran jasa oleh kru — in-scope per baseline Master Control ("Marketplace layanan kru"); lifecycle/visibility/permission/API detail `PROPOSED` (desain final Phase 16); bukan license, bukan Application, tidak menciptakan membership/assignment |
 | `Membership` *(ref)* | Membership & Roles | Created only via Invitation (REQ-049, REQ-051) |
 | `EventAssignment` *(ref)* | Event & Assignment | Separate step after membership (REQ-050) |
 

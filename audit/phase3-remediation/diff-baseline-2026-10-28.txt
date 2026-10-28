@@ -1,0 +1,31 @@
+# Bukti F-06.1 — Diff baseline 12 file root vs upload/phase2_extract/ (remediasi audit Phase 3)
+Tanggal eksekusi: 2026-10-28 07:10:18 UTC
+Command: diff -q <root>/<file> upload/phase2_extract/<file> untuk 12 file kontrol yang ada di P-1 (epicRider_Phase_2_Prompt_zai.md dikecualikan karena bukan file kontrol — prompt)
+
+DIFFERS    ARCHITECTURE.md  (exit diff=1)
+DIFFERS    CONTROL_CONSISTENCY_MATRIX.md  (exit diff=1)
+DIFFERS    DECISIONS.md  (exit diff=1)
+DIFFERS    LICENSE_MATRIX.md  (exit diff=1)
+DIFFERS    MASTER_CONTROL.md  (exit diff=1)
+DIFFERS    PHASE_2_ACCEPTANCE.md  (exit diff=1)
+IDENTICAL  PHASE_2_DEPENDENCY_MATRIX.md
+IDENTICAL  PHASE_2_REPORT_TEMPLATE.md
+DIFFERS    PHASE_2_TRACEABILITY.md  (exit diff=1)
+DIFFERS    ROADMAP.md  (exit diff=1)
+IDENTICAL  SECURITY.md
+IDENTICAL  TESTING.md
+
+RINGKASAN: total=12, identical=4, differs=8
+
+Klasifikasi differs (semua = update eksekusi/koreksi tercatat, bukan konflik aturan; per-file):
+- ARCHITECTURE.md              : remediasi F-01 (Service Offer ditambah ke §6 hiRider objects, 2026-10-28)
+- CONTROL_CONSISTENCY_MATRIX.md: remediasi F-01/F-02 (rule kanonik hiRider services + License & Extension Shop + pencarian baru, 2026-10-28)
+- DECISIONS.md                 : header ADR register (Phase 2/3)
+- LICENSE_MATRIX.md            : koreksi tiga surface §4 (F-03 Gate A) + penawaran jasa hiRider §3 (F-01, 2026-10-28)
+- MASTER_CONTROL.md            : Gate A F-02/F-03 (§0 de-dinamisasi, tiga surface §1) + remediasi F-01 (hiRider penawaran jasa §1, 2026-10-28)
+- PHASE_2_ACCEPTANCE.md        : blok RE-ASSESSMENT (remediasi F-05 audit Phase 2)
+- PHASE_2_TRACEABILITY.md      : hasil mapping 100/100 (eksekusi Phase 2)
+- ROADMAP.md                   : status fase dari bukti acceptance + pemulihan fase 0-26 (F-07) + status Phase 3 PARTIAL (F-04)
+IDENTICAL (4): PHASE_2_DEPENDENCY_MATRIX.md, PHASE_2_REPORT_TEMPLATE.md, SECURITY.md, TESTING.md
+
+Catatan: hitungan pada PHASE_3_REPORT.md §4 versi sebelumnya (9 identical/4 differs = 13 file) SALAH hitung dan CONTROL_BASELINE_REGISTER.md §4 mencantumkan PHASE_2_ACCEPTANCE.md ganda (identical sekaligus differs) — kedua klaim lama dikoreksi; angka di file ini adalah hasil eksekusi ulang aktual pada snapshot saat ini.

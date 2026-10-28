@@ -59,9 +59,7 @@ describe("ErrorState", () => {
 
   it("retrying=true → tombol disabled (dengan spinner, bukan warna saja)", () => {
     const onRetry = vi.fn();
-    render(
-      <ErrorState title="Gagal" onRetry={onRetry} retrying retryLabel="Coba lagi" />
-    );
+    render(<ErrorState title="Gagal" onRetry={onRetry} retrying retryLabel="Coba lagi" />);
 
     const retryButton = screen.getByRole("button", { name: "Coba lagi" });
     expect(retryButton).toBeDisabled();
@@ -111,9 +109,7 @@ describe("StatusBadge", () => {
   });
 
   it("mengganti tone → ikon berubah (perbandingan glyph, bukan warna) + data-tone ikut", () => {
-    const { container, rerender } = render(
-      <StatusBadge tone="success">Status</StatusBadge>
-    );
+    const { container, rerender } = render(<StatusBadge tone="success">Status</StatusBadge>);
 
     const badge = container.querySelector("[data-slot='badge']");
     expect(badge?.getAttribute("data-tone")).toBe("success");

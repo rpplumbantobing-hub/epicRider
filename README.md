@@ -47,7 +47,7 @@ adr/              # Architecture Decision Records (ADR-001..020)
 - **Folder & naming**: komponen React = `PascalCase.tsx` di `src/components/`; modul non-komponen = `camelCase.ts`/`kebab-case.ts`; test = `*.test.ts(x)` di `tests/unit|components`.
 - **Import boundaries** (arah): `src/app` → `src/components` → `src/lib` / `src/i18n`. Komponen fondasi (`components/foundation`) presentational — tidak memanggil API/database.
 - **Error handling**: try/catch eksplisit di boundary; hasil operasi yang bisa gagal dikembalikan sebagai typed result (bukan throw mentah lintas lapisan). Error UI memakai komponen status (ErrorState/PermissionDenied), otorisasi tetap server-side.
-- **Config environment**: nilai nyata di `.env` (tidak di-commit); placeholder + penjelasan di `.env.example` — jangan pernah menyalin nilai rahasia ke `.env.example`.
+- **Config environment**: nilai nyata di `.env` (**tidak di-track Git** — dihapus dari index pada remediasi F-05 2026-10-28; file tetap ada secara lokal); placeholder + penjelasan di `.env.example` (**ter-track**, pengecualian `!.env.example` di `.gitignore`) — jangan pernah menyalin nilai rahasia ke `.env.example`.
 - **Editor**: `.editorconfig` (UTF-8, LF, indent 2 spasi, newline akhir); formatting Prettier (`.prettierrc`, printWidth 100, double quote).
 - **Kontrol dokumen**: file kontrol root (MASTER_CONTROL, ROADMAP, dll.) tidak diedit oleh alur kerja fitur biasa; status fase hanya di `ROADMAP.md`.
 

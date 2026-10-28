@@ -94,6 +94,7 @@ Minimum conceptual objects:
 - Candidate/User Profile
 - Skill
 - Portfolio
+- Service Offer *(planned — remediasi F-01 audit Phase 3, 2026-10-28: penawaran jasa in-scope per baseline Master Control "Marketplace layanan kru"; lihat adr/ADR-021; lifecycle PROPOSED, desain final Phase 16)*
 - Recruitment Opening
 - Application
 - Application Status History

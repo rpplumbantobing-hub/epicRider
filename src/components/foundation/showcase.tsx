@@ -50,7 +50,16 @@ const COLOR_TOKENS: { token: string; swatchClass: string }[] = [
   { token: "info", swatchClass: "border bg-info text-info-foreground" },
 ];
 
-const TYPOGRAPHY_SIZES = ["text-xs", "text-sm", "text-base", "text-lg", "text-xl", "text-2xl", "text-3xl", "text-4xl"] as const;
+const TYPOGRAPHY_SIZES = [
+  "text-xs",
+  "text-sm",
+  "text-base",
+  "text-lg",
+  "text-xl",
+  "text-2xl",
+  "text-3xl",
+  "text-4xl",
+] as const;
 
 function Section({
   title,
@@ -116,7 +125,12 @@ function ColorsSection() {
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {COLOR_TOKENS.map(({ token, swatchClass }) => (
           <div key={token} className="rounded-xl border bg-card p-6">
-            <div className={swatchClass + " flex h-16 items-center justify-center rounded-lg text-sm font-medium"}>
+            <div
+              className={
+                swatchClass +
+                " flex h-16 items-center justify-center rounded-lg text-sm font-medium"
+              }
+            >
               {t("showcase.colorDemoText")}
             </div>
             <p className="mt-3 font-mono text-xs text-muted-foreground">--{token}</p>
@@ -379,10 +393,7 @@ function StatesSection() {
             </div>
           ) : null}
           {activeState === "empty" ? (
-            <EmptyState
-              title={t("states.emptyTitle")}
-              description={t("states.emptyDesc")}
-            />
+            <EmptyState title={t("states.emptyTitle")} description={t("states.emptyDesc")} />
           ) : null}
           {activeState === "error" ? (
             <ErrorState
@@ -463,9 +474,7 @@ function FormattingSection() {
       <dl className="grid grid-cols-1 gap-6 sm:grid-cols-3">
         <div className="rounded-xl border bg-card p-6">
           <dt className="text-sm text-muted-foreground">{t("format.dateLabel")}</dt>
-          <dd className="mt-2 text-lg font-medium">
-            {formatDate(DEMO_DATE, { timeZone: "UTC" })}
-          </dd>
+          <dd className="mt-2 text-lg font-medium">{formatDate(DEMO_DATE, { timeZone: "UTC" })}</dd>
           <dd className="mt-1 font-mono text-xs text-muted-foreground">locale: {locale}</dd>
         </div>
         <div className="rounded-xl border bg-card p-6">

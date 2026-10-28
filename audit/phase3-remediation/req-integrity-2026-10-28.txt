@@ -1,0 +1,18 @@
+# Bukti F-06.2 — Integritas requirement (remediasi audit Phase 3)
+Tanggal eksekusi: 2026-10-28 07:11:05 UTC
+
+== A. Baris tabel requirement (kolom pertama) ==
+Command: rg -c '^\| REQ-' REQUIREMENTS.md
+jumlah baris tabel REQ: 100
+Command: rg -o '^\| (REQ-[0-9]{3}) ' -r '$1' REQUIREMENTS.md | sort | uniq -d | wc -l
+jumlah ID duplikat: 0
+ID pertama: | REQ-001
+ID terakhir: | REQ-100
+kesinambungan (100 ID unik REQ-001..REQ-100, gap check): OK
+
+== B. Referensi REQ ID di seluruh dokumen aktif (metode TERPISAH dari A — tidak dipakai sebagai jumlah requirement) ==
+Command: rg -o 'REQ-[0-9]{3}' *.md adr/*.md (root+adr, tanpa upload/, audit/, node_modules, worklog) | sort | uniq -c | wc -l
+jumlah ID unik yang dirujuk: 100
+total kemunculan (referensi): 3452
+
+KOREKSI klaim lama (F-06): scan S8 lama menyebut '99 baris REQ dan 53 duplikat' — tidak cocok dan metodologinya campur; angka resmi = hitungan kolom pertama tabel (A): 100 baris, 0 duplikat. Hitungan referensi (B) adalah angka kemunculan ID lintas dokumen, BUKAN jumlah requirement.

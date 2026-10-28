@@ -22,8 +22,8 @@
 | CI | Tidak ada (`.github/` NOT FOUND; git remote kosong → CI remote mustahil dipicu) | NOT FOUND | `ls .github`; `git remote -v` |
 | i18n | Tidak ada implementasi; `layout.tsx` hard-code `lang="en"`; page tanpa i18n | NOT FOUND | `src/app/layout.tsx` |
 | Design tokens | shadcn semantik dasar (background/card/primary/muted/destructive/ring/sidebar/chart) + radius; **tidak ada token success/warning/info; tidak ada reduced-motion handling** | PARTIAL | `globals.css` |
-| `.env` | Ada (50 byte, tidak ter-track git — `.gitignore` `*` pattern `env files`) | VERIFIED | `ls -la .env`; `git status` |
-| `.env.example` | NOT FOUND | NOT FOUND | root |
+| `.env` | Ada (50 byte) | ~~VERIFIED: tidak ter-track~~ **KOREKSI F-05 (2026-10-28): ter-track sejak commit awal `483950c`** — keputusan `git ls-files .env` saat Gate B melewatkan status index; sejak remediasi F-05 file dihapus dari index (`git rm --cached`), lokal dipertahankan, kini tidak ter-track + di-ignore. Bukti: `audit/phase3-remediation/secret-scan-env-2026-10-28.txt` | KOREKSI | `git log --all -- .env`; `git ls-files` |
+| `.env.example` | NOT FOUND saat Gate B | ~~NOT FOUND~~ **kini TER-TRACK** (dibuat saat implementasi 3-c, baru masuk index saat remediasi F-05 karena pola `.env*` tanpa pengecualian sebelumnya menelannya file ini) | KOREKSI | `git ls-files .env.example` |
 | `.editorconfig` | NOT FOUND | NOT FOUND | root |
 | README developer | NOT FOUND di root (hanya `download/README.md` platform) | NOT FOUND | root |
 | Git | main; 4 commit (`483950c` initial → `03293b6` P0 → `938932f` P1 → `70005a7` P2); tanpa remote | VERIFIED | `git log --oneline` |
@@ -68,8 +68,10 @@
 
 ## 6. Status taxonomy ringkas (wajib per prompt §4.7)
 
-- VERIFIED: stack, struktur, command tersedia, git state, .env hygiene, risiko #1/#3/#5/#6/#7.
+> **Koreksi F-05 (remediasi audit Phase 3, 2026-10-28):** item ".env hygiene" di bawah (klaim VERIFIED "tidak ter-track") **SALAH saat direkam** — `.env` ternyata ter-track sejak commit awal; `.env.example` saat Gate B memang NOT FOUND. Kedua baris tabel §1 di atas diberi status KOREKSI dengan fakta terkini. Klaim keamanan/handoff lain sudah diselaraskan (`HANDOFF.md` §7, `PHASE_3_REPORT.md` §8).
+
+- VERIFIED: stack, struktur, command tersedia, git state, risiko #1/#3/#5/#6/#7.
 - PARTIAL: lint (ada tapi longgar), design tokens (dasar ada, kurang success/warning/info + motion), tsconfig strictness.
-- NOT FOUND: CI, test framework, formatter, .env.example, .editorconfig, README, i18n, remote git.
-- NOT TESTED / NOT RUN: build (larangan platform), CI remote (tanpa remote), test suite (belum ada).
-- UNKNOWN / NEEDS DECISION: OD-01/OD-02/OD-185 (tidak memblokir fondasi Phase 3).
+- NOT FOUND (saat Gate B): CI, test framework, formatter, .env.example, .editorconfig, README, i18n, remote git — sebagian kini sudah ada (implementasi 3-c + remediasi).
+- NOT TESTED / NOT RUN: build (larangan platform), CI remote (tanpa remote).
+- UNKNOWN / NEEDS DECISION: OD-01/OD-02 (tidak memblokir fondasi Phase 3). ~~OD-185~~ CLOSED — DECIDED BY BASELINE (ADR-021, remediasi F-01).

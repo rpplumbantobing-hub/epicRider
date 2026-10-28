@@ -80,3 +80,8 @@ Phase 2 is DONE only when evidence proves the following.
    the architecture baseline nor Phase 3 foundation work, but gates hiRider detail design in Phase 16).
    Owner follow-ups unchanged: ratify 7 PROPOSED ADRs (+ ratify/amend ADR-018), decide OD-01/OD-02,
    answer OD-185, TC-10 treatment requirement. Status phase source of truth: `ROADMAP.md`.
+   **UPDATE 2026-10-28 (remediasi audit Phase 3, F-01):** ~~"F-04 remains OPEN — OWNER DECISION as
+   OD-185"~~ — OD-185 kini **CLOSED — DECIDED BY BASELINE** (penawaran jasa IN-SCOPE hiRider; lihat
+   `adr/ADR-021-hirider-service-offer-scope.md`; REQ-013 diamendemi terkendali; follow-up owner
+   "answer OD-185" tidak lagi berlaku). Catatan ini adalah koreksi ber-tanggal atas blok re-assessment
+   di atas — blok asli dipertahankan sebagai sejarah.

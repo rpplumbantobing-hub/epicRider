@@ -10,13 +10,39 @@
 
 ## Phase state
 
-| Phase | Name | Status |
-|---|---|---|
-| 0 | Audit repository & control baseline | DONE — existing evidence |
-| 1 | Discovery/personas/use cases/requirements/acceptance | DONE/BASELINE — existing Phase 1 artifacts; revalidated for Phase 2 |
-| 2 | Architecture/domain model/threat model/data model/ADR | **DONE — architecture baseline 2026-10-27, re-verified 2026-10-28 setelah remediasi konsistensi** (evidence: `PHASE_2_ACCEPTANCE.md` A–G + blok re-assessment 2026-10-28; `PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md`; owner follow-ups: ratify ADR PROPOSED (+ADR-018), decide OD-01/OD-02/OD-185 — non-blocking untuk baseline) |
-| 3 | Repository foundations, design system, i18n & CI/testing foundation (+ remediasi konsistensi Phase 2 sebagai Gate A) | **DONE — repository foundation baseline 2026-10-28** (evidence: `PHASE_3_ACCEPTANCE.md` 16/16 kriteria PASS dengan kualifikasi tercatat — build NOT RUN di sandbox, CI remote NOT TESTED, e2e smoke manual; `PHASE_3_REPORT.md`; Gate A: `PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md`) |
-| 4–26 | Subsequent roadmap | NOT STARTED unless evidence says otherwise (Phase 4 tidak dimulai otomatis) |
+**Sumber nama/outcome fase 0–26:** Master Control §12 (roadmap kendali). Kolom Status/Bukti = kondisi aktual berbasis bukti — dipisahkan eksplisit dari outcome yang direncanakan. Fase 4–26 **tidak dimulai otomatis** (MC §12: "Roadmap ini adalah urutan target, bukan bukti bahwa fase sudah dikerjakan").
+
+*Catatan remediasi (F-07, audit konsistensi Phase 3, 2026-10-28): tabel fase 4–26 yang sebelumnya diringkas menjadi satu baris generik dipulihkan menjadi satu baris per fase agar outcome tiap fase terlihat di sumber tunggal status. Semua fase 4–26 tetap `NOT STARTED`.*
+
+| Phase | Nama (outcome yang direncanakan — MC §12) | Status | Bukti / Blocker / Dependency |
+|---|---|---|---|
+| 0 | Audit repository, verifikasi bukti & penguncian control baseline | **DONE — existing evidence** | `PHASE_0_ACCEPTANCE.md` (9/9); commit `03293b6`; verifikasi ISO `BLOCKED` (F0-012, OD-160) |
+| 1 | Discovery, personas, use cases, requirements & acceptance criteria | **DONE — BASELINE** | `PHASE_1_REPORT.md` + 13 artefak; REQ-001..100; commit `938932f` |
+| 2 | Architecture/domain model, threat model, data model & ADR | **DONE — architecture baseline 2026-10-27, re-verified 2026-10-28 setelah remediasi konsistensi** | `PHASE_2_ACCEPTANCE.md` A–G + blok re-assessment; `PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md`; follow-up owner: ratify ADR PROPOSED (+ADR-018), decide OD-01/OD-02 — non-blocking |
+| 3 | Repository foundations, design system, i18n & CI/testing foundation (+ Gate A remediasi konsistensi Phase 2; + remediasi audit Phase 3 F-01..F-08) | **PARTIAL — kontrol diremediasi 2026-10-28; evidence build/CI belum terpenuhi** | `PHASE_3_ACCEPTANCE.md` (re-assessed: kriteria 12 = PARTIAL — build NOT RUN karena dilarang platform sandbox; CI remote NOT TESTED); `PHASE_3_REPORT.md`; `PHASE_3_REMEDIATION_REPORT.md`; lint/typecheck/test exit 0 (25/25); screenshot showcase. Status naik ke DONE hanya setelah `bun run build` + CI remote terbukti di runner owner |
+| 4 | Identity, authentication, workspace/tenant, memberships & permissions | NOT STARTED | Prasyarat keputusan: OD-03 (vendor WhatsApp) hanya untuk integrasi spesifik vendor; OD-115 (param sesi, bisa PROPOSED dulu) |
+| 5 | Licensing, entitlements, renewal/expiry & extensions model | NOT STARTED | Sub-scope tertahan: OD-05 (final seat counting), OD-06 (charging/harga final), OD-108 (expiry/grace/downgrade) — arsitektur katalog/entitlement tidak tertahan |
+| 6 | Home/dashboard & event foundation | NOT STARTED | — |
+| 7 | Technical rider & templates | NOT STARTED | — |
+| 8 | Asset foundation & asset/set templates | NOT STARTED | — |
+| 9 | Media kit/templates | NOT STARTED | — |
+| 10 | Team/event workspace, chat, rundown, reports & notifications baseline | NOT STARTED | OD-125 (scope notifikasi baseline, kandidat) |
+| 11 | Developer Equipment Store khusus miniRider | NOT STARTED | ADR-018 (surface model); OD-133/OD-135 (harga/order) menahan nilai komersial, bukan struktur |
+| 12 | maxRider CRM | NOT STARTED | — |
+| 13 | maxRider asset/rental lifecycle, QR/barcode, printing, scanning, maintenance/readiness | NOT STARTED | OD-07 (offline-first), OD-107 (konflik reservasi), OD-184 (matrix scanner) |
+| 14 | maxRider finance/commercial | NOT STARTED | OD-06 (charging/harga/gateway) — state model tidak tertahan |
+| 15 | Advanced roles/workflow, HSE/risk/readiness/operational controls | NOT STARTED | — |
+| 16 | hiRider marketplace/recruitment | NOT STARTED | Scope terkunci: termasuk penawaran jasa/ServiceOffer (ADR-021; OD-185 CLOSED); desain lifecycle = pekerjaan fase ini; OD-109 (visibilitas), OD-134 (kontak lamaran) |
+| 17 | IMS foundation, process architecture & controlled document library | NOT STARTED | Prasyarat data: verifikasi standar ISO (`BLOCKED` — F0-012, OD-160); OD-140..OD-144 |
+| 18 | Forms/checklists, evidence, sign-off/signatures & Audit Mode | NOT STARTED | OD-103 (kekuatan hukum sign-off), OD-104 (retensi) |
+| 19 | Sustainability, environmental, HSE, information security, continuity & risk workflows | NOT STARTED | OD-105 (metodologi GHG), OD-106 (KPI target) |
+| 20 | Audit programmes, NCR/CAPA, management review & continual improvement | NOT STARTED | — |
+| 21 | End-to-end IMS integration, compliance mapping & project/event dossier | NOT STARTED | — |
+| 22 | Public landing, Developer Portal, license/extension shop, notification governance | NOT STARTED | ADR-018 (tiga surface: License & Extension Shop = jalur first-license); OD-06, OD-101, OD-102, OD-111 |
+| 23 | Extensions, workspace landing pages, mobile/tablet/Windows delivery | NOT STARTED | ADR-007/OD-02 (strategi client final) — menahan delivery, bukan kontrak API |
+| 24 | Integrations, import/export, offline & sync hardening | NOT STARTED | OD-07, OD-111 |
+| 25 | Security/performance/reliability/backup-restore/DR/accessibility/UAT | NOT STARTED | OD-112 (target NFR), OD-114 (RPO/RTO) |
+| 26 | Pilot, production launch, support, measurement & continuous improvement | NOT STARTED | OD-10 (hosting/rilis) |
 
 ## Phase 2 entry correction
 
@@ -46,3 +72,7 @@ OD-01 production database may constrain the final physical database decision, bu
 ## Phase 2 completion
 
 Phase 2 completion is determined by `PHASE_2_ACCEPTANCE.md`, not by the existence of files alone.
+
+## Phase 3 completion
+
+Phase 3 completion is determined by `PHASE_3_ACCEPTANCE.md` (re-assessed 2026-10-28 setelah remediasi audit Phase 3) — bukan oleh keberadaan file. Status saat ini: **PARTIAL** (kontrol diremediasi; build & CI remote belum terbukti). Fase 4 tidak dimulai otomatis.

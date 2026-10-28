@@ -13,7 +13,7 @@ Phase 3 dikerjakan sebagai: **Gate A** (remediasi konsistensi Phase 2 — F-01..
 | F-01 baseline ganda | RESOLVED — `CONTROL_BASELINE_REGISTER.md` |
 | F-02 status fase konflik | RESOLVED — MC §0 de-dinamisasi; ROADMAP sumber tunggal |
 | F-03 batas commerce | RESOLVED — ADR-018 (3 surface) + sinkron 6 dokumen; ADR-013 amended |
-| F-04 penawaran jasa hiRider | **OPEN — OWNER DECISION (OD-185)**, dampak tertulis, tidak memblokir Phase 3 |
+| F-04 penawaran jasa hiRider | ~~OPEN — OWNER DECISION (OD-185)~~ **CLOSED — DECIDED BY BASELINE** (remediasi F-01 audit Phase 3: penawaran jasa in-scope per baseline Master Control; `adr/ADR-021`; REQ-013 diamendemi terkendali) |
 | F-05 klaim 0-contradictions | RESOLVED — acceptance dihitung ulang + scan baru S1–S9 |
 | F-06 referensi MC §N | RESOLVED — crosswalk + 14 nota header + 9 titik diperbaiki |
 | F-07 HANDOFF.md | RESOLVED — dibuat |
@@ -31,16 +31,17 @@ Phase 3 dikerjakan sebagai: **Gate A** (remediasi konsistensi Phase 2 — F-01..
 
 | Command | Exit code | Hasil | Kapan |
 |---|---|---|---|
-| `diff -q` root vs `upload/phase2_extract/` (12 file) | 0 | 9 identical / 4 differs (tercatat & diklasifikasi) | Gate A |
-| Contradiction scan S1–S9 → `audit/phase3-scan/contradiction-scan-2026-10-28.txt` | 0 (bersih) | 0 kontradiksi aktif; sisa hits = negasi/daftar istilah/arsip/worklog | Gate A |
-| REQ integrity: 100 unique first-column IDs, 0 duplikat | 0 | ID utuh | Gate A |
+| `diff -q` root vs `upload/phase2_extract/` (12 file) | 0 | Gate A: klaim awal "9 identical / 4 differs" **SALAH hitung (13 file)** — dikoreksi F-06; hasil ulang remediasi: **4 identical / 8 differs** (12 file, klasifikasi per-file tercatat) — `audit/phase3-remediation/diff-baseline-2026-10-28.txt` | Gate A + remediasi |
+| Contradiction scan S1–S9 → `audit/phase3-scan/contradiction-scan-2026-10-28.txt` | 0 (bersih) | Gate A; **klaim "0 kontradiksi" lama tidak cukup kuat (F-06) — scan diregenerasi dengan cakupan eksplisit + run pertama menangkap sisa "two stores" di AUTHORIZATION_MODEL (diperbaiki)** → `audit/phase3-remediation/contradiction-scan-2026-10-28-remediation.txt` | Gate A + remediasi |
+| REQ integrity: **100 baris tabel (REQ-001..100), 0 duplikat** — hitung kolom pertama DIPISAHKAN dari hitung referensi (100 ID unik / 3.452 kemunculan lintas dokumen) | 0 | ID utuh; klaim S8 lama ("99 baris / 53 duplikat") dikoreksi — `audit/phase3-remediation/req-integrity-2026-10-28.txt` | remediasi |
+| Secret scan + riwayat `.env` (tanpa mencetak nilai) | 0 | `.env` keluar index; riwayat sejak `483950c` = 1 baris `DATABASE_URL=file:` (bukan credential; tanpa rotasi) — `audit/phase3-remediation/secret-scan-env-2026-10-28.txt` | remediasi |
 | `bun install --frozen-lockfile` | 0 | 956 packages, konsisten | 3-c |
-| `bun run lint` | **0** | bersih | 3-c + re-run 3-d |
-| `bun run typecheck` (`tsc --noEmit`) | **0** | bersih | 3-c + re-run 3-d |
-| `bun run test` (`vitest run`) | **0** | **25/25 pass** (unit 15, foundation 7, switcher 3) — re-run 3-d identik | 3-c + 3-d |
-| `bun run format:check` | 1 | 66 file scaffold lama belum rapi — **bukan gate**; dicatat jujur | 3-c |
-| `curl localhost:3000/` | HTTP 200 | id default + en via cookie | 3-c |
-| `bun run build` | **NOT RUN** | larangan platform (melindungi dev server) — bukan kegagalan | — |
+| `bun run lint` | **0** | bersih (diulang pasca-formatting F-08) | 3-c + 3-d + remediasi |
+| `bun run typecheck` (`tsc --noEmit`) | **0** | bersih (diulang pasca-formatting F-08) | 3-c + 3-d + remediasi |
+| `bun run test` (`vitest run`) | **0** | **25/25 pass** (unit 15, foundation 7, switcher 3) — diulang pasca-formatting F-08, identik | 3-c + 3-d + remediasi |
+| `bun run format:check` (repo-wide) | 1 | 66 file scaffold lama belum rapi — **bukan gate**; file Phase 3 kini 100% rapi (F-08: 25 file diformat); rencana pengetatan tercatat | 3-c + remediasi |
+| `curl localhost:3000/` | HTTP 200 | id default + en via cookie; diulang pasca-formatting (lang="id") | 3-c + remediasi |
+| `bun run build` | **NOT RUN** | larangan platform (melindungi dev server) — bukan kegagalan; **konsekuensi: kriteria 12 = PARTIAL, status fase = PARTIAL** | — |
 
 ## 5. Browser verification (agent-browser, Task 3-d)
 
@@ -63,15 +64,21 @@ Phase 3 dikerjakan sebagai: **Gate A** (remediasi konsistensi Phase 2 — F-01..
 5. `next-intl` tetap terpasang tidak terpakai (dependency existing; ADR-020 mencatat opsi migrasi).
 6. Keyboard test otomatis belum komprehensif (interaksi utama tercakup user-event + pemeriksaan manual).
 
-## 7. Blockers & residual risks
+## 7. Blockers & residual risks *(diperbarui remediasi 2026-10-28)*
 
-- **OD-185** (penawaran jasa hiRider) — owner decision; memblokir desain hiRider detail (Phase 16), TIDAK memblokir Phase 4/5.
+- ~~**OD-185** (penawaran jasa hiRider)~~ — **CLOSED — DECIDED BY BASELINE** (ADR-021; penawaran jasa in-scope; desain lifecycle = Phase 16).
 - OD-01/OD-02 tetap OPEN (non-blocking fondasi); ADR-006/007 menunggu.
 - Verifikasi edisi ISO tetap BLOCKED (sandbox; F0-012; OD-160).
 - `db/custom.db` ter-commit (warisan scaffold) — catatan kebersihan; jangan simpan data nyata.
 - Stale-build Tailwind: perubahan `globals.css` kadang butuh trigger recompile di dev sandbox — perilaku lingkungan, bukan kode.
 - `tsconfig` mengecualikan `examples/` & `skills/` (folder platform dengan error pre-existing) — baseline tercatat; jangan gunakan pola itu untuk kode produk.
+- **Build + CI evidence belum terpenuhi** (F-04) — status fase Phase 3 = PARTIAL; langkah pembuktian di `HANDOFF.md` §9.
 
-## 8. Security/configuration note
+## 8. Security/configuration note *(dikoreksi remediasi F-05, 2026-10-28)*
 
-- `.env` ada, tidak ter-track, tidak dibuka; `.env.example` placeholder; tidak ada secret di workflow/report/screenshot/log. CI `permissions: contents: read`. Tidak ada dependency baru runtime (semua dev-only: vitest/testing-library/prettier/jsdom).
+- ~~"`.env` ada, tidak ter-track"~~ **SALAH — dikoreksi.** Fakta: `.env` ter-track sejak commit awal `483950c`; remediasi F-05 menghapusnya dari index (`git rm --cached .env`, file lokal dipertahankan), kini di-ignore `.gitignore`; riwayat memuat 1 baris `DATABASE_URL=file:` (SQLite lokal — bukan credential, tanpa rotasi). `.env.example` (placeholder) kini **ter-track** via pengecualian `!.env.example`. Bukti tanpa mencetak nilai: `audit/phase3-remediation/secret-scan-env-2026-10-28.txt`. Secret scan working tree file ter-track: tidak ada pola secret nyata (13 kandidat = design `token:` di showcase + teks "version token" di dokumen API — benign).
+- CI `permissions: contents: read`. Tidak ada dependency baru runtime (semua dev-only: vitest/testing-library/prettier/jsdom).
+
+## 9. Remediasi audit konsistensi Phase 3 (2026-10-28)
+
+Input: `upload/epicRider_phase3_consistency_audit.md` (putusan REWORK REQUIRED — remediasi kontrol, bukan rebuild). Eksekusi penuh F-01..F-08; peta tindakan+bukti per temuan, bukti audit regenerasi, dan rencana pengetatan lint/TypeScript ada di **`PHASE_3_REMEDIATION_REPORT.md`**; bukti mentah di `audit/phase3-remediation/` (diff, REQ integrity, contradiction scan, secret scan, quality gates). Dampak status: kriteria 12 → PARTIAL, kriteria 14 fakta dikoreksi; putusan acceptance → **PARTIAL**; ROADMAP/PHASE_STATUS/HANDOFF disinkronkan.

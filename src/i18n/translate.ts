@@ -39,7 +39,9 @@ export function createTranslator(
       return value;
     }
     const fallbackValue =
-      fallbackDictionary === dictionary ? undefined : resolveDictionaryValue(fallbackDictionary, path);
+      fallbackDictionary === dictionary
+        ? undefined
+        : resolveDictionaryValue(fallbackDictionary, path);
     if (fallbackValue !== undefined) {
       return fallbackValue;
     }

@@ -43,6 +43,7 @@ Define the three commerce surfaces, their product scopes, and their access rules
 **Negative / risks**
 - Phase 2 documents describing the Public Store as selling "license products, extensions" need targeted correction (`MASTER_CONTROL.md` §1, `LICENSE_MATRIX.md` §4, `DATA_MODEL_CONCEPT.md` §3.12/§4.6, `AUTHORIZATION_MODEL.md` §9, `API_ARCHITECTURE.md` §3 platform-scoped row, `ENTITLEMENT_MODEL.md` §3) — executed in Phase 3 Gate A, itemized in `PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md`.
 - License & Extension Shop commerce is a new named surface in the control docs; no requirement was invented for it in Phase 3 (commerce UI/build remains Phase 22+; OD-06 gates commercial values).
+- **Sinkronisasi F-02 (remediasi audit konsistensi Phase 3, 2026-10-28):** keputusan tiga surface kini tersinkron penuh ke requirement & kontrol — `REQUIREMENTS.md` REQ-030 direvisi (ID dipertahankan, tanpa renumber), `PRODUCT_SCOPE.md` diamendemi terkendali (§2.1/§3/§5/§6, rujukan ADR-018), `CONTROL_CONSISTENCY_MATRIX.md` menambah rule kanonik "License & Extension Shop"/"Commerce surfaces" + pencarian kontradiksi "dua store". Bukti scan: `audit/phase3-remediation/`.
 
 ## Evidence
 
@@ -52,6 +53,6 @@ Define the three commerce surfaces, their product scopes, and their access rules
 
 ## Dependencies
 
-- Open: OD-06 (commercial values), OD-101 (developer role model), OD-133 (price/discount authority), OD-135 (order/invoice state machine), OD-185 is unrelated (hiRider).
+- Open: OD-06 (commercial values), OD-101 (developer role model), OD-133 (price/discount authority), OD-135 (order/invoice state machine). OD-185 (hiRider scope) tidak terkait commerce — **CLOSED 2026-10-28 via ADR-021**.
 - Related ADRs: ADR-011 (entitlement), ADR-013 (superseded in part), ADR-014 (extension products).
 - Phases: foundation only in Phase 3 (documentation); License & Extension Shop UI/commerce later (landing/commerce roadmap phases); Public Store per ADR-013 phasing; Equipment Store Phase 11.

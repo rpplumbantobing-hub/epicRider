@@ -9,7 +9,7 @@
 | Audit F-01 (`epicRider_phase2_consistency_audit.md`) | Control baseline register | `CONTROL_BASELINE_REGISTER.md` | diff evidence §4; worklog 3-a | RESOLVED |
 | Audit F-02 | MC tanpa status dinamis; ROADMAP sumber tunggal | `MASTER_CONTROL.md` §0/§8; `ROADMAP.md` | scan S1 (`audit/phase3-scan/`) | RESOLVED |
 | Audit F-03 + owner prompt §2.1 | ADR-018 tiga surface + sinkronisasi 6 dokumen | `adr/ADR-018-commerce-surfaces.md`, MC §1, `LICENSE_MATRIX.md` §4, `DATA_MODEL_CONCEPT.md` §3.12/§4.6, `AUTHORIZATION_MODEL.md`, `API_ARCHITECTURE.md`, `ENTITLEMENT_MODEL.md` | scan S2; ADR-013 amended nota | RESOLVED (dokumenter) |
-| Audit F-04 | OD-185 OPEN — OWNER DECISION | `OPEN_DECISIONS.md` §3; `adr/ADR-012` Dependencies | grep OD-185 = terdaftar | OPEN (dampak tertulis) |
+| Audit F-04 | ~~OD-185 OPEN — OWNER DECISION~~ **CLOSED — DECIDED BY BASELINE** (remediasi F-01 audit Phase 3) | `OPEN_DECISIONS.md` §3; `adr/ADR-021-hirider-service-offer-scope.md`; `adr/ADR-012` (nota amendemen); `DATA_MODEL_CONCEPT.md` §3.7/§5; `ARCHITECTURE.md` §6; `LICENSE_MATRIX.md` §3; `REQUIREMENTS.md` REQ-013 (amended) | ADR-021 + presence scan (penawaran jasa di 6 dokumen kunci) | CLOSED (2026-10-28) |
 | Audit F-05 | Re-assessment acceptance + scan ulang | `PHASE_2_ACCEPTANCE.md` (blok re-assessment); `PHASE_2_REPORT.md` §15; `audit/phase3-scan/contradiction-scan-2026-10-28.txt` | scan S1–S9 | RESOLVED |
 | Audit F-06 | Crosswalk + perbaikan 9 titik referensi + nota 14 file | `CONTROL_REFERENCE_CROSSWALK.md`; header-nota Phase 0/1 artifacts | grep inventory; scan S5 | RESOLVED |
 | Audit F-07 | HANDOFF.md | `HANDOFF.md` | file + isi §1–§9 | RESOLVED |
@@ -40,3 +40,18 @@
 - Quality gates: `PHASE_3_REPORT.md` §5 (command + exit code).
 - Browser evidence: `audit/evidence/phase3-showcase-{id-desktop,en-desktop,en-tablet-768,en-mobile-390}.png` + catatan interaksi di `worklog.md` Task 3-d.
 - Gate A scan: `audit/phase3-scan/contradiction-scan-2026-10-28.txt`.
+
+## D. Remediasi audit konsistensi Phase 3 (F-01..F-08) — 2026-10-28
+
+Input: `upload/epicRider_phase3_consistency_audit.md`. Peta lengkap: `PHASE_3_REMEDIATION_REPORT.md`; bukti mentah: `audit/phase3-remediation/`.
+
+| Temuan (audit Phase 3) | Deliverable remediasi | Path | Evidence | Status |
+|---|---|---|---|---|
+| F-01 hiRider scope (penawaran jasa) | MC §1 diselaraskan; OD-185 CLOSED; ADR-021; ADR-012 nota; DMC §3.7/§5 ServiceOffer (planned); ARCH §6; LICENSE_MATRIX §3; REQ-013 amended (tanpa REQ baru) | `MASTER_CONTROL.md` §1; `OPEN_DECISIONS.md`; `adr/ADR-021`; `adr/ADR-012`; `DATA_MODEL_CONCEPT.md`; `ARCHITECTURE.md`; `LICENSE_MATRIX.md`; `REQUIREMENTS.md` | presence scan S-B (penawaran jasa di 6 dokumen kunci); invariant tetap | RESOLVED |
+| F-02 tiga commerce surface | REQ-030 revised (ID tetap); PRODUCT_SCOPE amendemen (§2.1/§3/§5/§6 + nota ADR-018); matrix + rule/pencarian baru; sisa "two stores" di AUTHORIZATION_MODEL §9 diperbaiki; ADR-018 nota sinkron | `REQUIREMENTS.md`; `PRODUCT_SCOPE.md`; `CONTROL_CONSISTENCY_MATRIX.md`; `AUTHORIZATION_MODEL.md`; `adr/ADR-018` | scan S-A "two stores" = 0; presence "License & Extension Shop" di 6 dokumen | RESOLVED |
+| F-03 status Phase 3 konflik | PHASE_STATUS pembuka vs tabel diselaras — keduanya PARTIAL | `PHASE_STATUS.md`; `ROADMAP.md` | scan S-C/S-D | RESOLVED |
+| F-04 build/CI belum terbukti | Kriteria 12 → PARTIAL; status fase → PARTIAL; langkah pembuktian owner | `PHASE_3_ACCEPTANCE.md` (re-assessment); `ROADMAP.md`; `HANDOFF.md` §9 | `audit/phase3-remediation/quality-gates-2026-10-28.txt` | RESOLVED (status jujur; build/CI NOT RUN/NOT TESTED) |
+| F-05 `.env` tracked + `.env.example` hilang | `.env` keluar index; `.gitignore` + `!.env.example`; `.env.example` ter-track; klaim di HANDOFF/README/REPORT/CURRENT_STATE_AUDIT dikoreksi | `.gitignore`; `.env.example`; `HANDOFF.md` §7; `README.md`; `PHASE_3_REPORT.md` §8; `PHASE_3_CURRENT_STATE_AUDIT.md` | `audit/phase3-remediation/secret-scan-env-2026-10-28.txt` (riwayat: hanya `DATABASE_URL=file:` — tanpa rotasi) | RESOLVED |
+| F-06 bukti audit tidak konsisten | Diff 12-file regenerasi (4/8, klasifikasi per-file); REQ integrity metodologi terpisah (100 baris/0 duplikat vs 100 ID/3.452 referensi); contradiction scan baru dengan cakupan eksplisit (menangkap sisa "two stores"); klaim "0 contradictions" → klaim terukur | `audit/phase3-remediation/{diff-baseline,req-integrity,contradiction-scan}-2026-10-28*.txt`; `CONTROL_BASELINE_REGISTER.md` §4 | file bukti (command+timestamp+hasil) | RESOLVED |
+| F-07 ROADMAP fase 4–26 tereduksi | Satu baris per fase 0–26 dipulihkan (outcome MC §12 vs status aktual dipisah) | `ROADMAP.md` | tabel 27 baris | RESOLVED |
+| F-08 tech debt | 25 file Phase 3 diformat prettier (check exit 0); rencana pengetatan lint/TS bertahap | file src/tests/config; `PHASE_3_REMEDIATION_REPORT.md` §5 | `audit/phase3-remediation/quality-gates-2026-10-28.txt` | RESOLVED (format fase 3) / REGISTERED (rencana) |

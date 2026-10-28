@@ -22,18 +22,24 @@ Hanya tiga license tier:
 ### hiRider
 **hiRider bukan license, bukan tier keempat, dan bukan nilai pada `license_tier`.**
 
-hiRider adalah portal/capability di ekosistem epicRider untuk:
+hiRider adalah **marketplace layanan/jasa kru** (crew services marketplace) yang terhubung dengan profil, skill, portofolio, workspace, event, dan rekrutmen. Scope hiRider mencakup:
 - workspace membuka recruitment;
 - user melihat calon kesempatan;
 - user/calon anggota tim membuat profil, skill dan portfolio;
+- **penawaran jasa (service offer)** oleh kru — bagian dari scope hiRider (baseline Master Control: "Marketplace layanan kru"; putusan scope = `adr/ADR-021-hirider-service-offer-scope.md`; detail lifecycle = desain Phase 16, status `PROPOSED`);
 - user melamar ke recruitment opening;
 - workspace melihat, menyaring, menerima/menolak kandidat;
-- assignment dapat dilakukan setelah proses recruitment.
+- assignment dapat dilakukan setelah proses recruitment;
+- kru dapat mengelola beberapa workspace mandiri sesuai lisensi.
 
-Invariant:
+Aturan akses rekrutmen: kru hanya dapat melamar pada rekrutmen yang **terbuka** dan memenuhi akses/kriteria; owner dapat menutup rekrutmen.
+
+Invariant (tetap mengikat — tidak berubah oleh penyertaan penawaran jasa):
 `Application != Workspace Membership`
 `Application != Event Assignment`
 `Acceptance != Automatic Workspace Access`
+
+*(Remediasi F-01 audit konsistensi Phase 3, 2026-10-28: baris ini diselaraskan dengan baseline Master Control yang mendefinisikan hiRider sebagai marketplace layanan kru termasuk penawaran jasa; OD-185 ditutup sebagai keputusan scope yang bersumber dari baseline — bukan pertanyaan terbuka.)*
 
 ### Commerce/store surfaces — TIGA domain terpisah (koreksi owner, prompt Phase 3 §2.1 F-03)
 

@@ -1,0 +1,23 @@
+# Bukti F-04/F-08 — Quality gates pasca-remediasi & formatting file Phase 3
+Tanggal eksekusi: 2026-10-28 07:18:58 UTC
+
+== A. Formatting file Phase 3 (F-08) ==
+Command: prettier --write src/i18n src/components/foundation src/app/page.tsx src/app/layout.tsx src/app/globals.css tests vitest.config.ts next.config.ts package.json .github/workflows/ci.yml
+Hasil: 25 file berubah (git diff --stat); re-check = 'All matched files use Prettier code style!' exit 0
+Catatan: repo-wide format:check tetap exit 1 pada file scaffold lama (66 file, warisan) — BUKAN gate; rencana pengetatan di PHASE_3_REMEDIATION_REPORT.md §5.
+
+== B. Quality gates ==
+$ bun run lint   -> exit 0 (eslint bersih)
+$ bun run typecheck (tsc --noEmit) -> exit 0
+$ bun run test   (vitest run) -> exit 0 — 3 file / 25 test pass (unit 15, foundation 7, switcher 3)
+
+== C. Build (jujur) ==
+$ bun run build -> NOT RUN
+Alasan: kebijakan platform sandbox melarang next build (melindungi dev server pada port 3000). BUKAN kegagalan build.
+Konsekuensi: kriteria 12 PHASE_3_ACCEPTANCE = PARTIAL; status Phase 3 = PARTIAL sampai build dieksekusi di runner owner (lihat HANDOFF §9 next actions).
+
+== D. CI remote (jujur) ==
+Status: NOT TESTED — repo tanpa git remote; workflow .github/workflows/ci.yml belum pernah dieksekusi di GitHub Actions.
+
+== E. Smoke dev server pasca-format ==
+curl localhost:3000/ -> HTTP 200; <html lang="id" (default locale tetap benar); dev.log GET / 200 tanpa error.

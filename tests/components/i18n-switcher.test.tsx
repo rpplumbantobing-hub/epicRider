@@ -54,9 +54,7 @@ describe("I18nProvider + setLocale (language switcher)", () => {
     );
 
     expect(screen.getByTestId("active-locale")).toHaveTextContent("id");
-    expect(
-      screen.getByRole("heading", { name: idDictionary.showcase.title })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: idDictionary.showcase.title })).toBeInTheDocument();
     expect(screen.getByTestId("retry-label")).toHaveTextContent("Coba lagi");
   });
 

@@ -32,6 +32,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# remediasi F-05 (audit Phase 3, 2026-10-28): .env.example (placeholder non-rahasia) WAJIB ter-track
+!.env.example
 
 # vercel
 .vercel
@@ -52,3 +54,5 @@ prompt
 server.log
 # Skills directory
 /skills/
+# transient tool outputs
+/tool-results/

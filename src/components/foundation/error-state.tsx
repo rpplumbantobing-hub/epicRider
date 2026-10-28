@@ -36,9 +36,7 @@ export function ErrorState({
     >
       <AlertTriangle aria-hidden="true" focusable="false" className="size-8 text-destructive" />
       <p className="text-sm font-medium">{title}</p>
-      {description ? (
-        <p className="max-w-sm text-sm text-muted-foreground">{description}</p>
-      ) : null}
+      {description ? <p className="max-w-sm text-sm text-muted-foreground">{description}</p> : null}
       {onRetry ? (
         <Button
           type="button"

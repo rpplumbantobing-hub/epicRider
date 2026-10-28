@@ -36,6 +36,7 @@ It supports:
 - candidate profiles;
 - skills;
 - portfolio;
+- service offers / penawaran jasa *(planned — remediasi F-01 audit Phase 3, 2026-10-28: in-scope per baseline Master Control "Marketplace layanan kru"; lihat adr/ADR-021; lifecycle PROPOSED)*;
 - application;
 - shortlist;
 - accept/reject/withdraw;

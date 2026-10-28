@@ -1,0 +1,120 @@
+# Bukti F-06.3 — Contradiction scan (remediasi audit Phase 3, sesuai CONTROL_CONSISTENCY_MATRIX.md)
+Tanggal eksekusi: 2026-10-28 07:15:08 UTC (eksekusi final setelah perbaikan sisa temuan; run pertama pukul 07:11 UTC menemukan sisa 'two stores' di AUTHORIZATION_MODEL.md — telah diperbaiki lalu scan diulang)
+Scope: root *.md + adr/*.md (upload/, audit/, node_modules, tool-results dikecualikan; worklog.md ikut tersapu dan hit-nya diklasifikasikan sebagai log historis append-only — bukan dokumen kontrol aktif)
+
+== S-A. Negasi/frasa kontradiktif (harus 0 hit kontradiktif) ==
+--- rg -in "hiRider adalah license" (di luar worklog):
+(0 hit)
+--- rg -in "hiRider adalah tier" (di luar worklog):
+(0 hit)
+--- rg -in "tier keempat" (di luar worklog):
+PHASE_2_REPORT.md:212:  ("hiRider bukan license/bukan tier keempat" — MASTER_CONTROL, DATA_MODEL, ADR-012, dst.);
+MASTER_CONTROL.md:23:**hiRider bukan license, bukan tier keempat, dan bukan nilai pada `license_tier`.**
+DATA_MODEL_CONCEPT.md:468:- Source: MC §1 ("hiRider bukan license, bukan tier keempat, dan bukan nilai pada `license_tier`"); LICENSE_MATRIX.md §1; TESTING.md (`hiRider != LicenseTier`).
+--- rg -in "Public Store maxRider allowed" (di luar worklog):
+(0 hit)
+--- rg -in "Public Store ISOrider allowed" (di luar worklog):
+(0 hit)
+--- rg -in "Equipment Store untuk maxRider" (di luar worklog):
+(0 hit)
+--- rg -in "dua store terisolasi" (di luar worklog):
+(0 hit)
+--- rg -in "two stores are fully isolated" (di luar worklog):
+AUTHORIZATION_MODEL.md:398:- **Developer Equipment Store:** **miniRider-only** (REQ-010, MC §1). API access by maxRider or ISOrider accounts — and by any user without a qualifying miniRider workspace — returns an **audited denial** (`DENY_STORE_TIER`), never a merely hidden menu (REQ-010, REQ-024; RSK-103). *(Koreksi F-02, remediasi audit Phase 3, 2026-10-28: REQ-030 kini mencakup TIGA surface — kalimat "the two stores are fully isolated" pada versi sebelumnya diganti.)* Ketiga surface (License & Extension Shop, Public Store, Developer Equipment Store) terisolasi penuh sebagai domain terpisah dalam data, akses, API, issuance entitlement, dan audit; cross-access/surface yang tidak berlaku ditolak (REQ-030, ADR-018).
+--- rg -in "store publik lisensi/extension terpisah dari Developer Equipment Store in-app \(miniRider only\)" (di luar worklog):
+(0 hit)
+--- rg -in "OD-02 blocks Phase 2" (di luar worklog):
+PHASE_2_REPORT.md:206:`Public Store ISOrider`, `OD-02 blocks Phase 2`, `OD-03 blocks Phase 4`, `OD-05 blocks Phase 5`,
+CONTROL_CONSISTENCY_MATRIX.md:42:- `OD-02 blocks Phase 2`
+--- rg -in "OD-03 blocks Phase 4" (di luar worklog):
+PHASE_2_REPORT.md:206:`Public Store ISOrider`, `OD-02 blocks Phase 2`, `OD-03 blocks Phase 4`, `OD-05 blocks Phase 5`,
+CONTROL_CONSISTENCY_MATRIX.md:43:- `OD-03 blocks Phase 4`
+--- rg -in "OD-05 blocks Phase 5" (di luar worklog):
+PHASE_2_REPORT.md:206:`Public Store ISOrider`, `OD-02 blocks Phase 2`, `OD-03 blocks Phase 4`, `OD-05 blocks Phase 5`,
+CONTROL_CONSISTENCY_MATRIX.md:44:- `OD-05 blocks Phase 5`
+--- rg -in "OD-06 blocks Phase 14" (di luar worklog):
+CONTROL_CONSISTENCY_MATRIX.md:45:- `OD-06 blocks Phase 14`
+--- rg -in "OD-116 prerequisite" (di luar worklog):
+PHASE_2_REPORT.md:207:`OD-06 blocks entire Phase`, `OD-116 prerequisite Phase 2`, `CRUP` — ditambah varian Indonesia):
+CONTROL_CONSISTENCY_MATRIX.md:47:- `OD-116 prerequisite Phase 2`
+--- rg -in "Phase 3 DONE — repository foundation" (di luar worklog):
+(0 hit)
+--- rg -in "penawaran jasa di luar scope" (di luar worklog):
+(0 hit)
+--- rg -in "penawaran jasa out of scope" (di luar worklog):
+(0 hit)
+--- rg -in "ServiceOffer out of scope" (di luar worklog):
+(0 hit)
+
+== S-B. Kehadiran aturan baru (harus DITEMUKAN) ==
+--- 'penawaran jasa' di dokumen kunci:
+MASTER_CONTROL.md: 3
+REQUIREMENTS.md: 2
+DATA_MODEL_CONCEPT.md: 4
+ARCHITECTURE.md: 1
+LICENSE_MATRIX.md: 1
+PRODUCT_SCOPE.md: 4
+--- 'License & Extension Shop' di dokumen kunci:
+MASTER_CONTROL.md: 2
+REQUIREMENTS.md: 1
+CONTROL_CONSISTENCY_MATRIX.md: 2
+adr/ADR-018-commerce-surfaces.md: 7
+PRODUCT_SCOPE.md: 5
+LICENSE_MATRIX.md: 2
+--- 'ServiceOffer' hadir di:
+adr/ADR-021-hirider-service-offer-scope.md
+adr/ADR-012-hirider-domain-boundary.md
+PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md
+ROADMAP.md
+REQUIREMENTS.md
+OPEN_DECISIONS.md
+HANDOFF.md
+DATA_MODEL_CONCEPT.md
+CONTROL_CONSISTENCY_MATRIX.md
+
+== S-C. OD-185 di dokumen aktif (harus CLOSED — DECIDED BY BASELINE / ADR-021; 'OPEN' hanya di log historis) ==
+1:adr/ADR-018-commerce-surfaces.md:56:- Open: OD-06 (commercial values), OD-101 (developer role model), OD-133 (price/discount authority), OD-135 (order/invoice state machine). OD-185 (hiRider scope) tidak terkait commerce — **CLOSED 2026-10-28 via ADR-021**.
+2:adr/ADR-012-hirider-domain-boundary.md:67:- **Open decisions:** OD-109 (default visibility & abuse policy), OD-134 (application contact-data policy), OD-123 (multi-workspace crew limits). ~~OD-185~~ **CLOSED 2026-10-28 — DECIDED BY BASELINE** (penawaran jasa in-scope; lihat `adr/ADR-021-hirider-service-offer-scope.md`; `ServiceOffer` direncanakan di `DATA_MODEL_CONCEPT.md` §3.7, lifecycle `PROPOSED`; tanpa REQ baru — REQ-013 diamendemi terkendali).
+6:PHASE_STATUS.md:10:| 2 | Architecture/domain model, threat model, data model & ADR | **DONE — architecture baseline 2026-10-27, re-verified 2026-10-28** (`PHASE_2_ACCEPTANCE.md` A–G evidenced + blok re-assessment 2026-10-28; remediasi F-01..F-08 = `PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md`; kualifikasi: 7 ADR PROPOSED + ADR-018 menunggu ratifikasi owner; OD-01/OD-02 OPEN non-blocking; ~~OD-185~~ CLOSED — DECIDED BY BASELINE via ADR-021, remediasi audit Phase 3) | 8 deliverable arsitektur (DATA_MODEL_CONCEPT, AUTHORIZATION_MODEL, ENTITLEMENT_MODEL, THREAT_MODEL, API_ARCHITECTURE, ADR_REGISTER + adr/ADR-006..017, LEGAL_REGULATORY_REGISTER, PHASE_2_TRACEABILITY 100/100). Scan ulang 2026-10-28 = 0 kontradiksi aktif (`audit/phase3-scan/`; bukti tambahan `audit/phase3-remediation/`). Laporan: `PHASE_2_REPORT.md` (+§15 addendum). |
+8:PHASE_3_REPORT.md:16:| F-04 penawaran jasa hiRider | **OPEN — OWNER DECISION (OD-185)**, dampak tertulis, tidak memblokir Phase 3 |
+10:PHASE_3_ACCEPTANCE.md:8:| 2 | Remediasi F-01..F-08 ditriase dengan bukti; F-04 open hanya dengan dampak jelas | **PASS** | `PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md` §1 (tabel disposition); OD-185 terdaftar OPEN — OWNER DECISION |
+11:PHASE_3_ACCEPTANCE.md:31:6. **F-04 / OD-185 tetap OPEN — OWNER DECISION** (penawaran jasa hiRider) — tidak memblokir fondasi; memblokir desain detail hiRider (Phase 16).
+13:PHASE_2_ACCEPTANCE.md:79:   resolved; **F-04 remains OPEN — OWNER DECISION as OD-185** with written impact; it does not block
+17:OPEN_DECISIONS.md:87:| ~~OD-185~~ | ~~**Apakah "penawaran jasa" (service offering) tetap menjadi scope hiRider?**~~ **CLOSED 2026-10-28 — DECIDED BY BASELINE: penawaran jasa IN-SCOPE** (sumber keputusan = baseline Master Control "Marketplace layanan kru" §2 hiRider + roadmap Phase 16 — bukan preferensi engineer; dieksekusi sebagai remediasi F-01 audit konsistensi Phase 3; lihat `adr/ADR-021-hirider-service-offer-scope.md`) | ~~(a)/(b)~~ moot — opsi tidak berlaku karena scope sudah dijawab baseline | `ServiceOffer` direncanakan di `DATA_MODEL_CONCEPT.md` §3.7/§5 + `ARCHITECTURE.md` §6 + `LICENSE_MATRIX.md` §3 (lifecycle/visibility/permission/API/audit detail = `PROPOSED`, desain final Phase 16 — keberadaannya BUKAN `OPEN`); REQ-013 diamendemi terkendali (ID tetap, tanpa REQ baru); invariant tetap: `Application != Workspace Membership`, `Application != Event Assignment`, `Acceptance != Automatic Workspace Access`, `hiRider != License/Tier`. Pembukaan kembali hanya via keputusan owner eksplisit yang mengubah baseline (ADR pengganti wajib). | CLOSED — lihat ADR-021 |
+25:PHASE_2_REPORT.md:245:- **F-04** → **OD-185** terdaftar `OPEN — OWNER DECISION` di `OPEN_DECISIONS.md`; ADR-012 menautkannya; invariant utuh.
+27:PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md:15:| **F-04** | Penawaran jasa hiRider hilang dari model Phase 2 | **CONFIRMED** | `grep ServiceOffer` di DATA_MODEL_CONCEPT = 0 hits; kontrol lama menyebutnya (MC-V1 §2); REQ-013/062..064 hanya profil/skill/portfolio/rekrutmen | **OD-185** didaftarkan di `OPEN_DECISIONS.md` §3: `OPEN — OWNER DECISION` (opsi a/b, dampak, larangan mengarang REQ baru); ADR-012 §Dependencies menautkan OD-185. Invariant dijaga. **Tidak memblokir Phase 3** (fondasi tidak bergantung padanya); memblokir desain detail hiRider (Phase 16) | **OPEN — OWNER DECISION** (tercatat, dampak jelas) |
+28:PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md:25:- Status Phase 2: kembali **DONE — architecture baseline** (re-verified 2026-10-28), dengan kualifikasi yang tercatat: 7 ADR PROPOSED menunggu ratifikasi owner; OD-01/OD-02 OPEN non-blocking; **OD-185 OPEN — OWNER DECISION** (F-04) dengan dampak tertulis; F-08 verifikasi edisi ISO tetap BLOCKED di luar repo.
+29:CONTROL_BASELINE_REGISTER.md:52:| `OPEN_DECISIONS.md` | Phase 1 + koreksi P-1 | Register keputusan terbuka; ditambah OD-185 (F-04) |
+31:PHASE_3_TRACEABILITY.md:12:| Audit F-04 | OD-185 OPEN — OWNER DECISION | `OPEN_DECISIONS.md` §3; `adr/ADR-012` Dependencies | grep OD-185 = terdaftar | OPEN (dampak tertulis) |
+--- contoh baris CLOSED:
+OPEN_DECISIONS.md:87:| ~~OD-185~~ | ~~**Apakah "penawaran jasa" (service offering) tetap menjadi scope hiRider?**~~ **CLOSED 2026-10-28 — DECIDED BY BASELINE: penawaran jasa IN-SCOPE** (sumber keputusan = baseline Master Control "Marketplace layanan kru" §2 hiRider + roadmap Phase 16 — bukan preferensi engineer; dieksekusi sebagai remediasi F-01 audit konsistensi Phase 3; lihat `adr/ADR-021-hirider-service-offer-scope.md`) | ~~(a)/(b)~~ moot — opsi tidak berlaku karena scope sudah dijawab baseline | `ServiceOffer` direncanakan di `DATA_MODEL_CONCEPT.md` §3.7/§5 + `ARCHITECTURE.md` §6 + `LICENSE_MATRIX.md` §3 (lifecycle/visibility/permission/API/audit detail = `PROPOSED`, desain final Phase 16 — keberadaannya BUKAN `OPEN`); REQ-013 diamendemi terkendali (ID tetap, tanpa REQ baru); invariant tetap: `Application != Workspace Membership`, `Application != Event Assignment`, `Acceptance != Automatic Workspace Access`, `hiRider != License/Tier`. Pembukaan kembali hanya via keputusan owner eksplisit yang mengubah baseline (ADR pengganti wajib). | CLOSED — lihat ADR-021 |
+CONTROL_CONSISTENCY_MATRIX.md:28:| ~~OD-185~~ | CLOSED — DECIDED BY BASELINE: penawaran jasa in-scope hiRider (ADR-021) |
+CONTROL_CONSISTENCY_MATRIX.md:40:- `OD-185` (harus hanya berstatus CLOSED — DECIDED BY BASELINE / ADR-021 di dokumen aktif)
+
+== S-D. Status Phase 3 di dokumen aktif (harus PARTIAL) ==
+1:PHASE_STATUS.md:3:**Sumber kebenaran:** bukti di repository. Tanggal update terakhir: 2026-10-28 (remediasi audit konsistensi Phase 3 — F-01..F-08 dieksekusi; status Phase 3 dikoreksi menjadi **PARTIAL** sesuai aturan DoD; lihat `PHASE_3_REMEDIATION_REPORT.md`). Dokumen ini adalah **ringkasan** — sumber tunggal status fase = `ROADMAP.md` (MC §0).
+3:PHASE_STATUS.md:11:| 3 | Repository foundations, design system, i18n & CI/testing foundation | **PARTIAL — kontrol diremediasi 2026-10-28, evidence build/CI belum terpenuhi** (remediasi F-01..F-08 audit Phase 3 dieksekusi: scope hiRider diselaraskan ADR-021/OD-185 CLOSED, tiga commerce surface tersinkron REQ-030+PRODUCT_SCOPE+matrix, `.env` dilepas dari Git index + `.env.example` ter-track, ROADMAP 0–26 dipulihkan, bukti audit diregenerasi `audit/phase3-remediation/`; lint/typecheck/test exit 0 — **build NOT RUN: dilarang platform sandbox; CI remote NOT TESTED: tanpa git remote** → per aturan DoD Phase 3 §10.12, status fase = `PARTIAL`, bukan `DONE`, sampai build+CI terbukti di runner owner) | Fondasi: scripts lint/typecheck/test nyata (exit 0; 25/25 tests); tokens + 4 foundation components + showcase `/` (i18n id/en 85/85 keys, 5 screenshot); CI workflow config (belum pernah berjalan); `CONTROL_BASELINE_REGISTER.md`, ADR-018..021, `HANDOFF.md`; remediasi Phase 2 F-01..F-08 + remediasi Phase 3 F-01..F-08 (`PHASE_3_REMEDIATION_REPORT.md`). Laporan: `PHASE_3_REPORT.md` + acceptance `PHASE_3_ACCEPTANCE.md` (re-assessed). |
+5:ROADMAP.md:22:| 3 | Repository foundations, design system, i18n & CI/testing foundation (+ Gate A remediasi konsistensi Phase 2; + remediasi audit Phase 3 F-01..F-08) | **PARTIAL — kontrol diremediasi 2026-10-28; evidence build/CI belum terpenuhi** | `PHASE_3_ACCEPTANCE.md` (re-assessed: kriteria 12 = PARTIAL — build NOT RUN karena dilarang platform sandbox; CI remote NOT TESTED); `PHASE_3_REPORT.md`; `PHASE_3_REMEDIATION_REPORT.md`; lint/typecheck/test exit 0 (25/25); screenshot showcase. Status naik ke DONE hanya setelah `bun run build` + CI remote terbukti di runner owner |
+7:ROADMAP.md:78:Phase 3 completion is determined by `PHASE_3_ACCEPTANCE.md` (re-assessed 2026-10-28 setelah remediasi audit Phase 3) — bukan oleh keberadaan file. Status saat ini: **PARTIAL** (kontrol diremediasi; build & CI remote belum terbukti). Fase 4 tidak dimulai otomatis.
+9:CONTROL_CONSISTENCY_MATRIX.md:16:| Phase 3 status | PARTIAL — control remediation complete; build NOT RUN (platform policy) + CI remote NOT TESTED (lihat ROADMAP) |
+--- frasa 'Phase 3 DONE' di dokumen aktif (harus 0):
+CONTROL_CONSISTENCY_MATRIX.md:48:- `Phase 3 DONE` (dokumen aktif harus PARTIAL, bukan DONE — kecuali riwayat bertanda)
+
+== S-E. Klaim .env di laporan (harus konsisten dengan git ls-files) ==
+git ls-files .env*:
+.env.example
+--- klaim 'tidak ter-track/di-commit' yang masih menyertakan .env di laporan aktif:
+2:PHASE_3_CURRENT_STATE_AUDIT.md:25:| `.env` | Ada (50 byte, tidak ter-track git — `.gitignore` `*` pattern `env files`) | VERIFIED | `ls -la .env`; `git status` |
+9:HANDOFF.md:63:- ~~"`.env` tidak di-commit"~~ **KLAIM LAMA SALAH.** Fakta terkoreksi: `.env` **ter-track sejak commit awal `483950c`**; pada remediasi F-05 (2026-10-28) `.env` dihapus dari Git index (`git rm --cached .env`, file lokal dipertahankan) dan kini **tidak ter-track** + di-ignore `.gitignore`. Isinya 1 baris `DATABASE_URL=file:…` (path SQLite lokal — bukan credential layanan; diverifikasi tanpa mencetak nilai, lihat `audit/phase3-remediation/secret-scan-env-2026-10-28.txt`), sehingga **tidak ada rotasi credential yang diperlukan**; riwayat Git memuat nilai tersebut sejak `483950c` (tercatat; nilai bukan rahasia).
+13:PHASE_3_REPORT.md:77:- `.env` ada, tidak ter-track, tidak dibuka; `.env.example` placeholder; tidak ada secret di workflow/report/screenshot/log. CI `permissions: contents: read`. Tidak ada dependency baru runtime (semua dev-only: vitest/testing-library/prettier/jsdom).
+
+== S-F. CRUP ==
+TESTING.md:56:Previous `CRUP lintas-tenant ditolak` is corrected to:
+PHASE_2_REPORT.md:42:di-scope pada sub-level (non-blocking untuk arsitektur); typo CRUP→CRUD.
+PHASE_2_REPORT.md:176:2. Pre-scan kontradiksi `rg` per-file root `*.md` (sebelum penggantian) → 1 temuan aktif (CRUP di TESTING lama).
+PHASE_2_REPORT.md:207:`OD-06 blocks entire Phase`, `OD-116 prerequisite Phase 2`, `CRUP` — ditambah varian Indonesia):
+PHASE_2_REPORT.md:213:  (c) riwayat bertanda — koreksi typo CRUP di `TESTING.md` ("Previous … is corrected to"),
+CONTROL_CONSISTENCY_MATRIX.md:46:- `CRUP`
+PHASE_2_REPORT_TEMPLATE.md:42:Results for hiRider, Public Store, OD-02/03/05/06/09, OD-116, status taxonomy, CRUP.
+
+PUTUSAN SCAN: 0 kontradiksi aktif — dengan batas eksplisit: (a) frasa negasi tidak muncul sebagai aturan aktif (hit tersisa hanya di worklog = log historis append-only); (b) aturan baru hadir konsisten; (c) run pertama (07:11 UTC) menangkap 1 sisa 'two stores' di AUTHORIZATION_MODEL.md yang kemudian diperbaiki — bukti bahwa scan ini memiliki daya tangkap, bukan klaim universal.

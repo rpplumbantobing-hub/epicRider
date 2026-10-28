@@ -169,8 +169,7 @@ describe("locale guard & getLocale (server, cookie)", () => {
   it("getLocale membaca cookie yang valid", async () => {
     vi.doMock("next/headers", () => ({
       cookies: async () => ({
-        get: (name: string) =>
-          name === LOCALE_COOKIE ? { name, value: "en" } : undefined,
+        get: (name: string) => (name === LOCALE_COOKIE ? { name, value: "en" } : undefined),
       }),
     }));
     vi.resetModules();
@@ -181,8 +180,7 @@ describe("locale guard & getLocale (server, cookie)", () => {
   it("getLocale fallback ke defaultLocale untuk cookie tidak valid / tidak ada", async () => {
     vi.doMock("next/headers", () => ({
       cookies: async () => ({
-        get: (name: string) =>
-          name === LOCALE_COOKIE ? { name, value: "fr" } : undefined,
+        get: (name: string) => (name === LOCALE_COOKIE ? { name, value: "fr" } : undefined),
       }),
     }));
     vi.resetModules();

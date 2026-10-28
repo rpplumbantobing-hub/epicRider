@@ -29,9 +29,7 @@ export function PermissionDenied({
     >
       <ShieldAlert aria-hidden="true" focusable="false" className="size-8 text-warning" />
       <p className="text-sm font-medium">{title}</p>
-      {description ? (
-        <p className="max-w-sm text-sm text-muted-foreground">{description}</p>
-      ) : null}
+      {description ? <p className="max-w-sm text-sm text-muted-foreground">{description}</p> : null}
       {resource ? (
         <p className="mt-1 rounded-md bg-muted px-2 py-1 font-mono text-xs text-muted-foreground">
           {resource}

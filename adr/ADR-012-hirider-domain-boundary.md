@@ -4,6 +4,8 @@
 
 **ACCEPTED** (owner-reconciled baseline, 2026-10-27) · **Date:** 2026-10-27
 
+> **AMENDED (terkendali) 2026-10-28 — remediasi F-01 audit konsistensi Phase 3:** scope hiRider **termasuk penawaran jasa (Service Offer)** per baseline Master Control ("Marketplace layanan kru"); lihat `adr/ADR-021-hirider-service-offer-scope.md`. Boundary decision dan seluruh invariant ADR-012 **tidak berubah**; `ServiceOffer` ditambahkan sebagai objek yang direncanakan di context hiRider (lifecycle detail tetap `PROPOSED`).
+
 **Scope note:** the *boundary decision* below is accepted via the owner baseline. Detailed lifecycle states for RecruitmentOpening and Application remain **PROPOSED** pending owner review of `DATA_MODEL_CONCEPT.md` §5/§6 (see candidate decision in `ADR_REGISTER.md` §4).
 
 ## Context
@@ -62,7 +64,7 @@ Fix the domain boundary of hiRider so that the data model, authorization model, 
 
 ## Dependencies
 
-- **Open decisions:** OD-109 (default visibility & abuse policy), OD-134 (application contact-data policy), OD-123 (multi-workspace crew limits), **OD-185 (apakah penawaran jasa/service offering tetap scope hiRider — OPEN — OWNER DECISION, audit F-04 2026-10-28; model ini tidak memuat ServiceOffer; keputusan owner menentukan apakah konsep domain + requirement baru >REQ-100 perlu ditambahkan — jangan mengarang ID)**.
+- **Open decisions:** OD-109 (default visibility & abuse policy), OD-134 (application contact-data policy), OD-123 (multi-workspace crew limits). ~~OD-185~~ **CLOSED 2026-10-28 — DECIDED BY BASELINE** (penawaran jasa in-scope; lihat `adr/ADR-021-hirider-service-offer-scope.md`; `ServiceOffer` direncanakan di `DATA_MODEL_CONCEPT.md` §3.7, lifecycle `PROPOSED`; tanpa REQ baru — REQ-013 diamendemi terkendali).
 - **Related ADRs:** ADR-011 (taxonomy), ADR-010 (§8 hiRider authorization specifics).
 - **Candidate decisions (no IDs):** hiRider Opening/Application lifecycle finalization; abuse/moderation model.
 - **Related docs:** `DATA_MODEL_CONCEPT.md`, `THREAT_MODEL.md`, `LEGAL_REGULATORY_REGISTER.md` (LR-002/LR-011).
