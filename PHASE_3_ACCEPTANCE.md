@@ -56,3 +56,8 @@ Audit eksternal `epicRider_phase3_consistency_audit.md` (putusan: REWORK REQUIRE
 - Yang sudah terbukti: lint exit 0, typecheck exit 0, test 25/25 exit 0 (diulang pasca-formatting F-08); smoke `/` HTTP 200 (`lang="id"`); seluruh temuan audit F-01..F-08 dieksekusi dengan bukti di `audit/phase3-remediation/`.
 - Yang belum terbukti: `bun run build` (NOT RUN — dilarang platform sandbox) dan eksekusi CI remote (NOT TESTED — tanpa git remote). Keduanya berstatus jujur sesuai taxonomy; **status fase Phase 3 = PARTIAL** di `ROADMAP.md`/`PHASE_STATUS.md` sampai keduanya terbukti di runner owner (langkah tercatat di `HANDOFF.md` §9).
 - `tsc --noEmit` exit 0 TIDAK disamarkan sebagai keberhasilan `next build`.
+
+> **CATATAN REKONSILIASI PRA-PHASE 4 (2026-10-28, Stage A):** per `OBSOLETE_AND_SUPERSEDED_REGISTER.md` dan
+> prompt Phase 4 gated §1.3, kenaikan status Phase 3 ke `DONE` kini juga tunduk pada `PRE_PHASE_4_GATE.md`
+> (item build pada runner/working-copy terisolasi + eksekusi workflow CI pada runner sah). Assessment di atas
+> tidak berubah; gate Phase 4 menambah jalur bukti yang sah bagi owner (remote CI atau runner setara).

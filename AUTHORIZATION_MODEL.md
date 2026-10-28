@@ -181,6 +181,8 @@ Conceptual verb–noun vocabulary organized by the 17 bounded contexts of `ARCHI
 | `application.decide.reject` | Reject an application (recruitment decision) | REQ-064 |
 | `marketplace.abuse.report` | Report/block abusive content or actors | UC-6005 (no dedicated REQ — known Phase 1 gap) |
 
+> **Service-offer permissions (planned — added 2026-10-28, pre-Phase 4 reconciliation; REQ-101 / ADR-021 / MC-V4 §2.2):** a `serviceoffer.*` permission family (publish/update/visibility-set/read/inquire per provider ownership) is **planned as target-state** with lifecycle/visibility detail designed in Phase 16. `ServiceOffer != RecruitmentOpening` — offers are provider-owned user-side objects, never workspace openings; an inquiry creates **no** membership and **no** event assignment (§8 invariants apply). No implementation exists yet; no commercial values invented (OD-06).
+
 Note: accepting an application grants **no** workspace permission — see §8.
 
 ### 4.8 Asset

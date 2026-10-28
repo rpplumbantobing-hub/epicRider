@@ -14,13 +14,15 @@
 
 *Catatan remediasi (F-07, audit konsistensi Phase 3, 2026-10-28): tabel fase 4–26 yang sebelumnya diringkas menjadi satu baris generik dipulihkan menjadi satu baris per fase agar outcome tiap fase terlihat di sumber tunggal status. Semua fase 4–26 tetap `NOT STARTED`.*
 
+*Catatan rekonsiliasi pra-Phase 4 (2026-10-28, Stage A — `OBSOLETE_AND_SUPERSEDED_REGISTER.md` + MC-V4):* status Phase 2 diturunkan dari `DONE` (klaim historis 2026-10-27/28) menjadi **`PARTIAL`**, dan Phase 4 ditetapkan **`BLOCKED / NOT STARTED`**, sampai `PRE_PHASE_4_GATE.md` lulus dengan bukti. Dasar: (1) Obsolete Register menetapkan klaim DONE/pass lama tanpa bukti reproduktif = "historical claim only"; (2) bukti build produksi & eksekusi workflow CI belum pernah tersedia pada runner sah (sandbox tidak memiliki remote/runner); (3) rekonsiliasi kontrol MC-V4 baru dipasang. Rujukan "MC §12" pada kolom nama fase = MC-V1 §12 historis (`CONTROL_REFERENCE_CROSSWALK.md` §2b).
+
 | Phase | Nama (outcome yang direncanakan — MC §12) | Status | Bukti / Blocker / Dependency |
 |---|---|---|---|
 | 0 | Audit repository, verifikasi bukti & penguncian control baseline | **DONE — existing evidence** | `PHASE_0_ACCEPTANCE.md` (9/9); commit `03293b6`; verifikasi ISO `BLOCKED` (F0-012, OD-160) |
 | 1 | Discovery, personas, use cases, requirements & acceptance criteria | **DONE — BASELINE** | `PHASE_1_REPORT.md` + 13 artefak; REQ-001..100; commit `938932f` |
-| 2 | Architecture/domain model, threat model, data model & ADR | **DONE — architecture baseline 2026-10-27, re-verified 2026-10-28 setelah remediasi konsistensi** | `PHASE_2_ACCEPTANCE.md` A–G + blok re-assessment; `PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md`; follow-up owner: ratify ADR PROPOSED (+ADR-018), decide OD-01/OD-02 — non-blocking |
+| 2 | Architecture/domain model, threat model, data model & ADR | **PARTIAL — arsitektur lengkap & direkonsiliasi (2026-10-28), namun evidence gate belum terpenuhi ulang di bawah kontrol terbaru** | `PHASE_2_ACCEPTANCE.md` A–G (assessment 2026-10-27 + re-assessment 2026-10-28 — klaim "DONE as architecture baseline" lama = klaim historis, bukan otoritas status); `PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md`; seluruh 8 deliverable ada & konsisten; yang belum: build/CI bukti reproduktif pada runner sah + ratifikasi owner ADR PROPOSED (+ADR-018) + keputusan OD-01/OD-02 — non-blocking untuk arsitektur, blocking untuk kelulusan penuh di bawah kebijakan kontrol 2026-10-28 (Obsolete Register §2) |
 | 3 | Repository foundations, design system, i18n & CI/testing foundation (+ Gate A remediasi konsistensi Phase 2; + remediasi audit Phase 3 F-01..F-08) | **PARTIAL — kontrol diremediasi 2026-10-28; evidence build/CI belum terpenuhi** | `PHASE_3_ACCEPTANCE.md` (re-assessed: kriteria 12 = PARTIAL — build NOT RUN karena dilarang platform sandbox; CI remote NOT TESTED); `PHASE_3_REPORT.md`; `PHASE_3_REMEDIATION_REPORT.md`; lint/typecheck/test exit 0 (25/25); screenshot showcase. Status naik ke DONE hanya setelah `bun run build` + CI remote terbukti di runner owner |
-| 4 | Identity, authentication, workspace/tenant, memberships & permissions | NOT STARTED | Prasyarat keputusan: OD-03 (vendor WhatsApp) hanya untuk integrasi spesifik vendor; OD-115 (param sesi, bisa PROPOSED dulu) |
+| 4 | Identity, authentication, workspace/tenant, memberships & permissions | **BLOCKED / NOT STARTED** — menunggu `PRE_PHASE_4_GATE.md` lulus (prompt Phase 4 gated, Stage A) | Gate wajib: rekonsiliasi kontrol (MC-V4 + Obsolete Register terpasang), REQ-101, traceability tiga surface, status sinkron, `.env` bersih, build produksi di runner/working-copy terisolasi, eksekusi workflow CI pada runner sah. OD-03 (vendor WhatsApp) hanya memblokir integrasi vendor spesifik; OD-115 (param sesi) bisa PROPOSED dulu |
 | 5 | Licensing, entitlements, renewal/expiry & extensions model | NOT STARTED | Sub-scope tertahan: OD-05 (final seat counting), OD-06 (charging/harga final), OD-108 (expiry/grace/downgrade) — arsitektur katalog/entitlement tidak tertahan |
 | 6 | Home/dashboard & event foundation | NOT STARTED | — |
 | 7 | Technical rider & templates | NOT STARTED | — |
@@ -76,3 +78,7 @@ Phase 2 completion is determined by `PHASE_2_ACCEPTANCE.md`, not by the existenc
 ## Phase 3 completion
 
 Phase 3 completion is determined by `PHASE_3_ACCEPTANCE.md` (re-assessed 2026-10-28 setelah remediasi audit Phase 3) — bukan oleh keberadaan file. Status saat ini: **PARTIAL** (kontrol diremediasi; build & CI remote belum terbukti). Fase 4 tidak dimulai otomatis.
+
+## Phase 4 entry gate
+
+Phase 4 hanya boleh dimulai setelah `PRE_PHASE_4_GATE.md` lulus dengan bukti tercatat di `PRE_PHASE_4_GATE_REPORT.md` (prompt Phase 4 gated §1.3). Sampai gate lulus: status Phase 4 = `BLOCKED / NOT STARTED`. Build produksi harus dibuktikan pada runner/working copy terisolasi; workflow CI harus benar-benar dieksekusi pada runner yang sah (remote CI atau runner setara) — menjalankan lint/typecheck/test/build manual di sandbox TIDAK setara dengan eksekusi workflow CI (Obsolete Register §2).

@@ -1,0 +1,4 @@
+=== GATE 3 (fix): continuity REQ-001..REQ-100, each exactly once — 2026-10-28T09:32:08Z ===
+missing=0 duplicates=0 (0/0 = PASS)
+--- REQ-101 row count:
+1

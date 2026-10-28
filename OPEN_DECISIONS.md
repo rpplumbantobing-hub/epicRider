@@ -9,18 +9,18 @@
 
 | ID | Keputusan | Status | Catatan Phase 1 |
 |---|---|---|---|
-| OD-01 | Database produksi (SQLite vs PostgreSQL/MySQL lain) | OPEN | Masih relevan untuk Phase 2; seed requirement REQ-029/097. |
-| OD-02 | Strategi mobile/tablet/Windows (PWA vs native vs cross-platform vs wrapper) | OPEN | Mempengaruhi UX requirements (REQ-019/020) & kontrak API Phase 2. |
-| OD-03 | Mekanisme/vendor verifikasi WhatsApp login | OPEN | REQ-021 dibuat agnostik-vendor; Phase 4 membutuhkan keputusan ini. |
-| OD-04 | Kebijakan `ignoreBuildErrors` / `reactStrictMode` | OPEN | Quality gate Phase 3. |
-| OD-05 | Definisi kuota 5 kru: owner dihitung atau tidak | OPEN | REQ-009 menunggu; wajib sebelum Phase 5. |
-| OD-06 | Harga, billing, pajak, refund, payment gateway | OPEN | Phase 1 tidak mengarang nilai; REQ-056/098/100 menunggu. |
+| OD-01 | Database produksi (SQLite vs PostgreSQL/MySQL lain) | OPEN | Masih relevan untuk finalisasi migrasi fisik; seed requirement REQ-029/097. SQLite saat ini = keadaan lokal/sandbox, BUKAN keputusan produksi. |
+| OD-02 | Strategi mobile/tablet/Windows (PWA vs native vs cross-platform vs wrapper) | OPEN | Mempengaruhi UX requirements (REQ-019/020) & kontrak API Phase 2 (client-neutral). Tidak memblokir fase dokumentasi. |
+| OD-03 | Mekanisme/vendor verifikasi WhatsApp login | OPEN | REQ-021 agnostik-vendor; **hanya integrasi/konfigurasi/production-test spesifik vendor yang menunggu keputusan ini — BUKAN seluruh arsitektur identity/auth Phase 4** (DECISIONS.md OD-03; MC-V3 §5 → crosswalk §2a). |
+| OD-04 | Kebijakan `ignoreBuildErrors` / `reactStrictMode` | **SEBAGIAN DIPUTUSKAN — sisa tetap OPEN** *(diperbarui 2026-10-28, rekonsiliasi pra-Phase 4)* | Sisi konfigurasi DIPUTUSKAN via ADR-019 (ACCEPTED, 2026-10-28): `ignoreBuildErrors` dihapus, `reactStrictMode: true`, script `typecheck` ditambahkan — jangan lagi menulis "`ignoreBuildErrors: true` masih aktif" tanpa bukti. Sisa aspek yang tetap OPEN: pengetatan bertahap eslint/tsconfig (`noImplicitAny`, ±30 rule off) — rekomendasi T-1..T-7 di `PHASE_3_REMEDIATION_REPORT.md` §5. |
+| OD-05 | Definisi kuota 5 kru: owner dihitung atau tidak | OPEN | REQ-009 menunggu; wajib sebelum Phase 5 (kuota/billing). Tidak memblokir pemodelan membership (Phase 4 boleh membuat membership tanpa enforcement kuota berbayar). |
+| OD-06 | Harga, billing, pajak, refund, payment gateway | OPEN | Phase 1 tidak mengarang nilai; REQ-056/098/100 & REQ-101 (komersial penawaran jasa) menunggu. |
 | OD-07 | Strategi offline-first workflow lapangan | OPEN | REQ-038/037 menunggu; mempengaruhi Phase 13/24. |
 | OD-08 | Scope standar ISO per segmen pelanggan | OPEN | Ditambah blocker teknis: verifikasi edisi masih `BLOCKED` (lihat STANDARD_REGISTER). |
 | OD-09 | Kewajiban hukum/privasi lokal (UU PDP dll.) — butuh ahli | OPEN | Relevan sebelum fitur evidence/metadata sensitif (Phase 18). |
 | OD-10 | Target hosting/deployment & strategi rilis | OPEN | OPERATIONS.md target; wajib sebelum Phase 25/26. |
 | ~~OD-11~~ | Commit baseline git | **CLOSED — TEREKSEKUSI** | Baseline ter-commit `03293b6` (terverifikasi `git log`). |
-| OD-12 | Bahasa konten produk (ID default + EN siap) | OPEN (asumsi MC §5 berlaku bila tidak dijawab) | REQ-028 mengasumsikan Indonesia default. |
+| OD-12 | Bahasa konten produk (ID default + EN siap) | **CLOSED 2026-10-28 — DECIDED BY BASELINE + ADR-020** *(diperbarui rekonsiliasi pra-Phase 4)* | Dasar: MC-V4 §4 eksplisit — "Bahasa Indonesia is the default UI locale; English is supported, and locale switching is system-controlled" (baseline owner, bukan asumsi engineer) + ADR-020 (mekanisme i18n fondasi: typed dictionary + cookie persistence; REQ-028). Tidak ada bahasa tambahan yang dikarang; penambahan bahasa baru tetap lewat prosedur ADR-020. Riwayat pertanyaan dipertahankan; pembukaan kembali hanya via keputusan owner eksplisit. |
 
 ## 2. Keputusan baru hasil Phase 1 (OWNER APPROVAL REQUIRED)
 
@@ -41,7 +41,7 @@
 | OD-113 | Izin pembuatan UX prototype terpisah (Phase 1 tidak membangun UI produksi) | (a) lanjut langsung design system Phase 3; (b) buat prototype klik-klik terpisah dulu | Cepat validasi arah visual vs biaya | (b) prototype ringan sebelum Phase 3 finalisasi token — hanya dengan persetujuan | Owner |
 | OD-114 | Strategi backup/DR & target RPO/RTO | Proposals di NON_FUNCTIONAL_REQUIREMENTS | REQ-094 | RPO/RTO diputuskan bersama hosting decision (OD-10) | Owner + eng lead |
 | OD-115 | Kebijakan sesi & perangkat (maks sesi aktif, idle timeout, force-logout semua device) | Proposals di USE_CASES (UC-10xx failure flows) | REQ-048 default param | Mulai konservatif (timeout pendek), evaluasi feedback kru lapangan | Owner + eng lead |
-| OD-116 | Input `DATA_MODEL_CONCEPT.md` tidak ditemukan di gate Phase 1 | (a) owner menyediakan dokumen konsep; (b) Phase 2 membangun konsep data model dari nol berbasis artefak Phase 1 | Risiko gap pemahaman domain sebelum Phase 2 | (a) bila dokumen ada; (b) bila tidak, Phase 2 wajib membuka dengan review artefak Phase 1 | Owner |
+| OD-116 | ~~Input `DATA_MODEL_CONCEPT.md` tidak ditemukan di gate Phase 1~~ **SUPERSEDED 2026-10-28 (rekonsiliasi pra-Phase 4)** — bukan lagi pertanyaan terbuka | ~~(a) owner menyediakan dokumen konsep; (b) Phase 2 membangun konsep data model dari nol berbasis artefak Phase 1~~ | **SUPERSEDED — TERJAWAB DENGAN BUKTI:** `DATA_MODEL_CONCEPT.md` kini ADA (834 baris, output workstream Phase 2, direkonsiliasi 2026-10-28) dan merupakan **output Phase 2, bukan prasyarat Phase 2** (DECISIONS.md OD-116; PHASE_2_DEPENDENCY_MATRIX; OBSOLETE_AND_SUPERSEDED_REGISTER §2 "Treating OD-116 as a prerequisite before Phase 2 — Superseded"). Dua status kontradiktif tidak boleh tersisa; riwayat pertanyaan dipertahankan di baris ini. | ~~Owner~~ — tidak diperlukan lagi |
 
 ## 3. Index kandidat keputusan dari artefak Phase 1 (WORKSTREAM CANDIDATES — status OPEN / OWNER APPROVAL REQUIRED)
 
@@ -104,7 +104,7 @@ Catatan penomoran: OD-129/OD-149/OD-169 hanya penanda batas range workstream (bu
 > (bukan arsitektur katalog/entitlement). Definisi kanonik: `DECISIONS.md` versi 2026-10-27.
 
 1. ~~**Menghalangi Phase 2 jika tak dijawab:** OD-01 (database), OD-02 (strategi mobile → kontrak API), OD-116 (konsep data model).~~ **[SUPERSEDED — lihat koreksi di atas]**
-2. **Menghalangi Phase 4:** OD-03 (WhatsApp vendor), OD-115 (param sesi bisa PROPOSED dulu).
+2. **Menghalangi Phase 4:** ~~OD-03 (WhatsApp vendor), OD-115 (param sesi bisa PROPOSED dulu)~~ *(diperjelas 2026-10-28)*: tidak ada OD yang memblokir Phase 4 secara keseluruhan — **OD-03 hanya memblokir integrasi/konfigurasi/production-test vendor WhatsApp** (identity/session/auth abstraction tetap jalan; DECISIONS.md); OD-115 tetap OPEN namun nilai pengembangan boleh `PROPOSED` (terpusat & configurable, bukan keputusan owner). Entry Phase 4 kini digerbangi `PRE_PHASE_4_GATE.md` (prompt Phase 4 gated).
 3. **Menghalangi Phase 5:** OD-05, OD-06, OD-108.
 4. **Menghalangi Phase 11/22:** OD-06, OD-101, OD-102.
 5. **Menghalangi Phase 17–20:** OD-08 (+ verifikasi standar masih BLOCKED), OD-103, OD-104, OD-105, OD-106, OD-110.

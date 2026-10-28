@@ -1,196 +1,156 @@
-# MASTER CONTROL — epicRider
+# MASTER_CONTROL.md — epicRider
 
-## 0. Canonical status
+**Revision:** 2026-10-28  
+**Status:** GOVERNING — stable product and engineering rules  
+**Dynamic phase status:** never maintained here; see `ROADMAP.md` only.
 
-Dokumen ini memuat **aturan produk/arsitektur yang stabil saja**. Dokumen ini **tidak menyimpan status fase dinamis** (remediasi F-02, audit konsistensi Phase 2, 2026-10-28).
+## 1. Product vision and scope
 
-**Aturan status (mengikat):**
-- `ROADMAP.md` adalah **satu-satunya sumber kebenaran status fase berjalan**.
-- `PHASE_STATUS.md` hanyalah ringkasan/rekaman eksekusi yang wajib konsisten dengan ROADMAP — bukan sumber status tandingan.
-- Status fase hanya boleh diubah dengan bukti (lihat §8 Evidence gate). Taxonomy status: §3.
+epicRider is a web-first platform for multimedia, event production, equipment rental and related operations. The architecture must support solo/home businesses, startups, mature organizations and organizations operating an Integrated Management System (IMS) without rebuilding the operational data core when moving between license tiers.
 
-**Inheritance rule:** Phase tidak menghapus artefak fase sebelumnya. Baseline Phase 0/1 (audit, discovery/requirements `REQ-001..REQ-100`) tetap dipertahankan dan traceability-nya wajib terjaga. Set kontrol kanonik aktif terekam di `CONTROL_BASELINE_REGISTER.md`; referensi `MC §N` lama ditafsirkan lewat `CONTROL_REFERENCE_CROSSWALK.md`.
+This document defines target-state constraints. It is not proof that the corresponding runtime feature exists. Current implementation and test status must come from repository evidence and `ROADMAP.md`.
 
-## 1. Product taxonomy
+## 2. Product taxonomy
 
-### License tiers
-Hanya tiga license tier:
-1. miniRider
-2. maxRider
-3. ISOrider
+### 2.1 License tiers — exactly three
 
-### hiRider
-**hiRider bukan license, bukan tier keempat, dan bukan nilai pada `license_tier`.**
+- **miniRider** — event and basic operational workflows, technical rider, media kit/templates, basic asset catalog, team and simple event operations. Baseline crew limit is five per workspace; whether the owner consumes a seat remains an open commercial/quota decision (OD-05).
+- **maxRider** — adds CRM, finance/commercial workflows, rental and asset lifecycle, QR/barcode, scan workflows, maintenance/readiness, advanced workflow/roles, basic HSE/risk and operational dashboards.
+- **ISOrider** — adds configurable IMS capabilities: processes and controls, controlled documents, execution records/evidence, approvals/sign-off, audit, findings/NCR/CAPA, management review, sustainability/environment, OH&S, information security, continuity and continual improvement.
 
-hiRider adalah **marketplace layanan/jasa kru** (crew services marketplace) yang terhubung dengan profil, skill, portofolio, workspace, event, dan rekrutmen. Scope hiRider mencakup:
-- workspace membuka recruitment;
-- user melihat calon kesempatan;
-- user/calon anggota tim membuat profil, skill dan portfolio;
-- **penawaran jasa (service offer)** oleh kru — bagian dari scope hiRider (baseline Master Control: "Marketplace layanan kru"; putusan scope = `adr/ADR-021-hirider-service-offer-scope.md`; detail lifecycle = desain Phase 16, status `PROPOSED`);
-- user melamar ke recruitment opening;
-- workspace melihat, menyaring, menerima/menolak kandidat;
-- assignment dapat dilakukan setelah proses recruitment;
-- kru dapat mengelola beberapa workspace mandiri sesuai lisensi.
+No other product, portal, store or capability may be represented as a fourth license tier. Tier inheritance is defined in `LICENSE_MATRIX.md`.
 
-Aturan akses rekrutmen: kru hanya dapat melamar pada rekrutmen yang **terbuka** dan memenuhi akses/kriteria; owner dapat menutup rekrutmen.
+### 2.2 hiRider — portal/capability, not a license
 
-Invariant (tetap mengikat — tidak berubah oleh penyertaan penawaran jasa):
-`Application != Workspace Membership`
-`Application != Event Assignment`
-`Acceptance != Automatic Workspace Access`
+hiRider is in scope as a crew/service marketplace and recruitment/team-matching portal. Its scope includes:
 
-*(Remediasi F-01 audit konsistensi Phase 3, 2026-10-28: baris ini diselaraskan dengan baseline Master Control yang mendefinisikan hiRider sebagai marketplace layanan kru termasuk penawaran jasa; OD-185 ditutup sebagai keputusan scope yang bersumber dari baseline — bukan pertanyaan terbuka.)*
+- user/provider profile, skills, experience and portfolio;
+- **service offerings** published by a user/provider;
+- workspace recruitment openings, applications, shortlist and recruitment decisions;
+- links from accepted recruitment to a separately granted workspace membership and, where authorized, later event assignment.
 
-### Commerce/store surfaces — TIGA domain terpisah (koreksi owner, prompt Phase 3 §2.1 F-03)
+Service offering and recruitment are distinct domain objects and workflows. Publishing or responding to a service offer must not be conflated with applying for a team position.
 
-**1. License & Extension Shop** — surface publik di landing page:
-- Jalur pembelian/perpanjangan **lisensi** dan **extension** epicRider.
-- Harus melayani **calon pelanggan yang belum memiliki lisensi** (pembelian lisensi pertama) serta alur renewal yang disepakati.
-- Bukan bagian dari Public Store dan bukan Developer Equipment Store.
-- Opsi/harga hanya ditampilkan bila datanya ada; dilarang mengarang harga, pajak, payment gateway, atau refund policy (OD-06).
+Non-negotiable invariants:
 
-**2. Public Store** — toko produk developer:
-- Menjual produk developer kepada pengguna epicRider; produk dapat mencakup produk digital/developer yang disetujui.
-- **Akses diberikan kepada user yang memiliki basic license miniRider.**
-- Bukan license tier, bukan fitur khusus maxRider/ISOrider, dan **bukan** pengganti jalur pembelian lisensi pertama (jalur itu = License & Extension Shop).
+- `hiRider != LicenseTier`
+- `Application != Workspace Membership`
+- `Application != Event Assignment`
+- `Acceptance != Automatic Workspace Access`
+- `ServiceOffer != RecruitmentOpening`
 
-**3. Developer Equipment Store** — toko perlengkapan developer di dalam aplikasi:
-- Akses: miniRider allowed; maxRider **denied**; ISOrider **denied** (penolakan di boundary server/API dan diaudit bila/ketika diimplementasikan — REQ-010).
+A recruitment acceptance does not automatically grant tenant access. Access is granted through a separate authorized membership workflow; event assignment is another separate workflow.
 
-**Aturan pemisahan:** ketiga surface wajib dimodelkan sebagai domain terpisah (katalog, order, akses, API, issuance entitlement, audit masing-masing). Melabeli ulang satu toko yang sama bukanlah pemisahan. Detail: `adr/ADR-018-commerce-surfaces.md` (mengoreksi sebagian ADR-013), `LICENSE_MATRIX.md` §4, `DATA_MODEL_CONCEPT.md` §3.12.
+### 2.3 Three commerce surfaces — separate domains
 
-## 2. Entitlement taxonomy
+1. **License & Extension Shop** — public landing/commerce surface for initial license purchase and license/extension renewal or purchase. It must not require the buyer to already own miniRider merely to purchase a first license. Actual payment, final prices, taxes, fees and refund terms remain governed by commercial decisions (OD-06).
+2. **Public Store** — developer-product store for epicRider users. Access requires a valid basic `miniRider` license as specified by the owner. It is not a license tier and it is not the first-license checkout.
+3. **Developer Equipment Store** — in-app equipment/equipment-related store. `miniRider` is allowed; `maxRider` and `ISOrider` are denied at the server/API boundary, not merely hidden in UI.
 
-### Tier entitlement
-Hak yang berasal dari license tier:
-- miniRider;
-- maxRider;
-- ISOrider.
+The three surfaces must be separate in access rules and domain/API policies, including catalogs, order types, purchase flows, entitlement issuance, audit events and tests. Different labels on a single undifferentiated store are not sufficient.
 
-### Capability
-Kemampuan/domain feature, misalnya:
-- recruitment;
-- candidate discovery;
-- CRM;
-- asset scanning;
-- audit mode;
-- notification broadcast.
+## 3. Entitlement and access model
 
-Capability bukan license.
+Distinguish:
 
-### Extension
-Tambahan yang dapat dibeli/diaktifkan di atas tier:
-- additional workspace;
-- additional seat package;
-- workspace landing;
-- mobile/client extension;
-- future approved extensions.
+- **LicenseTier** — miniRider, maxRider or ISOrider;
+- **License** — an issued license instance and lifecycle;
+- **Capability** — a domain/product ability;
+- **Extension** — an approved additive package/feature;
+- **Workspace Membership** — user-to-workspace relationship;
+- **Role/Permission** — authorized actions within a context;
+- **Event Assignment** — assignment to a particular event/work operation.
 
-Extension bukan tier.
+Effective access is determined by:
 
-### Effective access
-`Effective Access = Tier Entitlement + Active Extensions + Capability Rules + Role/Permission + Resource Context + Object State`
+`Tier Entitlement + Active Extensions + Capability Rules + Role/Permission + Resource Context + Object State`
 
-UI hiding tidak pernah menjadi security control.
+Enforce authorization and entitlement server-side. UI hiding is never an authorization control. A tier upgrade activates authorized capabilities in the same domain data model; do not create isolated operational databases by tier or silently delete data on downgrade.
 
-## 3. Status taxonomy
+Extensions may include additional workspace, seat package, workspace landing, mobile/client options and other approved packages. Do not invent prices, commercial mechanics or exact seat counting rules.
 
-### Evidence status
-`VERIFIED`, `PARTIAL`, `NOT FOUND`, `NOT TESTED`, `BLOCKED`, `PROPOSED`, `UNKNOWN / NEEDS DECISION`
+## 4. User experience, language and channels
 
-### Decision status
-`OPEN`, `PROPOSED`, `ACCEPTED`, `REJECTED`, `SUPERSEDED`
+`UX_UI_STANDARD.md` is a binding cross-phase quality standard. UI/UX is not cosmetic and cannot be deferred to final polish. The product target is premium, clear, consistent, intuitive, accessible, responsive and task-efficient, with complete loading/empty/error/success/permission-denied/offline-or-sync-pending states as relevant.
 
-### Requirement status
-`PROPOSED`, `APPROVED`, `IMPLEMENTED`, `VERIFIED`, `SUPERSEDED`
+- Bahasa Indonesia is the default UI locale; English is supported, and locale switching is system-controlled rather than hard-coded in business logic.
+- Web is a first-class channel for desktop and mobile browsers.
+- Domain/API boundaries remain client-neutral and capable of serving Android and iOS apps; Windows distribution is a planned channel, with technology selected via an evidence-backed ADR.
+- Do not infer that responsive web automatically fulfills native/mobile distribution requirements.
+- A screenshot proves appearance only, not authorization, business logic, workflow, or data correctness.
+- Do not claim usability/accessibility without recorded task-based and relevant manual/automated evidence.
 
-### Phase status
-`NOT STARTED`, `IN PROGRESS`, `BLOCKED`, `PARTIAL`, `DONE`
+## 5. Identity, workspace and authorization
 
-Status antar kategori tidak boleh dipertukarkan.
+The required conceptual chain is:
 
-## 4. Architecture invariants
+`Global User Identity → Workspace Membership → Role/Permission Context → Event Assignment → Resource/Action Authorization`
 
-- satu platform/domain foundation;
-- global user identity terpisah dari workspace membership;
-- membership terpisah dari event assignment;
-- server-side authorization;
-- server-side entitlement;
-- tenant/workspace isolation;
-- API/domain layer client-neutral;
-- controlled migrations;
-- auditability;
-- immutable approved records + amendment/version history;
-- i18n sejak awal;
-- web adalah first-class channel.
+Identity does not imply membership; membership does not imply assignment. Every sensitive read/write must check the authenticated actor, tenant/workspace scope, role/permission, entitlement/capability, object state and operation-specific rules. Tenant isolation and negative cross-tenant tests are mandatory when these features are implemented.
 
-## 5. Decision dependency policy
+Authentication targets include secure WhatsApp-controlled-account verification and Google OAuth 2.0/OpenID Connect. A typed WhatsApp number alone does not prove identity. Provider-specific decisions and integration credentials are not to be invented.
 
-Open decision hanya boleh memblokir bagian yang memang membutuhkan keputusan tersebut.
+## 6. Architecture and data invariants
 
-### OD-01 — Production database
-Boleh memblokir final production database selection/migration implementation.
-Tidak memblokir domain model, logical data model, threat model, API boundary atau architecture analysis.
+- One coherent platform/domain foundation, supporting multiple workspaces/tenants.
+- Global identity is separate from membership, role, entitlement, service offer, recruitment application and event assignment.
+- Client-neutral domain/API contracts; web-first, with mobile and Windows choices documented in ADRs.
+- Modular/bounded contexts with explicit ownership and contracts; avoid duplicated sources of truth.
+- Controlled schema migrations, rollback strategy and documented data ownership.
+- Approved/final records and evidence cannot be silently edited or deleted; corrections use amendment/revision with history.
+- Important changes and decisions record actor, timestamp, source/object and audit context appropriate to risk.
+- Use the operating sequence where relevant: `Process → Control → Workflow → Transaction → Evidence → Report`.
+- Distinguish current state, target state, proposed requirement, implementation evidence and verified behavior.
 
-### OD-02 — Mobile/client delivery
-Tidak memblokir Phase 2 secara keseluruhan.
-Phase 2 harus menghasilkan client-neutral domain/API contracts.
-Keputusan final PWA/native/cross-platform/wrapper dapat diselesaikan melalui ADR.
-Phase 23 delivery tetap bergantung pada keputusan final.
+## 7. IMS and standards
 
-### OD-03 — WhatsApp provider
-Tidak memblokir Phase 4 secara keseluruhan.
-Hanya provider-specific integration, credentials, configuration dan provider-specific production tests yang blocked.
-Identity/session/auth abstraction tetap berjalan.
+ISOrider is a configurable system-management support platform, not a certification body and not a guarantee of conformity or certification.
 
-### OD-05 — Owner seat semantics
-Tidak memblokir Phase 5 secara keseluruhan.
-Hanya final seat counting, quota enforcement dan billing based on seats yang blocked.
+`STANDARD_REGISTER.md` is the authoritative source for edition/publication metadata and verification evidence. As of the catalogue check dated 2026-10-28, the official register records published editions including ISO 9001:2026, ISO 14001:2026 and ISO 19011:2026. Do not retain obsolete “edition 2026 unknown” statements. Some other standards have published editions plus amendments, and some are under revision; the register must state this explicitly.
 
-### OD-06 — Billing/commercial
-Tidak memblokir Phase 5/14/22 secara keseluruhan.
-Dapat dikerjakan:
-- product catalog;
-- entitlement;
-- extension lifecycle;
-- abstract pricing;
-- commercial state model.
+Catalogue metadata confirmation is not the same as:
+- deciding applicability to a customer or Indonesian legal obligation;
+- approving a clause/control mapping;
+- proving a customer conforms to a standard;
+- proving certification.
 
-Yang blocked:
-- production payment charging;
-- final price;
-- final tax calculation;
-- production payment gateway;
-- commercial launch approval.
+No clause mapping may rely on unverified editions, and no copyrighted standard text may be copied into the product without rights. Legal/regulatory conclusions require competent validation (OD-09). Risk guidance such as ISO 31000 must not be described as a certifiable requirements standard.
 
-### OD-09 — Indonesian legal/regulatory obligations
-Tidak memblokir generic architecture.
-Memblokir legal applicability claim, compliance sign-off dan certification/legal assertions sampai divalidasi oleh pihak kompeten.
+## 8. Controlled documents, evidence and audit
 
-## 6. Phase 2 purpose
+The target platform supports configurable documentation hierarchies such as Policy → Manual → Process → Procedure/SOP → Work Instruction → Form/Checklist → Record/Evidence → Report.
 
-Phase 2 menghasilkan:
-- system/domain architecture;
-- bounded contexts;
-- domain model;
-- logical data model;
-- threat model;
-- authorization model;
-- entitlement model;
-- API/client-neutral boundaries;
-- ADRs;
-- dependency register;
-- migration/architecture principles;
-- traceability dari Phase 1.
+Controlled documents should support document ID, title/type, owner/approver, version/revision, status, effective/review dates, classification, access policy, retention, process/control links, supersedes relation and audit history.
 
-Phase 2 tidak membangun feature UI produksi kecuali prototype arsitektural yang secara eksplisit disetujui.
+Evidence workflows should support structured results, notes, permitted attachments, actor/time/source metadata, submit/review/reject/rework, appropriate approval/sign-off, version binding and controlled finalization. Amendments must preserve history. Electronic-signature legal status is not assumed.
 
-## 7. Quality
+Auditor access is read-only and limited by workspace/scope/time, with access logged and no default cross-tenant access.
 
-Build success != acceptance.
-Screenshot != business-logic proof.
-Tidak boleh mengarang vendor, price, tax, legal applicability, certification, test result, implementation status atau owner decision.
+## 9. Security and privacy
 
-## 8. Evidence gate
+- Never include `.env`, credentials, tokens, private keys, production data or secrets in a control pack or diagnostic log.
+- `.env` must not be tracked by Git; provide `.env.example` using placeholders only and allowlist it in `.gitignore`.
+- Verify secret scanning against the working tree and, where applicable, Git history; if actual credentials were exposed, rotate/revoke them according to incident procedure.
+- Apply least privilege, input/output validation, rate limiting/anti-abuse, secure session management, audit logging, privacy-minimizing defaults and tenant-isolation checks appropriate to the feature.
+- Do not claim security approval or pentest completion without evidence.
 
-Setiap fase hanya `DONE` jika output fase tersebut dan evidence review memenuhi acceptance criteria fase tersebut — tidak pernah karena file deliverable tersedia saja. Status fase aktif hanya ada di `ROADMAP.md` (lihat §0).
+## 10. Decision and status taxonomy
+
+Use separate status categories:
+
+- **Evidence:** `VERIFIED`, `PARTIAL`, `NOT FOUND`, `NOT TESTED`, `BLOCKED`, `PROPOSED`, `UNKNOWN / NEEDS DECISION`.
+- **Decision/ADR:** `OPEN`, `PROPOSED`, `ACCEPTED`, `REJECTED`, `SUPERSEDED`.
+- **Requirement:** `PROPOSED`, `APPROVED`, `IMPLEMENTED`, `VERIFIED`, `SUPERSEDED`.
+- **Phase:** `NOT STARTED`, `IN PROGRESS`, `BLOCKED`, `PARTIAL`, `DONE`.
+
+Never interchange these status categories. A decision may be accepted while its implementation remains unverified.
+
+## 11. Phase execution and acceptance
+
+- `ROADMAP.md` is the single source of current phase status; `PHASE_STATUS.md` is a consistent summary only.
+- A phase is `DONE` only when its mandatory acceptance gates pass with command/evidence paths, exit codes and known limitations recorded.
+- Build success is not full acceptance. A screenshot is not proof of business logic. File existence and checkboxes are not evidence by themselves.
+- Preserve all historic Phase 0/1 artefacts, requirements `REQ-001..REQ-100`, ADR/OD IDs and prior evidence. Never renumber or silently erase them.
+- Changes to scope or sequence require a dated decision/ADR with rationale, impacted requirements, dependencies, risk, tests and roadmap update.
+- End each phase with a `HANDOFF.md`; do not start the next phase automatically.
+- If controls conflict, stop the affected work, log the contradiction and reconcile all affected files before asserting acceptance.

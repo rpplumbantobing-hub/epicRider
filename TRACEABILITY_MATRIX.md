@@ -3,8 +3,8 @@
 > **Referensi MC §N:** rujukan Master Control pada dokumen ini memakai penomoran era Phase 0/1 (MC-V1, §1–§15 — arsip: `audit/superseded/phase1-era-control/`). Interpretasi ke anchor kanonik aktif: `CONTROL_REFERENCE_CROSSWALK.md`. Substansi dokumen tidak diubah (aturan F-06).
 
 **Status dokumen:** TRACED baseline hasil Task 1-b (Phase 1, WS-B). Dokumentasi saja; tidak ada kode/schema/config yang diubah.
-**Sumber ID:** `REQUIREMENTS.md` (REQ-001..REQ-100; tidak ada REQ baru dibuat). Persona P-01..P-12 sesuai daftar tetap. Use case: `USE_CASES.md` (UC-1001..UC-9003, 55 UC). Phase mengikuti kolom Phase `REQUIREMENTS.md` / `ROADMAP.md`.
-**Hitung awal dari REQUIREMENTS.md (terverifikasi via grep):** Must = **70**, Should = **26**, Could = **4** (total 100).
+**Sumber ID:** `REQUIREMENTS.md` (REQ-001..REQ-100 baseline Phase 1; **+ REQ-101 ditambahkan 2026-10-28 atas persetujuan owner via `OBSOLETE_AND_SUPERSEDED_REGISTER.md`** — tanpa renumber). Persona P-01..P-12 sesuai daftar tetap. Use case: `USE_CASES.md` (UC-1001..UC-9003, 55 UC). Phase mengikuti kolom Phase `REQUIREMENTS.md` / `ROADMAP.md`.
+**Hitung awal dari REQUIREMENTS.md (terverifikasi via grep, 2026-10-27):** Must = **70**, Should = **26**, Could = **4** (total 100). *Setelah penambahan REQ-101 (Must, 2026-10-28): Must = 71, total = 101 — lihat baris REQ-101 & ringkasan coverage.*
 **Definisi coverage status:**
 - `TRACED` — ada use case utama yang mewakili flow requirement secara utuh.
 - `PARTIAL` — requirement tersentuh use case tetapi bersifat cross-cutting/quality gate, atau terhalang keputusan terbuka (OD) sehingga flow penuh belum bisa didefinisikan.
@@ -41,7 +41,7 @@
 | REQ-027 | P-10, P-06 | UC-7005, UC-7006, UC-4002 | PUT/DELETE pada record approved → 403; amendment menambah versi + entri audit | 17, 18 | TRACED |
 | REQ-028 | P-01..P-12 | UC-1001 (representatif) | Scan i18n layar baru = 0 string hard-coded; locale ID lengkap sejak fitur pertama | 3+ | PARTIAL — quality gate global, tidak diwakili satu UC |
 | REQ-029 | P-08 (eng) | — | Setiap schema change punya migration ter-review; `db push --accept-data-loss` tidak dipakai di env ber-data | 2+ | NOT TRACED — constraint rekayasa/proses, bukan flow pengguna; dikontrol gate ADR/review migration |
-| REQ-030 | P-01, P-07, P-08 | UC-5001, UC-5006 | Akses silang antar dua store (data/API/role) ditolak pada 100% kasus uji | 11, 22 | TRACED |
+| REQ-030 | P-01, P-07, P-08 | UC-5001, UC-5006 | Akses silang antar **tiga commerce surface** — License & Extension Shop, Public Store, Developer Equipment Store — (data/API/role/issuance/audit) ditolak pada 100% kasus uji; jalur pembelian lisensi pertama tersedia tanpa lisensi eksisting *(baris dikoreksi 2026-10-28 — teks lama "antar dua store" = pra-ADR-018; lihat `REQUIREMENTS.md` REQ-030)* | 11, 22 | TRACED |
 | REQ-031 | P-07, P-08 | UC-5003, UC-5002 | Role developer mencoba ubah billing/broadcast global → 403 teraudit | 22 | TRACED |
 | REQ-032 | P-01..P-12 | UC-3008, UC-1005 (representatif) | Semua aksi berisiko menampilkan konfirmasi (test UI); design review per fase tercatat | 6+ | PARTIAL — gate lintas layar per UX_UI_STANDARD |
 | REQ-033 | P-01..P-12 | UC-2006 (representatif) | Audit a11y layar kunci: 0 pelanggaran automated + keyboard manual lulus | 6+ | PARTIAL — gate lintas layar |
@@ -112,6 +112,7 @@
 | REQ-098 | P-01, P-02 | UC-5006 | Setiap transisi lisensi (purchase→active→renewal→expiry→grace→downgrade) teruji; akses mengikuti OD-108 | 5 | TRACED |
 | REQ-099 | P-02, P-08 | UC-5006 | Downgrade tidak menghapus data; fitur non-tier terkunci server-side; data utuh untuk upgrade kembali | 5 | TRACED |
 | REQ-100 | P-12 | — | Tester environment terpisah/berlabel; tanpa data pelanggan nyata | 22 | NOT TRACED — scope tester menunggu keputusan owner (terkait OD-06/REQ-015); Could |
+| REQ-101 | P-03 (kru/provider) | — (baru 2026-10-28; UC flow inquiry/penawaran jasa belum ada di USE_CASES — kandidat UC baru range 60xx saat Phase 16) | `ServiceOffer != RecruitmentOpening` ditegakkan server-side (objek/permission/lifecycle/API/audit terpisah); inquiry/minat tidak menciptakan membership/event assignment; tidak ada harga/pembayaran dikarang (OD-06) | 16 | PARTIAL — requirement baru (persetujuan owner via Obsolete Register 2026-10-28); test idea terukur ada, UC penuh menunggu desain Phase 16 (OD-109 visibilitas) |
 
 ---
 
@@ -119,10 +120,12 @@
 
 | Kelompok | Total | TRACED | PARTIAL | NOT TRACED |
 |---|---|---|---|---|
-| Must | 70 | 57 | 12 | 1 |
+| Must | 70 → **71** *(+REQ-101, 2026-10-28)* | 57 | 12 → **13** | 1 |
 | Should | 26 | 22 | 4 | 0 |
 | Could | 4 | 1 | 1 | 2 |
-| **Total** | **100** | **80** | **17** | **3** |
+| **Total** | 100 → **101** | 80 | 17 → **18** | 3 |
+
+*(Tabel asli Phase 1: Total 100 = 80 TRACED / 17 PARTIAL / 3 NOT TRACED. Delta 2026-10-28: +1 Must PARTIAL = REQ-101 — requirement baru atas persetujuan owner; substansi baris REQ-001..REQ-100 tidak diubah.)*
 
 - **Must traced (TRACED + PARTIAL): 69/70.** TRACED penuh 57/70; PARTIAL 12/70 (REQ-001, REQ-019, REQ-020, REQ-028, REQ-032, REQ-033, REQ-034, REQ-035, REQ-088, REQ-089, REQ-092, REQ-097 — semuanya requirement cross-cutting/quality gate yang tidak diwakili satu flow pengguna tunggal, tetapi tersentuh UC dan punya test idea terukur).
 - **Should traced: 26/26 tercapak dalam matriks (22 TRACED + 4 PARTIAL).** PARTIAL: REQ-015 (flow landing page belum ada UC), REQ-037 (menunggu OD-07), REQ-091 (proses evaluasi), REQ-093 (target menunggu OD-112).
@@ -138,5 +141,6 @@
 
 ### Catatan gap non-REQ (dari USE_CASES §11)
 
-- Report/block abuse hiRider (UC-6005) belum punya REQ dedikasi — hanya dirujuk REQ-092. Bila dianggap perlu, owner menambahkan REQ baru (ID > REQ-100).
+- Report/block abuse hiRider (UC-6005) belum punya REQ dedikasi — hanya dirujuk REQ-092. Bila dianggap perlu, owner menambahkan REQ baru (ID > REQ-101).
 - Landing page publik (REQ-015) belum diwakili UC penuh; kandidat UC baru pada range 50xx saat Phase 22.
+- Penawaran jasa hiRider (REQ-101, ditambahkan 2026-10-28): UC flow publish/inquiry belum ada — kandidat UC baru range 60xx saat Phase 16 (desain lifecycle = fase itu).

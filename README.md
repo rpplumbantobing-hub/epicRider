@@ -1,6 +1,6 @@
-# epicRider — Foundation (Phase 3)
+# epicRider — Foundation (Phase 3, PARTIAL; entry Phase 4 digerbangi)
 
-epicRider adalah platform untuk kru produksi multimedia/event. **Repositori ini saat ini berada di Phase 3: fondasi** — design token, mekanisme i18n, komponen status, gerbang kualitas (lint/typecheck/test), CI, dan konvensi pengembangan. **Ini BUKAN fitur produksi**; satu-satunya route yang terlihat user adalah showcase fondasi di `/` (konten demo, tanpa data nyata).
+epicRider adalah platform untuk kru produksi multimedia/event. **Repositori ini berada di Phase 3: fondasi — status `PARTIAL`** (kontrol lengkap & diremediasi; bukti build/CI runner sah belum tersedia — `ROADMAP.md`). **Phase 4 (identity/auth/workspace) = `BLOCKED / NOT STARTED`** sampai `PRE_PHASE_4_GATE.md` lulus. **Ini BUKAN fitur produksi**; satu-satunya route yang terlihat user adalah showcase fondasi di `/` (konten demo, tanpa data nyata).
 
 Dokumen kontrol proyek (status fase, baseline, keputusan): lihat `CONTROL_BASELINE_REGISTER.md` dan `HANDOFF.md`.
 
@@ -20,7 +20,7 @@ Dokumen kontrol proyek (status fase, baseline, keputusan): lihat `CONTROL_BASELI
 | `bun run test:watch` | `vitest` | Mode watch. |
 | `bun run format` / `format:check` | `prettier --write .` / `--check .` | Skrip tersedia sejak Phase 3. **Belum diterapkan repo-wide** (menyentuh banyak file scaffold; keputusan penerapan menyusul) — `format:check` saat ini masih melaporkan file yang belum rapi. Bukan gate CI. |
 | `bun run db:push` | `prisma db push` | Push schema Prisma ke SQLite (`db/custom.db`). Schema saat ini masih demo User/Post — tidak diubah di Phase 3. |
-| `bun run build` | `next build` + copy standalone | **Tidak dieksekusi di sandbox** (platform melarang build produksi); hanya dijalankan di CI remote. Statusnya = NOT TESTED secara lokal. |
+| `bun run build` | `next build` + copy standalone | **Tidak dieksekusi di working copy utama sandbox** (larangan platform — melindungi dev server). Bukti build produksi yang sah: CI remote, atau working copy terisolasi (lihat `PRE_PHASE_4_GATE_REPORT.md`). Status lokal = NOT RUN. |
 
 ## Struktur proyek
 
@@ -74,7 +74,7 @@ Audit string hard-coded: cari literal di JSX — `rg -n '>[^<{]*[A-Za-z]{3}' src
 
 `.github/workflows/ci.yml` — nama workflow **"CI"**, trigger `push` + `pull_request`, `permissions: contents: read`. Satu job `ubuntu-latest`: setup-bun (pin `1.3.14`) → `bun install --frozen-lockfile` → `bun run lint` → `bun run typecheck` → `bun run test` → `bun run build`.
 
-Status jujur: **workflow belum pernah dijalankan** — repo tidak punya git remote di Phase 3, jadi CI remote = NOT TESTED (termasuk step build yang memang tidak bisa dieksekusi di sandbox).
+Status jujur: **workflow belum pernah dijalankan pada runner** — repo tidak punya git remote, dan sandbox tidak memiliki runner CI (docker/act tidak tersedia) → CI remote = NOT TESTED (termasuk step build). Eksekusi gate secara manual di lokal TIDAK setara dengan eksekusi workflow CI (OBSOLETE_AND_SUPERSEDED_REGISTER §2; `PRE_PHASE_4_GATE.md` item 9).
 
 ## Dokumen kontrol
 

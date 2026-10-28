@@ -99,6 +99,8 @@ Special access paths that are **not** scope classes but cross-cut them: the audi
 
 hiRider is the recruitment portal/capability — **not a license** and never a value of `LicenseTier` (MC §1, `ARCHITECTURE.md` §2). hiRider openings and applications are **platform-scoped resources** in the API: openings are published by workspaces and browsable through the portal (REQ-063); applications are submitted against openings by users (REQ-064). Workspace management of one's own openings and review of received applications is exposed as workspace-scoped views. The invariants `Application != Workspace Membership`, `Application != Event Assignment`, `Acceptance != Automatic Workspace Access` (MC §1) are enforced server-side at this boundary (`AUTHORIZATION_MODEL.md` §8) — an accepted application returns a recruitment decision, never an implicit membership or assignment.
 
+> **Service-offer boundary note (added 2026-10-28, pre-Phase 4 reconciliation — REQ-101, ADR-021, MC-V4 §2.2):** hiRider also includes **service offerings** (`ServiceOffer`) — a domain object **distinct from `RecruitmentOpening`** with its own ownership (provider = the user/crew publishing the offer), authorizable lifecycle/visibility, and inquiry/interest path. Target-state (all `PROPOSED`, not implemented): service offers are platform-scoped portal resources with user-scoped "my offers" management; inquiries create **no** workspace membership and **no** event assignment (server-side enforced, same invariant pattern as applications above); no prices/payment mechanics are invented (OD-06). Detailed resource/endpoint design belongs to Phase 16 (REQ-101 planned phase; `DATA_MODEL_CONCEPT.md` §3.7/§5; `THREAT_MODEL.md` TC-09/TC-24).
+
 ### 3.5 Context-to-scope classification (all 17 contexts)
 
 | # | Bounded context (`ARCHITECTURE.md` §3) | Scope class(es) | Notes |
@@ -109,7 +111,7 @@ hiRider is the recruitment portal/capability — **not a license** and never a v
 | 4 | Event & Assignment | Workspace-scoped, with an inner event-assignment boundary | Crew see only events they are assigned to (REQ-007, REQ-050) |
 | 5 | Entitlement & License | Platform-scoped (orders, issuance) + workspace-scoped read views | Platform-level domain (TB-7); issuance targets a workspace |
 | 6 | Extension | Platform-scoped (catalog/order) + workspace-scoped state views | Extension binds to (workspace, type) — `ENTITLEMENT_MODEL.md` §7 |
-| 7 | hiRider Recruitment | Platform-scoped portal + user-scoped (my profile/applications) + workspace-scoped (my openings, received applications) | Visibility defaults OD-109 `OPEN`; contact data OD-134 `OPEN` |
+| 7 | hiRider Recruitment | Platform-scoped portal + user-scoped (my profile/applications) + workspace-scoped (my openings, received applications) | Visibility defaults OD-109 `OPEN`; contact data OD-134 `OPEN`; service offers (REQ-101, added 2026-10-28) = platform-scoped + user-scoped "my offers", `ServiceOffer != RecruitmentOpening` — detail Phase 16 |
 | 8 | Asset | Workspace-scoped | Reservation conflict prevention (REQ-065, OD-107 `OPEN`) |
 | 9 | Technical Rider | Workspace-scoped (event-linked) | Published rider requires a linked event, enforced server-side (REQ-004) |
 | 10 | Media Kit | Workspace-scoped (event-linked) | Media kit always linked to an event (REQ-005) |

@@ -1,0 +1,32 @@
+=== GATE 9: CI workflow execution — 2026-10-28T09:36:42Z ===
+--- cmd: git remote -v ---
+(empty = no remote configured; cannot push for GitHub Actions)
+--- cmd: which docker act ---
+(docker/act NOT FOUND = no local workflow runner available)
+--- conclusion: workflow .github/workflows/ci.yml has NEVER executed on any runner ---
+CI-equivalent local sequence (install/lint/typecheck/test/build) was executed on an ISOLATED copy (gate-8 logs) — per prompt §1.3 item 9 this is NOT equivalent to executing the CI workflow; item 9 = BLOCKED (no runner in this environment).
+
+=== GATE 11: pre-existing working tree changes classified ===
+--- cmd: git status --short (non-upload changes are Stage A reconciliation edits, listed below) ---
+23
+modified paths = Stage A control edits (classified in PHASE_4_ENTRY_AUDIT.md §5); untracked (upload/ + new gate files) preserved:
+?? OBSOLETE_AND_SUPERSEDED_REGISTER.md
+?? PHASE_4_ENTRY_AUDIT.md
+?? PRE_PHASE_4_GATE.md
+?? audit/phase4-entry/
+?? audit/superseded/MASTER_CONTROL-MC-V3-2026-10-28.md
+?? upload/MASTER_CONTROL_epicRider_2026-10-28.md
+?? upload/OBSOLETE_AND_SUPERSEDED_REGISTER.md
+?? upload/epicRider_Phase_4_Entry_Audit.md
+?? upload/epicRider_Phase_4_Gated_Prompt_zai.md
+?? upload/phase4_extract/
+?? upload/workspace-bdf10873-7803-4338-b2cf-19eb3b2301a4.tar
+--- no reset/clean/mass-stage executed; no user changes discarded ---
+
+=== POST-RUN NOTE (2026-10-28T09:38Z) ===
+Deviation & resolution: temporary TAR extraction upload/phase4_extract/ (verification artifact of PHASE_4_ENTRY_AUDIT §2)
+was removed after verification — it duplicated the repo tree (incl. examples/) and was not matched by tsconfig/eslint
+exclusion patterns, briefly causing lint exit 1 / typecheck exit 2 in the MAIN working copy. Original TAR preserved.
+Re-verification after removal: lint exit=0, typecheck exit=0, tests 25/25 exit 0, dev server HTTP 200.
+Main-project gate evidence: install/lint/typecheck/test/build all exit 0 on the ISOLATED copy (gate-8 logs);
+main working copy gates re-run green. No code changed in Stage A (documentation-only reconciliation).

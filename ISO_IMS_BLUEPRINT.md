@@ -8,18 +8,18 @@
 
 ## 1. Tabel kandidat standar & status verifikasi
 
-Tanggal percobaan verifikasi: **2026-05-22**, dari lingkungan sandbox audit.
+Tanggal percobaan verifikasi mandiri: **2026-05-22**, dari lingkungan sandbox audit. **Disinkronkan 2026-10-28** (rekonsiliasi pra-Phase 4): metadata katalog yang dicatat owner pada Master Control MC-V4 §7 (pemeriksaan **2026-10-28**) mencatat edisi terbit **ISO 9001:2026, ISO 14001:2026 dan ISO 19011:2026 (published)** — pernyataan lama "edisi 2026 belum diketahui statusnya" untuk ketiganya **obsolete** (OBSOLETE_AND_SUPERSEDED_REGISTER §2). Standar lain: sebagian memiliki edisi terbit plus amendment, sebagian under revision (tanpa rincian yang dikarang). Pemeriksaan katalog TIDAK diulang mandiri dari lingkungan ini (akses tetap BLOCKED — F0-012); metadata edisi bersumber pada catatan owner, kolom VERIFIED oleh verifier tetap menunggu prosedur `STANDARD_REGISTER.md` §4.
 
-| Standar (kandidat MC) | Peran kandidat | Status verifikasi Phase 0 | Catatan |
+| Standar (kandidat MC) | Peran kandidat | Status verifikasi | Catatan |
 |---|---|---|---|
-| ISO 9001:2026 | Requirements — QMS | `NOT VERIFIED` — BLOCKED | Edisi tahun 2026 tercantum sebagai kandidat di MC; kemungkinan merujuk edisi revisi yang sedang/akan terbit. WAJIB diverifikasi ke katalog resmi sebelum dipakai sebagai acuan. Jangan mengunci edisi sebelum verifikasi. |
-| ISO 20121:2024 | Requirements — event sustainability management | `NOT VERIFIED` — BLOCKED | idem |
+| ISO 9001:2026 | Requirements — QMS | `NOT VERIFIED — BLOCKED` (verifikasi mandiri) | **Edisi 2026 tercatat PUBLISHED per pemeriksaan katalog owner 2026-10-28 (MC-V4 §7)** — bukan verifikasi engineer; VERIFIED date/URL oleh verifier tetap menunggu §4 STANDARD_REGISTER sebelum dipakai untuk mapping |
+| ISO 20121:2024 | Requirements — event sustainability management | `NOT VERIFIED` — BLOCKED | idem — cek katalog saat verifikasi |
 | ISO 45001:2018 | Requirements — OH&S | `NOT VERIFIED` — BLOCKED | Perlu cek amendment terbaru |
-| ISO 14001:2026 | Requirements — environmental | `NOT VERIFIED` — BLOCKED | Edisi 2026 = kandidat; verifikasi status revisi |
-| ISO/IEC 27001:2022 (+amendment) | Requirements — ISMS | `NOT VERIFIED` — BLOCKED | Perlu cek amendment (mis. climate 2024) |
+| ISO 14001:2026 | Requirements — environmental | `NOT VERIFIED — BLOCKED` (verifikasi mandiri) | **Edisi 2026 tercatat PUBLISHED per pemeriksaan katalog owner 2026-10-28 (MC-V4 §7)** — idem STD-01 |
+| ISO/IEC 27001:2022 (+amendment) | Requirements — ISMS | `NOT VERIFIED` — BLOCKED | Perlu cek amendment (mis. climate 2024); edisi terbit + amendment ada secara umum per MC-V4 §7 |
 | ISO 22301:2019 (+amendment) | Requirements — BCMS | `NOT VERIFIED` — BLOCKED | Perlu cek amendment |
 | ISO 31000:2018 | **Guidance** — risk management (bukan standar sertifikasi) | `NOT VERIFIED` — BLOCKED | Wajib tetap diklasifikasi guidance, bukan requirement sertifikasi |
-| ISO 19011:2026 | Guidance — auditing management systems | `NOT VERIFIED` — BLOCKED | Edisi 2026 = kandidat; verifikasi |
+| ISO 19011:2026 | Guidance — auditing management systems | `NOT VERIFIED — BLOCKED` (verifikasi mandiri) | **Edisi 2026 tercatat PUBLISHED per pemeriksaan katalog owner 2026-10-28 (MC-V4 §7)** — idem STD-01 |
 | ISO 10013:2021 | Guidance — documented information | `NOT VERIFIED` — BLOCKED | — |
 | ISO 10005:2018 | Guidance — quality plans | `NOT VERIFIED` — BLOCKED | — |
 

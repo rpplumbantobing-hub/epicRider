@@ -1,6 +1,6 @@
 # HANDOFF — epicRider
 
-**Diperbarui:** 2026-10-28 (remediasi audit konsistensi Phase 3 — F-01..F-08 dieksekusi) · **Tujuan:** konteks minimum agar fase berikutnya bisa berjalan tanpa kehilangan informasi. File ini wajib diperbarui di akhir setiap fase.
+**Diperbarui:** 2026-10-28 (rekonsiliasi pra-Phase 4 Stage A — MC-V4 + `OBSOLETE_AND_SUPERSEDED_REGISTER.md` dipasang; REQ-101 ditambahkan; status Phase 2/3/4 disinkronkan; `PRE_PHASE_4_GATE.md` dibuat & dijalankan) · **Tujuan:** konteks minimum agar fase berikutnya bisa berjalan tanpa kehilangan informasi. File ini wajib diperbarui di akhir setiap fase.
 
 ---
 
@@ -9,31 +9,33 @@
 | Fase | Status | Bukti primer |
 |---|---|---|
 | 0 | DONE | `PHASE_0_ACCEPTANCE.md` (9/9), commit `03293b6` |
-| 1 | DONE — BASELINE | `PHASE_1_REPORT.md`, commit `938932f` |
-| 2 | DONE — architecture baseline (re-verified 2026-10-28 pasca-remediasi konsistensi F-01..F-08) | `PHASE_2_ACCEPTANCE.md` + blok re-assessment; `PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md`; commit `70005a7` |
-| 3 | **PARTIAL — kontrol diremediasi 2026-10-28; evidence build/CI belum terpenuhi** (remediasi audit Phase 3 F-01..F-08 dieksekusi — `PHASE_3_REMEDIATION_REPORT.md`; lint/typecheck/test exit 0, build NOT RUN karena dilarang platform sandbox, CI remote NOT TESTED) | `PHASE_3_ACCEPTANCE.md` (re-assessed); `PHASE_3_REPORT.md`; `PHASE_3_TRACEABILITY.md`; `audit/phase3-remediation/`; commit remediasi |
+| 1 | DONE — BASELINE | `PHASE_1_REPORT.md`, commit `938932f`; REQ-001..REQ-100 (+REQ-101, 2026-10-28) |
+| 2 | **PARTIAL — arsitektur lengkap & direkonsiliasi; klaim "DONE" lama = klaim historis** (Obsolete Register 2026-10-28; bukti build/CI runner sah + ratifikasi ADR PROPOSED belum tersedia) | `PHASE_2_ACCEPTANCE.md` (A–G + blok re-assessment + nota koreksi status 2026-10-28); `PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md`; commit `70005a7` |
+| 3 | **PARTIAL — kontrol diremediasi 2026-10-28; evidence build/CI belum terpenuhi** (remediasi audit Phase 3 F-01..F-08 dieksekusi — `PHASE_3_REMEDIATION_REPORT.md`; lint/typecheck/test exit 0, build NOT RUN di working copy utama, CI runner NOT TESTED) | `PHASE_3_ACCEPTANCE.md` (re-assessed); `PHASE_3_REPORT.md`; `audit/phase3-remediation/`; commit `dca3630` |
+| 4 | **BLOCKED / NOT STARTED — menunggu `PRE_PHASE_4_GATE.md` lulus** | `PRE_PHASE_4_GATE.md` + `PRE_PHASE_4_GATE_REPORT.md` + `PHASE_4_ENTRY_AUDIT.md` (2026-10-28) |
 
 ## 2. Control baseline kanonik & urutan otoritas
 
-1. Keputusan owner dalam prompt fase aktif (`upload/epicRider_Phase_3_Prompt_zai.md`).
+1. Keputusan owner dalam prompt fase aktif (`upload/epicRider_Phase_4_Gated_Prompt_zai.md`) + lampiran kontrol terbaru: **`MASTER_CONTROL.md` (MC-V4, 2026-10-28)** dan **`OBSOLETE_AND_SUPERSEDED_REGISTER.md`**.
 2. Keputusan ACCEPTED (`DECISIONS.md`, `ADR_REGISTER.md`, `adr/`).
 3. Kontrol kanonik root — daftar & versi: `CONTROL_BASELINE_REGISTER.md`.
-4. REQ-001..100 (`REQUIREMENTS.md`) — jangan reset/renumber.
+4. REQ-001..REQ-100 + REQ-101 (`REQUIREMENTS.md`) — jangan reset/renumber.
 5. Dokumen arsitektur Phase 2 (`DATA_MODEL_CONCEPT.md`, `AUTHORIZATION_MODEL.md`, `ENTITLEMENT_MODEL.md`, `THREAT_MODEL.md`, `API_ARCHITECTURE.md`).
-6. Temuan audit (`epicRider_phase2_consistency_audit.md`) — daftar verifikasi.
+6. Temuan audit (`epicRider_phase2_consistency_audit.md`, `epicRider_phase3_consistency_audit.md`, `epicRider_Phase_4_Entry_Audit.md`) — daftar verifikasi.
 7. Kode = bukti current state.
-8. Arsip historis (`audit/superseded/…`) — jejak saja.
+8. Arsip historis (`audit/superseded/…`, `upload/`) — jejak saja.
 
-Referensi `MC §N` lama ditafsirkan lewat `CONTROL_REFERENCE_CROSSWALK.md`. `MASTER_CONTROL.md` tidak lagi menyimpan status fase dinamis.
+Referensi `MC §N` lama ditafsirkan lewat `CONTROL_REFERENCE_CROSSWALK.md` (§2a MC-V3→MC-V4; §2b MC-V0/V1→MC-V4). `MASTER_CONTROL.md` tidak menyimpan status fase dinamis.
 
 ## 3. Keputusan yang berlaku (ringkas)
 
 - **ACCEPTED (owner-baseline):** ADR-012 (hiRider boundary — **amended nota 2026-10-28: scope termasuk penawaran jasa**), ADR-013 (store boundary — **amended in part oleh ADR-018**), ADR-014 (extension model).
-- **ACCEPTED (owner prompt Phase 3):** ADR-018 — tiga commerce surface: **License & Extension Shop** (publik, first-license) / **Public Store** (developer products, gate basic miniRider) / **Developer Equipment Store** (miniRider-only, denial audited). Sinkron ke REQ-030 (revised), `PRODUCT_SCOPE.md` (amendemen), `CONTROL_CONSISTENCY_MATRIX.md`.
-- **ACCEPTED (owner remediation directive, 2026-10-28):** ADR-021 — penawaran jasa (ServiceOffer) IN-SCOPE hiRider, menutup **OD-185 (CLOSED — DECIDED BY BASELINE)**; REQ-013 diamendemi terkendali; invariant tetap.
+- **ACCEPTED (owner prompt Phase 3):** ADR-018 — tiga commerce surface: **License & Extension Shop** (publik, first-license) / **Public Store** (developer products, gate basic miniRider) / **Developer Equipment Store** (miniRider-only, denial audited).
+- **ACCEPTED (owner remediation directive, 2026-10-28):** ADR-021 — penawaran jasa (ServiceOffer) IN-SCOPE hiRider, menutup **OD-185 (CLOSED — DECIDED BY BASELINE)**; REQ-013 diamendemi terkendali; **REQ-101 ditambahkan 2026-10-28 atas persetujuan owner via Obsolete Register §2** (invariant `ServiceOffer != RecruitmentOpening`; inquiry ≠ membership/event assignment; komersial OD-06).
+- **ACCEPTED (owner baseline 2026-10-28 / MC-V4):** OD-12 ditutup — Bahasa Indonesia default UI locale + English supported (MC-V4 §4; ADR-020 mekanisme).
 - **PROPOSED (menunggu ratifikasi owner):** ADR-008..011, ADR-015..017, ADR-018 (formal ratification).
-- **OPEN — OWNER DECISION:** OD-01 (DB produksi), OD-02 (mobile strategy); daftar lengkap `OPEN_DECISIONS.md`.
-- **Resolved via Phase 3:** OD-04 sisi `ignoreBuildErrors` — dihapus dari `next.config.ts` berdasarkan instruksi owner prompt Phase 3 §5.1 (lihat `adr/ADR-019-*.md`); sisa aspek OD-04 (reactStrictMode) diputuskan senada.
+- **OPEN — OWNER DECISION:** OD-01 (DB produksi — SQLite kini hanya status lokal/sandbox, bukan keputusan produksi), OD-02 (mobile strategy), OD-05, OD-06, OD-09, OD-109, OD-122, OD-115 (param sesi — nilai dev boleh PROPOSED), OD-03 (hanya vendor WhatsApp); daftar lengkap `OPEN_DECISIONS.md`.
+- **SUPERSEDED/CLOSED pada rekonsiliasi 2026-10-28:** OD-116 (data model = output Phase 2, dokumen ada), OD-185 (ADR-021), OD-12 (MC-V4 §4 + ADR-020); OD-04 sisi konfigurasi diputuskan ADR-019 (sisa pengetatan lint/TS tetap open spesifik).
 
 ## 4. Artefak kontrak teknis untuk fase berikutnya
 
@@ -43,9 +45,10 @@ Referensi `MC §N` lama ditafsirkan lewat `CONTROL_REFERENCE_CROSSWALK.md`. `MAS
 
 ## 5. Gap, risiko, blocker, dependency
 
-- ~~OD-185~~ **CLOSED — DECIDED BY BASELINE** (penawaran jasa in-scope hiRider, ADR-021); desain lifecycle ServiceOffer = pekerjaan Phase 16.
-- OD-01/OD-02 — menutup ADR-006/ADR-007; non-blocking untuk fase dokumentasi berikutnya.
-- Verifikasi edisi ISO tetap `NOT VERIFIED — BLOCKED` (katalog iso.org tidak dapat diakses dari sandbox; F0-012; OD-160).
+- ~~OD-185~~ **CLOSED — DECIDED BY BASELINE** (penawaran jasa in-scope hiRider, ADR-021; REQ-101); desain lifecycle ServiceOffer = pekerjaan Phase 16.
+- ~~OD-116~~ **SUPERSEDED 2026-10-28** — `DATA_MODEL_CONCEPT.md` ada; data model = output Phase 2, bukan prasyarat (Obsolete Register §2).
+- OD-01/OD-02 — menutup ADR-006/ADR-007 + kelulusan penuh Phase 2; non-blocking untuk fase dokumentasi berikutnya. SQLite = status lokal/sandbox saja (OD-01 tetap OPEN — tidak ada penetapan DB produksi diam-diam).
+- Metadata katalog ISO (9001:2026/14001:2026/19011:2026 = published) tercatat per pemeriksaan owner 2026-10-28 (MC-V4 §7; `STANDARD_REGISTER.md` sinkron); verifikasi mandiri oleh verifier dari lingkungan berakses tetap `BLOCKED` (F0-012; OD-160) — tidak ada klaim applicability/conformity.
 - TC-10 (recruitment abuse) butuh requirement baru — menunggu approval owner (jangan mengarang REQ ID).
 - CI remote: workflow dibuat tetapi **belum pernah berjalan di remote** (repo tidak punya git remote di sandbox) — status `NOT TESTED`, bukan `VERIFIED`.
 - Build produksi: script tersedia; eksekusi build di sandbox ini dilarang oleh platform (melindungi dev server) — status build di lingkungan ini `NOT RUN` (bukan gagal); typecheck `tsc --noEmit` dipakai sebagai evidence kompilasi. **Konsekuensi status: Phase 3 = PARTIAL sampai build+CI terbukti di runner owner.**
@@ -75,7 +78,7 @@ Referensi `MC §N` lama ditafsirkan lewat `CONTROL_REFERENCE_CROSSWALK.md`. `MAS
 
 ## 9. Next actions (tanpa otomatis memulai fase berikutnya)
 
-1. Owner/runner: jalankan `bun run build` + push repo ke remote agar CI (lint→typecheck→test→build) berjalan; catat link/log run → naikkan kriteria 12 `PHASE_3_ACCEPTANCE.md` dan status Phase 3 di `ROADMAP.md` dari PARTIAL ke DONE bila lolos.
-2. Owner: ratifikasi ADR PROPOSED (ADR-008..011, ADR-015..017, ADR-018) + putuskan OD-01/OD-02.
-3. Owner: review `PHASE_3_REMEDIATION_REPORT.md` + `PHASE_3_ACCEPTANCE.md` (re-assessed) untuk menutup Phase 3.
-4. Phase 4 hanya dimulai setelah instruksi owner eksplisit.
+1. **Owner/runner (bloker utama):** jalankan workflow CI pada runner sah — push repo ke remote Git (GitHub) dan biarkan `.github/workflows/ci.yml` berjalan (install→lint→typecheck→test→build), ATAU daftarkan runner setara yang mengeksekusi workflow aktual; catat log/exit code/link run. Tanpa ini, `PRE_PHASE_4_GATE.md` item 9 tetap BLOCKED dan Phase 4 tidak boleh dimulai (lihat `PRE_PHASE_4_GATE_REPORT.md`).
+2. Owner: ratifikasi ADR PROPOSED (ADR-008..011, ADR-015..017, ADR-018) + putuskan OD-01/OD-02 (menutup kelulusan penuh Phase 2).
+3. Owner: review `PHASE_4_ENTRY_AUDIT.md` + `PRE_PHASE_4_GATE_REPORT.md`; setelah CI runner terbukti, ulangi gate → bila PASS, Phase 4 boleh dimulai dengan prompt gated yang sama.
+4. Phase 4 hanya dimulai setelah `PRE_PHASE_4_GATE.md` PASS tercatat + instruksi owner eksplisit.

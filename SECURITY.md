@@ -1,14 +1,17 @@
 # SECURITY — epicRider
 
-## Current state
+## Current state (re-verified 2026-10-28, pre-Phase 4 reconciliation)
 
-Phase 0 evidence showed:
-- no implemented authentication;
-- no implemented authorization/tenant isolation/entitlement;
-- `next-auth` dependency exists without implementation;
-- `ignoreBuildErrors: true` exists and is a tracked quality risk;
-- no application security test suite;
-- no CI/dependency scanning/SAST evidence.
+Phase 0 evidence (2026-10-27, historical — see `PHASE_0_AUDIT_REPORT.md`) showed: no implemented authentication; no authorization/tenant isolation/entitlement; `next-auth` dependency without implementation; `ignoreBuildErrors: true` as a tracked quality risk; no application security test suite; no CI/dependency scanning/SAST evidence.
+
+Re-verified current state as of 2026-10-28 (per `PHASE_3_CURRENT_STATE_AUDIT.md`, `PHASE_3_REMEDIATION_REPORT.md`, ADR-019, `HANDOFF.md` §7):
+
+- **Authentication:** still NOT implemented (`next-auth` v4 present, no auth route/runtime). Target design: MC-V4 §5 (WhatsApp proof-of-control + Google OIDC), ADR-008/ADR-009.
+- **Authorization / tenant isolation / entitlement runtime:** still NOT implemented (documentation/model only — `AUTHORIZATION_MODEL.md`, `ENTITLEMENT_MODEL.md`, `THREAT_MODEL.md` all PROPOSED).
+- **`ignoreBuildErrors`:** **REMOVED from `next.config.ts` (ADR-019, ACCEPTED 2026-10-28)**; `reactStrictMode: true`; `typecheck` (tsc --noEmit) gate added — do not restate the Phase 0 configuration as current.
+- **Quality gates:** `lint`, `typecheck`, `test` scripts exist and exit 0 on the Phase 3 baseline (25/25 tests). Production build NOT RUN in the sandbox (platform policy); CI workflow (`.github/workflows/ci.yml`) exists but has never executed on a remote runner (no git remote) — NOT TESTED.
+- **Secrets hygiene:** `.env` is NOT tracked by Git (removed from index 2026-10-28, remediation F-05; local file preserved; contents = local SQLite path, no service credentials, no rotation required); `.env.example` (placeholders only) IS tracked; working-tree secret scan executed with no findings on tracked files (evidence: `audit/phase3-remediation/`). `db/custom.db` remains tracked (scaffold legacy — hygiene risk recorded; no real data to be stored there).
+- **Application security test suite:** still no dedicated security test suite (negative authz/tenant-isolation tests are Phase 4+ scope); no dependency scanning/SAST executed.
 
 These are CURRENT STATE findings, not target-state claims.
 

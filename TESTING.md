@@ -5,7 +5,7 @@
 Evidence:
 `VERIFIED`, `PARTIAL`, `NOT FOUND`, `NOT TESTED`, `BLOCKED`, `PROPOSED`, `UNKNOWN / NEEDS DECISION`.
 
-## Current Phase 0 evidence
+## Current Phase 0 evidence (historical, 2026-10-27)
 
 - no application test framework;
 - no application test suite;
@@ -14,6 +14,16 @@ Evidence:
 - production build not run;
 - security scan not run;
 - accessibility not tested.
+
+## Current testing status (re-verified 2026-10-28, pre-Phase 4 reconciliation)
+
+- Test framework: **vitest** (installed Phase 3, ADR-019/ADR-020 context) — unit + component suites exist.
+- Gates: `bun run lint` (eslint) exit 0; `bun run typecheck` (tsc --noEmit) exit 0; `bun run test` (vitest run) exit 0 — 25/25 tests on the Phase 3 baseline (unit 15 + component 10).
+- Production build: **NOT RUN** in the sandbox (platform policy protects the dev server); `bun run build` script exists and is wired into CI.
+- CI workflow (`.github/workflows/ci.yml`): configured (install → lint → typecheck → test → build) but **never executed on a runner** (no git remote) — NOT TESTED.
+- E2E framework: NOT FOUND (no Playwright etc.); route `/` smoke was performed manually via agent-browser (evidence in `audit/evidence/`).
+- Security/tenant-isolation negative tests: Phase 4+ scope — NOT FOUND today.
+- No test result may be claimed beyond these recorded commands.
 
 ## Phase 2 testing purpose
 

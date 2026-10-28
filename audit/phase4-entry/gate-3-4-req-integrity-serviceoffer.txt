@@ -1,0 +1,148 @@
+=== GATE 3: requirement integrity — run date: 2026-10-28T09:31:22Z ===
+--- cmd: table row count ---
+101
+--- cmd: unique IDs count ---
+101
+--- cmd: duplicates (should be empty) ---
+--- cmd: continuity REQ-001..REQ-100 present (each exactly once) ---
+REQ-0001 count=0
+REQ-0002 count=0
+REQ-0003 count=0
+REQ-0004 count=0
+REQ-0005 count=0
+REQ-0006 count=0
+REQ-0007 count=0
+REQ-0008 count=0
+REQ-0009 count=0
+REQ-0010 count=0
+REQ-0011 count=0
+REQ-0012 count=0
+REQ-0013 count=0
+REQ-0014 count=0
+REQ-0015 count=0
+REQ-0016 count=0
+REQ-0017 count=0
+REQ-0018 count=0
+REQ-0019 count=0
+REQ-0020 count=0
+REQ-0021 count=0
+REQ-0022 count=0
+REQ-0023 count=0
+REQ-0024 count=0
+REQ-0025 count=0
+REQ-0026 count=0
+REQ-0027 count=0
+REQ-0028 count=0
+REQ-0029 count=0
+REQ-0030 count=0
+REQ-0031 count=0
+REQ-0032 count=0
+REQ-0033 count=0
+REQ-0034 count=0
+REQ-0035 count=0
+REQ-0036 count=0
+REQ-0037 count=0
+REQ-0038 count=0
+REQ-0039 count=0
+REQ-0040 count=0
+REQ-0041 count=0
+REQ-0042 count=0
+REQ-0043 count=0
+REQ-0044 count=0
+REQ-0045 count=0
+REQ-0046 count=0
+REQ-0047 count=0
+REQ-0048 count=0
+REQ-0049 count=0
+REQ-0050 count=0
+REQ-0051 count=0
+REQ-0052 count=0
+REQ-0053 count=0
+REQ-0054 count=0
+REQ-0055 count=0
+REQ-0056 count=0
+REQ-0057 count=0
+REQ-0058 count=0
+REQ-0059 count=0
+REQ-0060 count=0
+REQ-0061 count=0
+REQ-0062 count=0
+REQ-0063 count=0
+REQ-0064 count=0
+REQ-0065 count=0
+REQ-0066 count=0
+REQ-0067 count=0
+REQ-0068 count=0
+REQ-0069 count=0
+REQ-0070 count=0
+REQ-0071 count=0
+REQ-0072 count=0
+REQ-0073 count=0
+REQ-0074 count=0
+REQ-0075 count=0
+REQ-0076 count=0
+REQ-0077 count=0
+REQ-0078 count=0
+REQ-0079 count=0
+REQ-0080 count=0
+REQ-0081 count=0
+REQ-0082 count=0
+REQ-0083 count=0
+REQ-0084 count=0
+REQ-0085 count=0
+REQ-0086 count=0
+REQ-0087 count=0
+REQ-0088 count=0
+REQ-0089 count=0
+REQ-0090 count=0
+REQ-0091 count=0
+REQ-0092 count=0
+REQ-0093 count=0
+REQ-0094 count=0
+REQ-0095 count=0
+REQ-0096 count=0
+REQ-0097 count=0
+REQ-0098 count=0
+REQ-0099 count=0
+REQ-0100 count=0
+continuity check done (any anomalies listed above; none = PASS)
+--- cmd: REQ-101 occurrences in REQUIREMENTS.md (must be exactly 1 row) ---
+1
+--- cmd: REQ-101 anywhere in repo active docs (context) ---
+./API_ARCHITECTURE.md
+./CONTROL_BASELINE_REGISTER.md
+./CONTROL_CONSISTENCY_MATRIX.md
+./HANDOFF.md
+./OBSOLETE_AND_SUPERSEDED_REGISTER.md
+./OPEN_DECISIONS.md
+./PHASE_2_ACCEPTANCE.md
+./PHASE_2_TRACEABILITY.md
+./PHASE_4_ENTRY_AUDIT.md
+./PHASE_STATUS.md
+./PRE_PHASE_4_GATE.md
+./REQUIREMENTS.md
+./ROADMAP.md
+./TRACEABILITY_MATRIX.md
+--- cmd: REQ-030 three surfaces ---
+22:| REQ-010 | miniRider | Developer Equipment Store in-app hanya miniRider; diblokir di API untuk tier lain | MC §2, §6 | Must | Akses API store oleh akun maxRider/ISOrider/hiRider mengembalikan denial teraudit (bukan hanya menu disembunyikan) | REQ-024, REQ-030 | 11 | PROPOSED |
+27:| REQ-015 | Public | Landing page: promosi produk, lisensi, extensions, akses tester, link download Android/iOS/Windows, login | MC §2 | Should | Semua elemen landing terhubung sumber data/aksi nyata; tanpa tombol palsu (UX_UI_STANDARD) | REQ-030, OD-02 | 22 | PROPOSED |
+42:| REQ-030 | Store | Tiga commerce surface terpisah sebagai domain terpisah: **License & Extension Shop** (publik, di landing page — jalur pembelian/perpanjangan lisensi & extension, melayani calon pelanggan tanpa lisensi), **Public Store** (produk developer, akses = basic miniRider), dan **Developer Equipment Store** in-app (miniRider-only, diblokir di API untuk tier lain) *(revisi terkendali 2026-10-28 sesuai ADR-018 — ID dipertahankan, bukan dua store lama)* | MC §6; ADR-018 | Must | Ketiga surface terisolasi penuh (katalog, order, akses, API, issuance entitlement, audit masing-masing — bukan relabeling satu toko); test akses silang ditolak; jalur pembelian lisensi pertama tersedia bagi calon pelanggan tanpa lisensi via License & Extension Shop | REQ-010, REQ-024 | 11,22 | PROPOSED |
+--- cmd: REQ-013 service offer preserved ---
+25:| REQ-013 | hiRider | Marketplace layanan kru: profil, skill, portofolio, **penawaran jasa (service offer)**, rekrutmen; lamaran ≠ akses workspace/event *(amendemen terkendali 2026-10-28 — penawaran jasa in-scope per baseline Master Control "Marketplace layanan kru" + `adr/ADR-021`; lihat Catatan)* | MC §2 | Must | Status lamaran tidak mengubah permission workspace (test server-side); penawaran jasa = objek domain terpisah (`ServiceOffer`) dengan lifecycle `PROPOSED` (desain final Phase 16) — bukan license/tier, bukan `Application`, tidak menciptakan membership/assignment | REQ-062..064 | 16 | PROPOSED |
+
+=== GATE 4: ServiceOffer mapped target-state, not implemented ===
+--- DATA_MODEL_CONCEPT ServiceOffer (planned) ---
+234:> **Remediasi F-01 (audit konsistensi Phase 3, 2026-10-28; `adr/ADR-021-hirider-service-offer-scope.md`):** scope hiRider **termasuk penawaran jasa** per baseline Master Control ("Marketplace layanan kru"). `ServiceOffer` ditambahkan di bawah sebagai objek yang **direncanakan** — lifecycle/ownership/visibility/permission/API/audit detail berstatus `PROPOSED` (desain final Phase 16). Keberadaan ServiceOffer di scope BUKAN keputusan terbuka (OD-185 CLOSED — DECIDED BY BASELINE).
+248:| `ServiceOffer` *(planned — ADR-021)* | A crew service offering (penawaran jasa) published by a candidate/kru within hiRider scope (MC baseline "Marketplace layanan kru"; REQ-013 amended) | id, provider user_id, title, description, service category, terms, visibility setting, status, version — **detail atribut `PROPOSED`** | N—1 `User` (ref, provider); relasi ke `CandidateProfile`/`RecruitmentOpening` = desain Phase 16 | Lifecycle **`PROPOSED`** — belum ada status final yang disetujui (ADR/desain Phase 16) | Bukan license/tier; bukan `Application` dan tidak menciptakan membership/assignment; visibility/privacy server-side (OD-109 analog); audit trail per transisi (MC auditability); detail permission + API boundary direncanakan di AUTHORIZATION_MODEL/API_ARCHITECTURE saat desain Phase 16 |
+251:- **Tenant boundary:** `RecruitmentOpening` is tenant-owned (workspace_id) but portal-visible per status; `CandidateProfile`, `Skill`, `PortfolioItem` are user-global; `Application` bridges both (opening→tenant, candidate→user) and must enforce visibility rules of both sides (application privacy = SECURITY.md hiRider section; contact-data policy = OD-134). `ServiceOffer` (planned, ADR-021) adalah objek user-global (provider-side) dengan visibility eksplisit — tenant-relasi final ditetapkan saat desain Phase 16.
+485:**Reminder:** hiRider is a portal/capability — NOT a license, NOT a tier value (see §4.4). The objects below are the minimum conceptual set from ARCHITECTURE.md §6, **plus `ServiceOffer` (planned — remediasi F-01/ADR-021, 2026-10-28: penawaran jasa in-scope per baseline Master Control)**. Entities marked *(ref)* are owned by other contexts and listed here only to show the chain.
+--- ARCHITECTURE Service Offer planned ---
+100:- Service Offer *(planned — remediasi F-01 audit Phase 3, 2026-10-28: penawaran jasa in-scope per baseline Master Control "Marketplace layanan kru"; lihat adr/ADR-021; lifecycle PROPOSED, desain final Phase 16)*
+--- API_ARCHITECTURE service-offer boundary note ---
+102:> **Service-offer boundary note (added 2026-10-28, pre-Phase 4 reconciliation — REQ-101, ADR-021, MC-V4 §2.2):** hiRider also includes **service offerings** (`ServiceOffer`) — a domain object **distinct from `RecruitmentOpening`** with its own ownership (provider = the user/crew publishing the offer), authorizable lifecycle/visibility, and inquiry/interest path. Target-state (all `PROPOSED`, not implemented): service offers are platform-scoped portal resources with user-scoped "my offers" management; inquiries create **no** workspace membership and **no** event assignment (server-side enforced, same invariant pattern as applications above); no prices/payment mechanics are invented (OD-06). Detailed resource/endpoint design belongs to Phase 16 (REQ-101 planned phase; `DATA_MODEL_CONCEPT.md` §3.7/§5; `THREAT_MODEL.md` TC-09/TC-24).
+114:| 7 | hiRider Recruitment | Platform-scoped portal + user-scoped (my profile/applications) + workspace-scoped (my openings, received applications) | Visibility defaults OD-109 `OPEN`; contact data OD-134 `OPEN`; service offers (REQ-101, added 2026-10-28) = platform-scoped + user-scoped "my offers", `ServiceOffer != RecruitmentOpening` — detail Phase 16 |
+--- AUTHORIZATION/THREAT anchors ---
+--- invariant present in MC-V4 ---
+40:- `ServiceOffer != RecruitmentOpening`
+--- no implementation claim: search src/ for ServiceOffer (should be 0) ---
+0

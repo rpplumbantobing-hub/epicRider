@@ -85,3 +85,13 @@ Phase 2 is DONE only when evidence proves the following.
    `adr/ADR-021-hirider-service-offer-scope.md`; REQ-013 diamendemi terkendali; follow-up owner
    "answer OD-185" tidak lagi berlaku). Catatan ini adalah koreksi ber-tanggal atas blok re-assessment
    di atas — blok asli dipertahankan sebagai sejarah.
+
+> **STATUS CORRECTION 2026-10-28 (rekonsiliasi pra-Phase 4, Stage A — `OBSOLETE_AND_SUPERSEDED_REGISTER.md` §2):**
+> Putusan "**DONE — as architecture baseline**" di atas kini berstatus **klaim historis, bukan otoritas status berjalan**.
+> Sesuai Obsolete Register (lampiran owner 2026-10-28) dan Master Control MC-V4 §11, `ROADMAP.md` adalah satu-satunya
+> sumber status; kontrol terbaru menetapkan **Phase 2 = `PARTIAL`** selama: (a) bukti build produksi & eksekusi workflow
+> CI belum tersedia secara reproduktif pada runner sah, dan (b) ratifikasi owner atas ADR PROPOSED belum diberikan.
+> Substansi assessment §A–G di atas (deliverable lengkap, konsisten, bebas kontradiksi aktif pada cakupan scan yang
+> dicatat) tetap berlaku sebagai bukti arsitektur; koreksi ini hanya menyangkut **status fase**, bukan isi assessment.
+> REQ-101 (service offering) ditambahkan 2026-10-28 atas persetujuan owner via Obsolete Register dan dipetakan di
+> `PHASE_2_TRACEABILITY.md` addendum. Blok putusan asli dipertahankan sebagai sejarah — tidak dihapus.
