@@ -1,5 +1,7 @@
 # RISK REGISTER — epicRider
 
+> **Referensi MC §N:** rujukan Master Control pada dokumen ini memakai penomoran era Phase 0/1 (MC-V1, §1–§15 — arsip: `audit/superseded/phase1-era-control/`). Interpretasi ke anchor kanonik aktif: `CONTROL_REFERENCE_CROSSWALK.md`. Substansi dokumen tidak diubah (aturan F-06).
+
 **Task:** WS-E (Task ID 1-e) · Phase 1 · DOCUMENTATION-ONLY.
 **Status dokumen:** Register risiko produk/teknis/UX/komersial/compliance/operasional/supply. ID mulai **RSK-101** agar tidak bentrok dengan risiko audit Phase 0 **R-01..R-10** (`PHASE_0_AUDIT_REPORT.md` §7) dan gap **G-001..G-016** (`PHASE_0_GAP_REGISTER.md`).
 **Penting:** Probability & Impact adalah **penilaian desk yang bersifat PROPOSED** (bukan fakta terukur). Seluruh status `OPEN` sampai mitigasi terbukti. Tidak ada angka statistik/harga/SLA di dokumen ini (anti-halusinasi MC §14).

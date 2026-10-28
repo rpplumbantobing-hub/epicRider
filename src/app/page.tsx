@@ -1,31 +1,20 @@
-'use client'
+// Route `/` — satu-satunya route yang terlihat user di sandbox.
+// Server component: baca locale dari cookie (ADR-020), render provider + showcase client.
 
-export default function Home() {
+import { Showcase } from "@/components/foundation/showcase";
+import { dictionaries } from "@/i18n/dictionaries";
+import { I18nProvider } from "@/i18n/provider";
+import { getLocale } from "@/i18n/server";
+
+export default async function Home() {
+  const locale = await getLocale();
+  const dictionary = dictionaries[locale];
+
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '100vh',
-      gap: '2rem',
-      padding: '1rem'
-    }}>
-      <div style={{
-        position: 'relative',
-        width: '6rem',
-        height: '6rem'
-      }}>
-        <img
-          src="/logo.svg"
-          alt="Z.ai Logo"
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'contain'
-          }}
-        />
+    <I18nProvider locale={locale} dictionary={dictionary}>
+      <div className="flex min-h-screen flex-col">
+        <Showcase />
       </div>
-    </div>
-  )
+    </I18nProvider>
+  );
 }

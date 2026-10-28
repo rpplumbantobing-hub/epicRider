@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+build
+coverage
+bun.lock
+db
+upload
+audit
+download
+tool-results
+*.md

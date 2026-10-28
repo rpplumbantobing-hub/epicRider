@@ -1,0 +1,115 @@
+// English dictionary — epicRider Phase 3.
+// `en` MUST satisfy the shape derived from the Indonesian (default) dictionary (ADR-020):
+// key parity is enforced at compile time via the `Dictionary` type.
+
+import type { Dictionary } from "./id";
+
+export const en: Dictionary = {
+  common: {
+    appName: "epicRider",
+    language: "Language",
+    switchLanguage: "Switch language",
+    retry: "Retry",
+    close: "Close",
+    menu: "Menu",
+    demo: "Demo",
+    demoNote: "Demo content — not real data.",
+  },
+  showcase: {
+    title: "Foundation showcase — design tokens, i18n & UI states",
+    subtitle:
+      "This page showcases the Phase 3 foundation: design tokens, the i18n mechanism, status components, and quality conventions. All copy comes from the i18n dictionaries.",
+    sectionColors: "Semantic colors",
+    sectionTypography: "Typography",
+    sectionSpacing: "Spacing",
+    sectionButtons: "Buttons",
+    sectionForms: "Forms",
+    sectionStates: "Screen states",
+    sectionBadges: "Badges & alerts",
+    sectionFormatting: "Date, number & currency formatting",
+    sectionResponsive: "Responsive",
+    colorsNote: "Each swatch uses a semantic token from globals.css — not a literal color.",
+    colorDemoText: "Sample text",
+    typographyNote: "Tailwind text scale (text-xs through text-4xl) using the Geist font family.",
+    typographySample: "Production crew ready to go",
+    spacingNote: "Consistent padding and gap: p-4/p-6 for card content, gap-4/gap-6 between cards.",
+    spacingBox4: "p-4 box",
+    spacingBox6: "p-6 box",
+    buttonsNote: "Every shadcn/ui button variant × size, plus loading and disabled states.",
+    formsNote:
+      "Submit the empty form to see inline validation (aria-invalid + aria-describedby, not color-only).",
+    statesNote: "State demo panel: pick a state to see its UI pattern.",
+    stateLoading: "Loading",
+    stateEmpty: "Empty",
+    stateError: "Error",
+    stateSuccess: "Success",
+    statePermission: "Permission denied",
+    badgesNote:
+      "StatusBadge always pairs an icon with text (never color alone), using the status tokens from globals.css.",
+    formatNote:
+      "Formatting uses Intl per locale. The date uses a fixed constant (UTC) so server and client render identically.",
+    responsiveNote:
+      "Sample grid: 1 column (mobile) → 2 columns (sm ≥640px) → 3 columns (lg ≥1024px) → 4 columns (xl ≥1280px).",
+    responsiveCell: "Column",
+  },
+  states: {
+    loading: "Loading…",
+    emptyTitle: "No data yet",
+    emptyDesc: "The list is still empty. Items you create will appear here.",
+    errorTitle: "Something went wrong",
+    errorDesc: "The data failed to load. Please try again in a moment.",
+    permissionTitle: "Permission denied",
+    permissionDesc: "You do not have permission to view this section.",
+    successTitle: "Success",
+    successDesc: "The action completed successfully.",
+  },
+  forms: {
+    nameLabel: "Name",
+    emailLabel: "Email",
+    roleLabel: "Role",
+    namePlaceholder: "e.g. Rani Pratama",
+    emailPlaceholder: "name@example.id",
+    rolePlaceholder: "Choose a role",
+    roleOption1: "Operator",
+    roleOption2: "Coordinator",
+    roleOption3: "Technician",
+    textareaLabel: "Notes",
+    consentLabel: "Demo form — no data is sent to the server",
+    helpText: "All fields below are form component examples only.",
+    validationError: "Fill in the name and email before submitting.",
+    submit: "Submit",
+    submitSuccess: "Form is valid — the inline validation example works.",
+  },
+  buttons: {
+    primary: "Primary",
+    secondary: "Secondary",
+    outline: "Outline",
+    ghost: "Ghost",
+    destructive: "Destructive",
+    link: "Link",
+    disabled: "Disabled",
+    loading: "Loading",
+  },
+  status: {
+    draft: "Draft",
+    active: "Active",
+    pending: "Pending",
+    archived: "Archived",
+    success: "Success",
+    warning: "Warning",
+    info: "Info",
+    error: "Error",
+  },
+  format: {
+    dateLabel: "Date (fixed example: Oct 28, 2026)",
+    numberLabel: "Number (1234567.89)",
+    currencyLabel: "Currency (1500000)",
+    currencyDemoNote:
+      "Currency is a formatting demo only (IDR for the id locale, USD for en) — not a commercial claim.",
+  },
+  footer: {
+    foundationShowcase: "Foundation showcase — Phase 3",
+    noRealData: "Demo content, no real data",
+    phaseLabel: "Phase 3",
+  },
+};

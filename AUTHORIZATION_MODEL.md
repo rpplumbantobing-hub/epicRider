@@ -228,7 +228,7 @@ Note: accepting an application grants **no** workspace permission — see §8.
 ### 4.12 Developer Commerce/Store
 | Permission | Grants | Ref |
 |---|---|---|
-| `store.public.access` | Enter/use the Public Store (requires basic miniRider license) | MC §1, REQ-030 |
+| `store.public.access` | Enter/use the Public Store (requires basic miniRider license) | MC §1, REQ-030; surface scope amended by ADR-018 (developer products only — license/extension purchase lives on the separate public License & Extension Shop) |
 | `store.equipment.access` | Enter the in-app Developer Equipment Store (miniRider-only) | REQ-010 |
 | `store.listing.create` | Create a store listing (draft) | REQ-055 |
 | `store.listing.update` | Edit a listing | REQ-055 |
@@ -334,7 +334,7 @@ Preset role defaults per tier = OD-122 OPEN (options: custom-only; preset read-o
 
 ### 5.3 Platform roles
 
-- **Developer role** (REQ-052, REQ-016, REQ-058): access to the Developer Portal console and Equipment Store management. Model choice (single role with sub-permissions vs separate store-manager/portal-admin roles) = **OD-101 OPEN**. Constraints regardless of option: developer role cannot touch billing/license rights (REQ-031); broadcast authority is a separate grant (REQ-017, OD-102); least privilege (MC §6).
+- **Developer role** (REQ-052, REQ-016, REQ-058): access to the Developer Portal console and Equipment Store management. Model choice (single role with sub-permissions vs separate store-manager/portal-admin roles) = **OD-101 OPEN**. Constraints regardless of option: developer role cannot touch billing/license rights (REQ-031); broadcast authority is a separate grant (REQ-017, OD-102); least privilege (MC §4 invariants; historical MC §5/§6 — crosswalk `CONTROL_REFERENCE_CROSSWALK.md`).
 - **Auditor access** (REQ-053, REQ-044, REQ-084): **read-only, scoped (workspace/documents), time-bound with automatic expiry**. Writes denied; expansion of scope requires a separate approval (UC-1007, UC-7007); export controlled (OD-143). Terms (default scope, max duration, NDA process) = **OD-110 OPEN**.
 - **Platform administrator/support** (P-08, UC-9001): operational platform role for support/monitoring. Tenant isolation still applies to admin access (REQ-023; J-08 "akses diagnosis tidak boleh melewati tenant isolation"); all admin actions audited (REQ-092, REQ-095). The platform-admin permission catalog and its governance — candidate, requires registration (no existing OD ID).
 
@@ -394,7 +394,7 @@ Ownership is part of the **Resource Context** input (§2). Policy checks, in ord
 
 ## 9. Store authorization
 
-- **Public Store:** access requires a **basic miniRider license** — server-side check at store entry and at every purchase/issuance step (MC §1, LICENSE_MATRIX §4, SECURITY.md). The Public Store is a developer commerce storefront for license products, extensions, and approved developer products; it is **not** a license tier and **not** an upper-tier-exclusive feature — it must not be modeled as such (MC §1). Purchases/issuance are auditable (SECURITY.md store security).
+- **Public Store:** access requires a **basic miniRider license** — server-side check at store entry and at every purchase/issuance step (MC §1, LICENSE_MATRIX §4, SECURITY.md). The Public Store is a developer commerce storefront for **approved developer products** (product scope amended 2026-10-28 by ADR-018: license/extension purchase moved to the separate public **License & Extension Shop**, which must serve unlicensed first-time buyers); it is **not** a license tier and **not** an upper-tier-exclusive feature — it must not be modeled as such (MC §1). Purchases/issuance are auditable (SECURITY.md store security).
 - **Developer Equipment Store:** **miniRider-only** (REQ-010, MC §1). API access by maxRider or ISOrider accounts — and by any user without a qualifying miniRider workspace — returns an **audited denial** (`DENY_STORE_TIER`), never a merely hidden menu (REQ-010, REQ-024; RSK-103). The two stores are fully isolated in data, access, and API; cross-access is denied (REQ-030).
 - **Developer Portal role separation (REQ-031, REQ-058):** the portal is a separate console with its own authentication; only the developer role reaches it. **Portal roles cannot touch billing/license rights** (REQ-031 — testable denial, audited) and broadcast authority is a separate, explicitly granted permission (REQ-017, OD-102). Role model choice (sub-permissions vs separate roles) = **OD-101 OPEN**. Listing publication is a controlled transition (draft→published→archived, REQ-055); commercial value changes are fully audited with actor + old/new values (REQ-056); price/discount authority limits = OD-133 OPEN.
 

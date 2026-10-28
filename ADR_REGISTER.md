@@ -81,7 +81,17 @@ Numbering fixed by the Phase 2 orchestrator. Individual files in `adr/`.
 | ADR-016 | API versioning strategy | PROPOSED | YES for deprecation/sunset policy (no OD ID registered yet) | (OD-02 related — non-blocking) | `API_ARCHITECTURE.md` (name only), `REQUIREMENTS.md` REQ-097 | `adr/ADR-016-api-versioning.md` |
 | ADR-017 | Concurrency & idempotency strategy | PROPOSED | Partially — conflict-resolution policies (OD-107/OD-130/OD-131); physical layer (OD-01) | OD-01, OD-05, OD-06, OD-107, OD-130, OD-131 | `DATA_MODEL_CONCEPT.md` §2.4, `THREAT_MODEL.md` TC-18/TC-19, `API_ARCHITECTURE.md` (name only) | `adr/ADR-017-concurrency-idempotency.md` |
 
-**Status distribution:** ACCEPTED ×3 (ADR-012, ADR-013, ADR-014 — all three evidenced by the owner's reconciled baseline attachment of 2026-10-27); PROPOSED ×7 (ADR-008, ADR-009, ADR-010, ADR-011, ADR-015, ADR-016, ADR-017 — awaiting owner review of Phase 2 output); OPEN ×2 (ADR-006, ADR-007 — owner decisions OD-01/OD-02 required; no selection faked).
+## 3b. Phase 3 register (ADR-018..ADR-020)
+
+| ID | Topic | Status | Depends on | Related OD | Referenced in | File |
+|---|---|---|---|---|---|---|
+| ADR-018 | Commerce surfaces: License & Extension Shop vs Public Store vs Developer Equipment Store | **ACCEPTED** (owner decision, Phase 3 prompt §2.1 F-03; supersedes ADR-013 in part — ADR-013 amended, history kept) | owner prompt + audit F-03 | OD-06, OD-101, OD-133, OD-135 | `MASTER_CONTROL.md` §1, `LICENSE_MATRIX.md` §4, `DATA_MODEL_CONCEPT.md` §3.12/§4.6, `AUTHORIZATION_MODEL.md` §9, `API_ARCHITECTURE.md` §3 | `adr/ADR-018-commerce-surfaces.md` |
+| ADR-019 | Build/type quality gates (remove `ignoreBuildErrors`, `reactStrictMode: true`, add typecheck script) | **ACCEPTED** (owner decision, Phase 3 prompt §5.1) — resolves the config side of OD-04 | owner prompt | OD-04 | `next.config.ts`, `package.json` (typecheck), `.github/workflows/ci.yml` | `adr/ADR-019-build-type-quality-gates.md` |
+| ADR-020 | i18n mechanism: typed dictionary + context provider + cookie persistence (id default, en; next-intl kept uninstalled-unused) | **ACCEPTED** (Phase 3 engineering decision per prompt §5.3; revisitable when routing-based locale is needed) | MC §4 i18n invariant; REQ-028 | OD-12 | `src/i18n/*`, README §i18n | `adr/ADR-020-i18n-mechanism.md` |
+
+**Status distribution Phase 3:** ACCEPTED ×3 (ADR-018 owner instruction; ADR-019 owner instruction; ADR-020 engineering decision within prompt-granted authority). Formal owner ratification of ADR-018 welcome alongside the 7 PROPOSED Phase 2 ADRs.
+
+**Status distribution (Phase 2 register above, historical):** ACCEPTED ×3 (ADR-012, ADR-013*, ADR-014 — evidenced by the owner's reconciled baseline attachment of 2026-10-27; *ADR-013 amended in part by ADR-018 on 2026-10-28, status line preserved); PROPOSED ×7 (ADR-008, ADR-009, ADR-010, ADR-011, ADR-015, ADR-016, ADR-017 — awaiting owner review of Phase 2 output); OPEN ×2 (ADR-006, ADR-007 — owner decisions OD-01/OD-02 required; no selection faked). Next free ADR ID after Phase 3: **ADR-021**.
 
 ---
 
@@ -109,7 +119,7 @@ The following decisions surfaced during Phase 2 architecture work but are **not 
 
 ## 5. Maintenance rules
 
-1. **ID assignment.** New ADRs take the **next free number** (next free ID after this register: **ADR-018**; historical ADR-000..005 and Phase 2 ADR-006..017 are permanently taken). Numbers are never reused, renumbered, or back-filled.
+1. **ID assignment.** New ADRs take the **next free number** (next free ID after this register: **ADR-021**; historical ADR-000..005, Phase 2 ADR-006..017 and Phase 3 ADR-018..020 are permanently taken). Numbers are never reused, renumbered, or back-filled.
 2. **Candidate → registered flow.** A §4 candidate is promoted by: (a) registering the open question in `OPEN_DECISIONS.md` if an owner decision is required (next free OD ID per that register's rules — never invent or reuse an OD ID), and/or (b) creating `adr/ADR-NNN-slug.md` with all 8 fields and adding the row to §3.
 3. **OD closure → ADR mapping.** When the owner resolves an OD: record the decision in a new or existing ADR (status `ACCEPTED` + date + evidence), update the OD row in `OPEN_DECISIONS.md` to `CLOSED — see ADR-xxx`, and update this register's §3 row (Related ODs column reflects the closed state). OD IDs and REQ IDs are never renumbered (`CONTROL_CONSISTENCY_MATRIX.md` Phase 1 preservation rule).
 4. **Status transitions.** `OPEN → PROPOSED → ACCEPTED | REJECTED`; `ACCEPTED → SUPERSEDED` only by a successor ADR. `ACCEPTED` requires citable owner evidence. Status changes are recorded in the ADR file itself (dated), never silently.

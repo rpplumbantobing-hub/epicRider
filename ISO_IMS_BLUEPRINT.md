@@ -1,5 +1,7 @@
 # ISO / IMS BLUEPRINT — epicRider (ISOrider)
 
+> **Referensi MC §N:** rujukan Master Control pada dokumen ini memakai penomoran era Phase 0/1 (MC-V1, §1–§15 — arsip: `audit/superseded/phase1-era-control/`). Interpretasi ke anchor kanonik aktif: `CONTROL_REFERENCE_CROSSWALK.md`. Substansi dokumen tidak diubah (aturan F-06).
+
 **Status dokumen:** Kandidat standar dari Master Control §9 + status verifikasi Phase 0. Dokumen ini TIDAK menyatakan kesesuaian/sertifikasi apa pun. ISOrider adalah platform pendukung IMS, bukan jaminan sertifikasi (MC §9).
 
 ---

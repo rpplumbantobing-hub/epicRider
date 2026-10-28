@@ -2,15 +2,14 @@
 
 ## 0. Canonical status
 
-Dokumen ini adalah control baseline untuk kelanjutan Phase 2 setelah Phase 1 sudah dikerjakan.
+Dokumen ini memuat **aturan produk/arsitektur yang stabil saja**. Dokumen ini **tidak menyimpan status fase dinamis** (remediasi F-02, audit konsistensi Phase 2, 2026-10-28).
 
-**Penting:** Phase 1 tidak dihapus atau di-reset. Artefak Phase 1 yang sudah ada tetap menjadi baseline/evidence dan harus dipertahankan traceability-nya.
+**Aturan status (mengikat):**
+- `ROADMAP.md` adalah **satu-satunya sumber kebenaran status fase berjalan**.
+- `PHASE_STATUS.md` hanyalah ringkasan/rekaman eksekusi yang wajib konsisten dengan ROADMAP — bukan sumber status tandingan.
+- Status fase hanya boleh diubah dengan bukti (lihat §8 Evidence gate). Taxonomy status: §3.
 
-### Current project state
-- Phase 0: audit/control baseline tersedia.
-- Phase 1: baseline discovery/requirements tersedia.
-- Phase 2: architecture/domain/data/threat model & ADR adalah fase berikutnya.
-- Phase 2 boleh berjalan dengan beberapa open decisions, selama keputusan tersebut tidak benar-benar diperlukan untuk menentukan invariant arsitektur yang sedang dikerjakan.
+**Inheritance rule:** Phase tidak menghapus artefak fase sebelumnya. Baseline Phase 0/1 (audit, discovery/requirements `REQ-001..REQ-100`) tetap dipertahankan dan traceability-nya wajib terjaga. Set kontrol kanonik aktif terekam di `CONTROL_BASELINE_REGISTER.md`; referensi `MC §N` lama ditafsirkan lewat `CONTROL_REFERENCE_CROSSWALK.md`.
 
 ## 1. Product taxonomy
 
@@ -36,25 +35,23 @@ Invariant:
 `Application != Event Assignment`
 `Acceptance != Automatic Workspace Access`
 
-### Public Store
-Public Store adalah toko developer untuk menjual produk developer kepada pengguna epicRider.
+### Commerce/store surfaces — TIGA domain terpisah (koreksi owner, prompt Phase 3 §2.1 F-03)
 
-Produk dapat mencakup:
-- license products;
-- extensions;
-- produk digital/developer lain yang disetujui.
+**1. License & Extension Shop** — surface publik di landing page:
+- Jalur pembelian/perpanjangan **lisensi** dan **extension** epicRider.
+- Harus melayani **calon pelanggan yang belum memiliki lisensi** (pembelian lisensi pertama) serta alur renewal yang disepakati.
+- Bukan bagian dari Public Store dan bukan Developer Equipment Store.
+- Opsi/harga hanya ditampilkan bila datanya ada; dilarang mengarang harga, pajak, payment gateway, atau refund policy (OD-06).
 
-**Akses Public Store diberikan kepada user yang memiliki basic license miniRider.**
+**2. Public Store** — toko produk developer:
+- Menjual produk developer kepada pengguna epicRider; produk dapat mencakup produk digital/developer yang disetujui.
+- **Akses diberikan kepada user yang memiliki basic license miniRider.**
+- Bukan license tier, bukan fitur khusus maxRider/ISOrider, dan **bukan** pengganti jalur pembelian lisensi pertama (jalur itu = License & Extension Shop).
 
-Public Store bukan license tier dan bukan fitur khusus maxRider/ISOrider.
+**3. Developer Equipment Store** — toko perlengkapan developer di dalam aplikasi:
+- Akses: miniRider allowed; maxRider **denied**; ISOrider **denied** (penolakan di boundary server/API dan diaudit bila/ketika diimplementasikan — REQ-010).
 
-### Developer Equipment Store
-Developer Equipment Store adalah toko perlengkapan developer di dalam aplikasi.
-
-Akses:
-- miniRider: allowed;
-- maxRider: denied;
-- ISOrider: denied.
+**Aturan pemisahan:** ketiga surface wajib dimodelkan sebagai domain terpisah (katalog, order, akses, API, issuance entitlement, audit masing-masing). Melabeli ulang satu toko yang sama bukanlah pemisahan. Detail: `adr/ADR-018-commerce-surfaces.md` (mengoreksi sebagian ADR-013), `LICENSE_MATRIX.md` §4, `DATA_MODEL_CONCEPT.md` §3.12.
 
 ## 2. Entitlement taxonomy
 
@@ -190,4 +187,4 @@ Tidak boleh mengarang vendor, price, tax, legal applicability, certification, te
 
 ## 8. Evidence gate
 
-Phase 2 hanya DONE jika output architecture/data/threat/ADR dan evidence review memenuhi acceptance criteria Phase 2.
+Setiap fase hanya `DONE` jika output fase tersebut dan evidence review memenuhi acceptance criteria fase tersebut — tidak pernah karena file deliverable tersedia saja. Status fase aktif hanya ada di `ROADMAP.md` (lihat §0).

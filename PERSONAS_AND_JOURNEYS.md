@@ -1,5 +1,7 @@
 # PERSONAS AND JOURNEYS — epicRider
 
+> **Referensi MC §N:** rujukan Master Control pada dokumen ini memakai penomoran era Phase 0/1 (MC-V1, §1–§15 — arsip: `audit/superseded/phase1-era-control/`). Interpretasi ke anchor kanonik aktif: `CONTROL_REFERENCE_CROSSWALK.md` (contoh: "MC §2" di sini = Produk & batas lisensi era MC-V1, BUKAN Entitlement taxonomy MC aktif; "MC §14" = anti-halusinasi → MC aktif §7). Substansi dokumen tidak diubah (aturan F-06).
+
 **Task ID:** 1-a (WS-A) · **Fase:** Phase 1 — discovery (documentation-only) · **Status dokumen:** `PROPOSED` (menunggu persetujuan owner)
 **Sumber:** `MASTER_CONTROL.md` §1–§11, `REQUIREMENTS.md` (REQ-001..100), `OPEN_DECISIONS.md` (OD-01..OD-116), `ROADMAP.md` (Phase 0–26), `LICENSE_MATRIX.md`, `UX_UI_STANDARD.md`.
 **Persona ID:** FIXED (P-01..P-12) — jangan didaur ulang/diubah. **Journey ID:** J-01..J-12 (satu journey kritis per persona).

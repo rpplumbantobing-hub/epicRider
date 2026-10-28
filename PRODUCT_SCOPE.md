@@ -1,5 +1,7 @@
 # PRODUCT SCOPE — epicRider
 
+> **Referensi MC §N:** rujukan Master Control pada dokumen ini memakai penomoran era Phase 0/1 (MC-V1, §1–§15 — arsip: `audit/superseded/phase1-era-control/`). Interpretasi ke anchor kanonik aktif: `CONTROL_REFERENCE_CROSSWALK.md` (contoh: "MC §2" di sini = Produk & batas lisensi era MC-V1, BUKAN Entitlement taxonomy MC aktif; "MC §14" = anti-halusinasi → MC aktif §7). Substansi dokumen tidak diubah (aturan F-06).
+
 **Task ID:** 1-a (WS-A) · **Fase:** Phase 1 — discovery (documentation-only) · **Status dokumen:** `PROPOSED` (menunggu persetujuan owner)
 **Sumber:** `MASTER_CONTROL.md` (MC §1–§12), `REQUIREMENTS.md` (REQ-001..100), `OPEN_DECISIONS.md` (OD-01..OD-116), `ROADMAP.md`, `PHASE_0_AUDIT_REPORT.md`, `LICENSE_MATRIX.md`, `UX_UI_STANDARD.md`.
 **Kejujuran metodologi:** Desk analysis — belum divalidasi dengan partisipan pengguna nyata. Tidak ada riset pasar, tidak ada data harga, tidak ada klaim legal. Semua klaim arah produk dapat ditunjuk ke MC § atau REQ-xxx.

@@ -1,5 +1,7 @@
 # UX REQUIREMENTS — epicRider
 
+> **Referensi MC §N:** rujukan Master Control pada dokumen ini memakai penomoran era Phase 0/1 (MC-V1, §1–§15 — arsip: `audit/superseded/phase1-era-control/`). Interpretasi ke anchor kanonik aktif: `CONTROL_REFERENCE_CROSSWALK.md` (contoh: "MC §2" di sini = Produk & batas lisensi era MC-V1, BUKAN Entitlement taxonomy MC aktif; "MC §14" = anti-halusinasi → MC aktif §7). Substansi dokumen tidak diubah (aturan F-06).
+
 **Task:** WS-E (Task ID 1-e) · Phase 1 · **DOCUMENTATION-ONLY** — dokumen ini tidak mengubah kode/schema/config dan tidak membangun UI produksi (keputusan prototype terpisah = **OD-113**, milik owner).
 **Status dokumen:** `PROPOSED` seluruhnya — hasil desk analysis berbasis dokumen kontrol, BUKAN hasil riset pengguna partisipan (lihat §8 Catatan Kejujuran).
 **Sumber:** `MASTER_CONTROL.md` §2/§3/§5/§7/§8, `REQUIREMENTS.md` (REQ-xxx dirujuk apa adanya — dokumen ini TIDAK membuat REQ baru), `UX_UI_STANDARD.md`, `PHASE_0_AUDIT_REPORT.md` (R-01..R-10), `PHASE_0_GAP_REGISTER.md` (G-001..G-016), `OPEN_DECISIONS.md` (OD-xxx), `ROADMAP.md`.

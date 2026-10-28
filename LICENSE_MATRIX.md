@@ -43,24 +43,28 @@ It supports:
 
 It does NOT grant a license.
 
-## 4. Store
+## 4. Store — tiga surface terpisah (koreksi owner 2026-10-28, ADR-018; F-03)
+
+### License & Extension Shop
+Surface **publik** di landing page untuk pembelian/perpanjangan lisensi dan extension epicRider.
+
+Access rule:
+- Melayani **calon pelanggan tanpa lisensi** (pembelian lisensi pertama) dan alur renewal yang disepakati.
+- Harga/pajak/gateway/refund tidak diarang (OD-06).
 
 ### Public Store
-Developer commerce storefront.
+Developer commerce storefront (produk developer).
 
 Access rule:
 **basic miniRider license required.**
 
-Product types may include:
-- license products;
-- extensions;
-- approved developer products.
+Bukan jalur pembelian lisensi pertama — jalur tersebut ada di License & Extension Shop.
 
 ### Developer Equipment Store
 miniRider only.
 
 maxRider: denied.
-ISOrider: denied.
+ISOrider: denied (denial di-API diaudit — REQ-010).
 
 ## 5. Extension
 

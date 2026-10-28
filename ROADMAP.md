@@ -14,8 +14,9 @@
 |---|---|---|
 | 0 | Audit repository & control baseline | DONE — existing evidence |
 | 1 | Discovery/personas/use cases/requirements/acceptance | DONE/BASELINE — existing Phase 1 artifacts; revalidated for Phase 2 |
-| 2 | Architecture/domain model/threat model/data model/ADR | **DONE — architecture baseline 2026-10-27** (evidence: `PHASE_2_ACCEPTANCE.md` A–G 7/7 checked; `PHASE_2_REPORT.md`; owner follow-ups: ratify 7 PROPOSED ADRs, decide OD-01/OD-02 — non-blocking) |
-| 3–26 | Subsequent roadmap | NOT STARTED unless evidence says otherwise |
+| 2 | Architecture/domain model/threat model/data model/ADR | **DONE — architecture baseline 2026-10-27, re-verified 2026-10-28 setelah remediasi konsistensi** (evidence: `PHASE_2_ACCEPTANCE.md` A–G + blok re-assessment 2026-10-28; `PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md`; owner follow-ups: ratify ADR PROPOSED (+ADR-018), decide OD-01/OD-02/OD-185 — non-blocking untuk baseline) |
+| 3 | Repository foundations, design system, i18n & CI/testing foundation (+ remediasi konsistensi Phase 2 sebagai Gate A) | **DONE — repository foundation baseline 2026-10-28** (evidence: `PHASE_3_ACCEPTANCE.md` 16/16 kriteria PASS dengan kualifikasi tercatat — build NOT RUN di sandbox, CI remote NOT TESTED, e2e smoke manual; `PHASE_3_REPORT.md`; Gate A: `PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md`) |
+| 4–26 | Subsequent roadmap | NOT STARTED unless evidence says otherwise (Phase 4 tidak dimulai otomatis) |
 
 ## Phase 2 entry correction
 

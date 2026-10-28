@@ -1,0 +1,45 @@
+# CI — epicRider quality gates (ADR-019).
+# Urutan gate: install → lint → typecheck → test → build.
+#
+# CATATAN JUJUR (Phase 3): step `bun run build` TIDAK dieksekusi di sandbox pengembangan
+# (platform melarang build produksi dev-server), sehingga status step build = NOT TESTED
+# secara lokal — status riilnya hanya bisa dibuktikan di CI remote ini (saat remote tersedia).
+
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality-gates:
+    name: lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup bun (pinned)
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies (frozen lockfile)
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Test
+        run: bun run test
+
+      # HANYA dieksekusi di CI remote — di sandbox pengembangan build produksi dilarang
+      # (platform constraint), jadi status step ini NOT TESTED secara lokal.
+      - name: Build
+        run: bun run build

@@ -4,6 +4,8 @@
 
 **ACCEPTED** (owner-reconciled baseline, 2026-10-27) · **Date:** 2026-10-27
 
+> **AMENDED 2026-10-28 — superseded in part by `adr/ADR-018-commerce-surfaces.md`** (owner decision, Phase 3 prompt §2.1 F-03): the definition of the **Public Store product scope** ("license products, extensions, and developer products") is superseded. The Public Store is now the **developer products storefront** (basic miniRider access); license/extension purchase moves to a separate public **License & Extension Shop** surface; Developer Equipment Store stays miniRider-only. The structural isolation, access rule for the Public Store (basic miniRider), and Developer Portal separation below remain valid. History preserved; do not delete this ADR.
+
 **Scope note:** the *boundary decision* below is accepted via the owner baseline. Commercial values, order/invoice finalization, and one access-derivation question remain OPEN (OD-06 / OD-135; one candidate — see Consequences).
 
 ## Context

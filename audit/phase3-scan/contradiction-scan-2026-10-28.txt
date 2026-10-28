@@ -1,0 +1,47 @@
+# Contradiction scan — 2026-10-28 (Phase 3 Gate A, pasca-remediasi F-02/F-03/F-06)
+Lingkup: file md aktif root (exclude upload/, audit/, adr/ historis, tool-results/)
+
+## S1 — Status fase di MASTER_CONTROL (harus kosong kecuali aturan stabil)
+  CLEAN — MC tanpa status fase dinamis
+
+## S2 — Sisa klaim 'Public Store menjual license products/extensions' di dokumen aktif
+  CLEAN di dokumen aktif (sisa hanya di ADR-013 historis/crosswalk/laporan)
+
+## S3 — Istilah terlarang hiRider (non-negasi)
+  ./MASTER_CONTROL.md:
+23:**hiRider bukan license, bukan tier keempat, dan bukan nilai pada `license_tier`.**
+  ./PHASE_2_REPORT.md:
+205:Hasil (pola wajib: `hiRider license`, `hiRider tier`, `hiRider fourth`, `Public Store maxRider`,
+212:  ("hiRider bukan license/bukan tier keempat" — MASTER_CONTROL, DATA_MODEL, ADR-012, dst.);
+  ./worklog.md:
+177:- Self-check grep (case-insensitive) on the deliverable for: "must comply", "is compliant", "violat*", "hiRider license", "hiRider tier", "hiRider fourth", "CRUP", "melanggar" → 0 hits.
+197:- Self-check grep on both files: "hiRider license"=0, "hiRider tier"=0, "hiRider fourth"=0, "CRUP"=0, "Public Store maxRider"=0, "Public Store ISOrider"=0 (also verified via case-insensitive regex sweep: zero hits).
+214:- Self-checks actually executed (rg): forbidden terms "hiRider license"/"hiRider tier"/"hiRider fourth"/"CRUP" = zero hits (case-insensitive); "Public Store maxRider|ISOrider" adjacency = zero hits; all 81 unique REQ refs within REQ-001..100 (no renumbering); all 39 unique OD refs verified present in OPEN_DECISIONS.md register (no invented OD IDs); no broken Unicode chars (one initially introduced in ASCII diagram was fixed in-place).
+  ./CONTROL_CONSISTENCY_MATRIX.md:
+28:- `hiRider license`
+29:- `hiRider tier`
+  ./DATA_MODEL_CONCEPT.md:
+465:- Source: MC §1 ("hiRider bukan license, bukan tier keempat, dan bukan nilai pada `license_tier`"); LICENSE_MATRIX.md §1; TESTING.md (`hiRider != LicenseTier`).
+
+## S4 — Invariant recruitment (jumlah file aktif yang memuat)
+  'Application != Workspace Membership': 6 file
+  'Application != Event Assignment': 9 file
+  'Acceptance != Automatic Workspace Access': 11 file
+  'hiRider != License': 5 file
+
+## S6 — Klaim dependency blocker lama
+./DECISIONS.md:90:If this ID exists in the Phase 1 repository, it must NOT be treated as a prerequisite that blocks Phase 2. It is a Phase 2 architecture/data-model workstream/output.
+./PHASE_2_REPORT.md:207:`OD-06 blocks entire Phase`, `OD-116 prerequisite Phase 2`, `CRUP` — ditambah varian Indonesia):
+./CONTROL_CONSISTENCY_MATRIX.md:38:- `OD-116 prerequisite Phase 2`
+
+## S7 — Klaim '0 contradictions' lama yang masih utuh tanpa kualifikasi
+./DATA_MODEL_CONCEPT.md:826:| Forbidden-phrase self-check | Performed (see worklog Task 2-a): zero active contradictions |
+
+## S8 — REQ/OD ID integrity
+  rows REQ di REQUIREMENTS.md: 99
+  unique REQ IDs: 99
+  duplikat (harus 0): 53
+
+## S9 — OD-185 terdaftar
+1
+1

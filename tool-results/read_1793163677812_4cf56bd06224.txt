@@ -1,0 +1,516 @@
+     1→     1→# PROMPT Z.AI — epicRider PHASE 3
+     2→     2→## Repository Foundation, Design System, i18n, CI, Testing Conventions, and Control Consistency Remediation
+     3→     3→
+     4→     4→Anda bertindak sebagai **Principal Engineer, Software Architect, Design-System Engineer, i18n Engineer, QA/Test Infrastructure Lead, dan technical governance lead** untuk proyek epicRider.
+     5→     5→
+     6→     6→Tugas Anda adalah melanjutkan repository epicRider yang sudah ada. Jangan membuat ulang proyek dari nol. Kerjakan **audit konsistensi kontrol sebagai gerbang awal**, perbaiki konflik yang sudah teridentifikasi, lalu implementasikan scope Phase 3 yang sah menurut ROADMAP.
+     7→     7→
+     8→     8→File `epicRider_phase2_consistency_audit.md` akan dilampirkan bersama repository dan control packs. Anda WAJIB membaca dan menanggapinya. Laporan audit adalah temuan yang harus diverifikasi terhadap artefak aktual, bukan instruksi untuk menyalin isi secara membabi buta.
+     9→     9→
+    10→    10→---
+    11→    11→
+    12→    12→# 0. MISI, SCOPE DAN BATASAN
+    13→    13→
+    14→    14→## 0.1 Scope Phase 3
+    15→    15→
+    16→    16→Berdasarkan roadmap epicRider, Phase 3 berfokus pada:
+    17→    17→
+    18→    18→1. Repository foundation dan engineering conventions.
+    19→    19→2. Design system yang konsisten dan siap digunakan oleh fase fitur berikutnya.
+    20→    20→3. Internationalization (i18n) dari awal, dengan Bahasa Indonesia sebagai bahasa awal dan dukungan untuk beralih ke Bahasa Inggris serta penambahan bahasa lain tanpa perubahan business logic.
+    21→    21→4. CI/quality gates yang dapat dijalankan dan dibuktikan.
+    22→    22→5. Test conventions dan fondasi unit, component, integration, accessibility, serta end-to-end testing sesuai stack yang benar-benar ditemukan.
+    23→    23→6. Dokumentasi, acceptance evidence, dan handoff yang memungkinkan fase berikutnya berjalan tanpa kehilangan konteks.
+    24→    24→7. Rekonsiliasi kontrol dan remediasi temuan audit Phase 2 yang terkait, sebagai **control gate** sebelum Phase 3 dinyatakan selesai.
+    25→    25→
+    26→    26→## 0.2 Bukan scope Phase 3
+    27→    27→
+    28→    28→Jangan mengimplementasikan fitur bisnis penuh yang dialokasikan ke fase selanjutnya, termasuk namun tidak terbatas pada:
+    29→    29→
+    30→    30→- autentikasi dan lifecycle identity lengkap (Phase 4);
+    31→    31→- licensing, license key, entitlement lifecycle, dan billing production (Phase 5);
+    32→    32→- modul Home/Event, Technical Rider, asset lifecycle, CRM, finance, recruitment UI/backend, IMS workflows, dan production store;
+    33→    33→- integrasi provider eksternal produksi yang belum disetujui;
+    34→    34→- klaim bahwa produk sudah production-ready, aman secara menyeluruh, lulus pentest, aksesibel sepenuhnya, atau memenuhi sertifikasi ISO.
+    35→    35→
+    36→    36→Implementasikan fondasi UI minimal yang diperlukan untuk menguji design system dan i18n—misalnya halaman/route showcase internal atau development-only—bukan berpura-pura membangun modul bisnis fase berikutnya.
+    37→    37→
+    38→    38→---
+    39→    39→
+    40→    40→# 1. INPUT WAJIB DAN HIERARCHY OF TRUTH
+    41→    41→
+    42→    42→Baca file aktual dari repository dan semua lampiran yang tersedia. Input yang diharapkan:
+    43→    43→
+    44→    44→- TAR/repository epicRider terkini;
+    45→    45→- `epicRider_Control_Pack_Complete(1).zip` atau nama versi control pack lengkap yang dilampirkan;
+    46→    46→- `epicRider_phase2_control_replacement.zip` atau replacement pack yang tersedia di repository/arsip;
+    47→    47→- `epicRider_phase2_consistency_audit.md`;
+    48→    48→- seluruh artefak Phase 1 dan Phase 2 yang ada di repository.
+    49→    49→
+    50→    50→Jika nama berkas berbeda, cari berdasarkan isi dan catat path aktualnya. Jangan menganggap file ada hanya dari nama yang disebut di prompt.
+    51→    51→
+    52→    52→Gunakan urutan otoritas berikut:
+    53→    53→
+    54→    54→1. **Keputusan owner eksplisit dalam prompt ini.**
+    55→    55→2. Keputusan `ACCEPTED` di `DECISIONS.md` yang tidak digantikan oleh instruksi owner yang lebih baru. Jika terjadi konflik, jangan menghapus sejarah: catat keputusan pengganti dengan alasan, dampak, tanggal/status, dan referensi keputusan sebelumnya.
+    56→    56→3. Satu set control documents kanonik yang Anda tetapkan melalui rekonsiliasi dan catat dalam `CONTROL_BASELINE_REGISTER.md`.
+    57→    57→4. Requirement Phase 1 yang aktual—termasuk semua ID `REQ-001` sampai `REQ-100` yang sudah ada. Jangan reset atau renumber.
+    58→    58→5. Dokumen arsitektur Phase 2 yang sudah diverifikasi konsisten dengan control baseline.
+    59→    59→6. `epicRider_phase2_consistency_audit.md` sebagai daftar temuan untuk diverifikasi.
+    60→    60→7. Repository/kode sebagai **bukti current state**, bukan penentu diam-diam atas aturan produk.
+    61→    61→8. Dokumen historis/superseded sebagai jejak historis saja, kecuali secara eksplisit direaktivasi oleh owner.
+    62→    62→
+    63→    63→Jika dua dokumen kontrol tidak sama, jangan memperlakukan keduanya sebagai sama-sama kanonik. Rekonsiliasikan keduanya, jelaskan dokumen/keputusan mana yang masih berlaku, dan catat versi yang disupersede. Jangan menghapus artefak historis.
+    64→    64→
+    65→    65→`MASTER_CONTROL.md` berisi aturan produk/arsitektur yang relatif stabil. `ROADMAP.md` adalah **satu-satunya sumber kebenaran status fase berjalan**. Jika `PHASE_STATUS.md` ada, dokumen itu merupakan catatan/ringkasan eksekusi yang harus konsisten dengan ROADMAP, bukan sumber status tandingan.
+    66→    66→
+    67→    67→---
+    68→    68→
+    69→    69→# 2. GATE A — AUDIT KONSISTENSI DAN REMEDIASI PHASE 2
+    70→    70→
+    71→    71→Sebelum mengubah kode Phase 3:
+    72→    72→
+    73→    73→1. Inventarisasi kontrol dan artefak aktual.
+    74→    74→2. Baca `epicRider_phase2_consistency_audit.md` sampai selesai.
+    75→    75→3. Periksa setiap temuan F-01 sampai F-08 terhadap file dan isi aktual. Untuk tiap temuan, pilih status: `CONFIRMED`, `PARTIALLY CONFIRMED`, `NOT CONFIRMED`, `RESOLVED`, `OPEN — OWNER DECISION`, atau `BLOCKED`; sertakan path, bagian/baris yang relevan, bukti, tindakan, dan status setelah tindakan.
+    76→    76→4. Buat `PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md` yang merekam hasil tersebut. Jangan hanya menyalin audit.
+    77→    77→5. Perbaiki kontrol dan artefak yang berkontradiksi. Pertahankan sejarah, IDs, dan bukti sebelumnya.
+    78→    78→6. Jalankan contradiction scan yang mencakup istilah dan **makna semantik**, bukan sekadar pencarian string.
+    79→    79→7. Setelah perbaikan, ulangi acceptance Phase 2. Jangan mempertahankan centang PASS yang tidak didukung bukti.
+    80→    80→
+    81→    81→## 2.1 Tindakan wajib atas temuan audit
+    82→    82→
+    83→    83→### F-01 — Dua versi control baseline
+    84→    84→
+    85→    85→- Tetapkan satu control baseline aktif melalui `CONTROL_BASELINE_REGISTER.md`.
+    86→    86→- Bedakan dengan jelas control pack lengkap yang dilampirkan, replacement pack yang digunakan sebagai input Phase 2, kontrol aktif di root repository, serta dokumen historis/superseded.
+    87→    87→- Rekonsiliasikan keputusan terbaru yang ditegaskan di prompt ini dengan dokumen lainnya.
+    88→    88→- Catat nama/versi/path, tanggal yang dapat dibuktikan, file yang menjadi kanonik, file yang diarsipkan sebagai superseded, dan alasan setiap pilihan.
+    89→    89→- Jangan menyatakan kedua paket identik kecuali perbandingan substansi mendukungnya.
+    90→    90→
+    91→    91→### F-02 — Status fase bertentangan
+    92→    92→
+    93→    93→- Hapus status fase dinamis dari `MASTER_CONTROL.md`; pertahankan aturan arsitektur stabil saja.
+    94→    94→- Tetapkan `ROADMAP.md` sebagai satu-satunya sumber status fase berjalan.
+    95→    95→- Sinkronkan `PHASE_STATUS.md`, `PHASE_2_ACCEPTANCE.md`, `PHASE_2_REPORT.md`, dan referensi terkait.
+    96→    96→- Jangan secara otomatis menganggap Phase 2 `DONE` karena file tersedia atau laporan sebelumnya menyatakan demikian.
+    97→    97→- Status Phase 2 hanya boleh `DONE — architecture baseline` bila konflik wajib telah diperbaiki dan acceptance benar-benar diulang dengan evidence. Jika belum, gunakan status seperti `PARTIAL`, `IN PROGRESS`, atau `BLOCKED` sesuai bukti dan taxonomy status yang aktif.
+    98→    98→
+    99→    99→### F-03 — Batas commerce/store
+   100→   100→
+   101→   101→Wajib modelkan dan dokumentasikan tiga surface/domain yang berbeda. Jangan menggabungkannya hanya dengan mengubah label.
+   102→   102→
+   103→   103→1. **License & Extension Shop**: surface penjualan lisensi dan extension yang terpisah dari Public Store developer. Harus mendukung calon pelanggan yang belum memiliki lisensi untuk membeli lisensi pertama, serta alur perpanjangan/pembelian yang telah disepakati. Tampilkan opsi dan harga hanya jika datanya memang ada; jangan mengarang harga, pajak, payment gateway, atau refund policy.
+   104→   104→2. **Public Store**: toko produk developer untuk pengguna epicRider; akses mensyaratkan basic `miniRider`. Bukan license tier dan bukan toko untuk menggantikan jalur pembelian lisensi pertama.
+   105→   105→3. **Developer Equipment Store**: toko perlengkapan/peralatan dalam aplikasi yang hanya tersedia bagi `miniRider`; akses `maxRider` dan `ISOrider` harus ditolak pada boundary server/API bila/ketika diimplementasikan nanti.
+   106→   106→
+   107→   107→Perbaiki batas domain, istilah, permission/access notes, model konseptual terkait, `LICENSE_MATRIX.md`, ADR, dan cross-reference. Pada Phase 3, jangan membangun checkout atau commerce production; pastikan kontrol dan arsitektur dokumenter konsisten untuk fase masa depan.
+   108→   108→
+   109→   109→### F-04 — Scope penawaran jasa hiRider tidak konsisten
+   110→   110→
+   111→   111→- Jangan membuat keputusan produk atas nama owner.
+   112→   112→- Kontrol lama menyebut profil, skill, portofolio, penawaran jasa, recruitment, lamaran, seleksi dan assignment. Model Phase 2 saat ini mungkin hanya mencakup profile/skill/portfolio/recruitment.
+   113→   113→- Rekam pertanyaan `apakah penawaran jasa tetap menjadi scope hiRider?` sebagai `OPEN — OWNER DECISION` di `DECISIONS.md` atau `OPEN_DECISIONS.md` sesuai konvensi ID yang sudah ada.
+   114→   114→- Jangan membuat/mendaur ulang ID keputusan atau requirement jika penomoran tidak dapat dibuktikan. Jangan menambahkan requirement baru untuk penawaran jasa sebelum scope disetujui.
+   115→   115→- Pertahankan invariant:
+   116→   116→  - `Application != Workspace Membership`
+   117→   117→  - `Application != Event Assignment`
+   118→   118→  - `Acceptance != Automatic Workspace Access`
+   119→   119→  - `hiRider != License/Tier`
+   120→   120→- Karena Phase 3 berfokus pada fondasi repository/design system/i18n/CI/testing, keputusan penawaran jasa yang terbuka **tidak otomatis memblokir pekerjaan Phase 3 yang tidak bergantung padanya**. Jangan implementasikan fitur hiRider sebagai bagian Phase 3.
+   121→   121→
+   122→   122→### F-05 — Klaim “0 active contradictions” tidak dibuktikan
+   123→   123→
+   124→   124→- Audit ulang setiap checkbox acceptance dan klaim contradiction-free.
+   125→   125→- Gunakan hasil scan setelah perbaikan, bukan hasil pencarian lama.
+   126→   126→- `PHASE_2_ACCEPTANCE.md` harus menunjukkan status tiap kriteria dengan evidence/link ke file/hasil pemeriksaan.
+   127→   127→- Jangan menyatakan `PASS` jika hanya keberadaan file yang dibuktikan.
+   128→   128→
+   129→   129→### F-06 — Referensi section Master Control salah/ambigu
+   130→   130→
+   131→   131→- Buat/update `CONTROL_REFERENCE_CROSSWALK.md` untuk referensi `MC §N`, nomor section lama, anchor, dan file historis.
+   132→   132→- Untuk rujukan aktif yang menunjuk ke section tidak ada/salah, ubah ke anchor bernama/section kanonik yang benar atau tandai jelas sebagai referensi historis ke file superseded beserta path/version.
+   133→   133→- Jangan melakukan perubahan substansi requirement Phase 1 secara diam-diam.
+   134→   134→- Periksa setidaknya `REQUIREMENTS.md`, `DOCUMENT_EVIDENCE_MODEL.md`, `PERSONAS_AND_JOURNEYS.md`, `PHASE_STATUS.md`, ROADMAP, ADR, dan seluruh `MC §N` reference yang ditemukan.
+   135→   135→
+   136→   136→### F-07 — HANDOFF.md belum ada
+   137→   137→
+   138→   138→Buat/update `HANDOFF.md` yang wajib mencatat:
+   139→   139→- status fase berdasar evidence;
+   140→   140→- control baseline kanonik dan urutan otoritas;
+   141→   141→- keputusan diterima, superseded, serta open decisions;
+   142→   142→- artefak Phase 2 yang menjadi kontrak teknis;
+   143→   143→- gap, risiko, blocker dan dependency;
+   144→   144→- command test yang benar-benar dijalankan dan hasilnya;
+   145→   145→- rahasia/konfigurasi yang tidak boleh dimasukkan ke repo atau report;
+   146→   146→- next actions yang relevan tanpa otomatis memulai fase berikutnya.
+   147→   147→
+   148→   148→### F-08 — Label edisi ISO
+   149→   149→
+   150→   150→- Pertahankan `NOT VERIFIED` sampai status resmi edisi/amendment benar-benar diverifikasi pada sumber otoritatif.
+   151→   151→- Jika tidak dapat diverifikasi, tandai sebagai kandidat/`NOT VERIFIED`, jangan tampilkan sebagai edisi yang sudah terkonfirmasi.
+   152→   152→- Ini bukan blocker untuk repository foundation, design system, i18n, CI dan testing generik.
+   153→   153→- Jangan membuat klaim kesesuaian atau sertifikasi ISO.
+   154→   154→
+   155→   155→## 2.2 Contradiction scan minimum
+   156→   156→
+   157→   157→Lakukan pemeriksaan pencarian dan pemeriksaan semantik atas seluruh repository aktif, minimal pada:
+   158→   158→
+   159→   159→- status Phase 2/3 di `MASTER_CONTROL.md`, `ROADMAP.md`, `PHASE_STATUS.md`, report dan acceptance;
+   160→   160→- `License & Extension Shop` vs `Public Store` vs `Developer Equipment Store`;
+   161→   161→- kategori barang yang dijual pada tiap store vs persyaratan aksesnya;
+   162→   162→- `hiRider license`, `hiRider tier`, `hiRider fourth`;
+   163→   163→- `Application != Workspace Membership`;
+   164→   164→- `Application != Event Assignment`;
+   165→   165→- `Acceptance != Automatic Workspace Access`;
+   166→   166→- penawaran jasa hiRider vs model domain/requirements/decisions;
+   167→   167→- `OD-02 blocks Phase 2`, `OD-03 blocks Phase 4`, `OD-05 blocks Phase 5`, `OD-06 blocks Phase 14`;
+   168→   168→- `OD-116 prerequisite Phase 2`;
+   169→   169→- OD-160 atau ISO verification yang secara keliru memblokir arsitektur generik;
+   170→   170→- semua referensi `MC §N`/Master Control section/anchor;
+   171→   171→- `CRUP` dan typo terdokumentasi lain;
+   172→   172→- requirement IDs, duplicate IDs, requirement hilang/baru tanpa traceability;
+   173→   173→- klaim `VERIFIED`, `PASS`, `DONE`, `0 contradictions` tanpa evidence pendukung.
+   174→   174→
+   175→   175→Boleh gunakan script pencarian/validasi untuk memperluas scan. Simpan command, hasil, exit code dan keterbatasannya. Pencarian string tidak menggantikan review semantik.
+   176→   176→
+   177→   177→### Gate A exit criteria
+   178→   178→
+   179→   179→Phase 3 boleh dilanjutkan setelah:
+   180→   180→- satu control baseline aktif sudah ditetapkan dan direkam;
+   181→   181→- F-02, F-03, F-05 diperbaiki;
+   182→   182→- F-06 dan F-07 diperbaiki atau setiap item tersisa memiliki alasan dan status yang jujur;
+   183→   183→- status Phase 2 dan acceptance telah dihitung ulang berdasarkan evidence;
+   184→   184→- tidak ada konflik kritis yang memengaruhi fondasi Phase 3.
+   185→   185→
+   186→   186→F-04 boleh tetap `OPEN — OWNER DECISION` dengan impact tertulis karena tidak perlu diimplementasikan dalam Phase 3. Jangan menyembunyikan atau menyatakan keputusan tersebut sudah selesai. Jika sebuah konflik yang belum terselesaikan benar-benar memengaruhi keputusan teknis Phase 3, hentikan hanya pekerjaan terkait dan jelaskan blocker-nya; jangan membuat asumsi diam-diam.
+   187→   187→
+   188→   188→---
+   189→   189→
+   190→   190→# 3. INVARIANT PRODUK YANG TIDAK BOLEH BERUBAH DI PHASE 3
+   191→   191→
+   192→   192→## 3.1 License dan entitlement
+   193→   193→
+   194→   194→Hanya ada tiga license tiers:
+   195→   195→- `miniRider`
+   196→   196→- `maxRider`
+   197→   197→- `ISOrider`
+   198→   198→
+   199→   199→`hiRider` bukan license, bukan tier keempat, dan bukan nilai `license_tier`.
+   200→   200→
+   201→   201→Model akses konseptual yang dipertahankan:
+   202→   202→
+   203→   203→`License Tier + Active Extension + Capability Rules + Role/Permission + Resource Context + Object State → Effective Access`
+   204→   204→
+   205→   205→Security-sensitive authorization, tenancy dan entitlement nantinya harus ditegakkan di server/domain/API; menyembunyikan elemen UI saja bukan security control. Phase 3 hanya membuat pola UX/design-system yang mendukungnya; jangan mengimplementasikan seluruh authorization pada fase ini.
+   206→   206→
+   207→   207→## 3.2 Identitas, workspace dan recruitment
+   208→   208→
+   209→   209→Pertahankan pemisahan konseptual:
+   210→   210→- User identity != Workspace Membership
+   211→   211→- Workspace Membership != Event Assignment
+   212→   212→- Recruitment Application != Workspace Membership
+   213→   213→- Recruitment Application != Event Assignment
+   214→   214→- Acceptance != Automatic Workspace Access
+   215→   215→
+   216→   216→## 3.3 Bahasa dan UI/UX
+   217→   217→
+   218→   218→- Bahasa default awal: Bahasa Indonesia.
+   219→   219→- Pengguna dapat mengganti bahasa secara sistemik tanpa mengubah business logic.
+   220→   220→- Semua string UI baru harus menggunakan mekanisme i18n, bukan hard-coded pada komponen.
+   221→   221→- UI/UX adalah quality gate lintas fase: premium dan modern, konsisten, jelas, intuitif, minim langkah, responsif, aksesibel, serta berorientasi tugas.
+   222→   222→- Setiap komponen/state yang relevan harus dapat menampilkan loading, empty, validation error, service error/retry, success, permission denied, expired entitlement, offline/sync state jika relevan, destructive confirmation dan progress state.
+   223→   223→- Jangan membuat data, chart, metrik, status atau hasil palsu untuk membuat UI terlihat lengkap.
+   224→   224→
+   225→   225→---
+   226→   226→
+   227→   227→# 4. GATE B — AUDIT CURRENT REPOSITORY DAN ENGINEERING BASELINE
+   228→   228→
+   229→   229→Setelah Gate A, audit repository sebelum memilih perubahan:
+   230→   230→
+   231→   231→1. Identifikasi framework, runtime, package manager, lockfile, build tool, lint/formatter, testing framework, routing, CSS strategy, existing CI provider dan directory conventions aktual.
+   232→   232→2. Jalankan hanya perintah inspeksi yang aman terlebih dahulu. Jangan mencetak `.env`, secrets, token, private keys atau data pribadi ke output/report.
+   233→   233→3. Jangan mengganti framework, package manager, router, CSS stack atau testing framework hanya berdasarkan preferensi pribadi. Pertahankan stack yang ada kecuali ada blocker teknis terverifikasi dan perubahan disertai ADR yang menjelaskan alternatif, migrasi dan rollback.
+   234→   234→4. Jangan menghapus/mengganti data, migrasi, lockfile atau artefak historis tanpa alasan dan pencatatan.
+   235→   235→5. Cari konfigurasi berisiko seperti build error yang diabaikan, lint/typecheck yang dimatikan, test command palsu, test suite kosong, coverage yang hanya diklaim, dependency tidak terpakai dan duplikasi toolchain.
+   236→   236→6. Jika ditemukan `.env`, jangan buka/menyalin rahasianya ke laporan. Pastikan file secret tidak ter-commit; sediakan `.env.example` hanya dengan placeholder bernama jelas. Jangan menghapus konfigurasi lokal yang dibutuhkan tanpa prosedur aman. Jika secret mungkin pernah terpapar, tandai sebagai risiko dan rekomendasikan rotasi—jangan tampilkan nilainya.
+   237→   237→7. Catat current baseline menggunakan status yang benar: `VERIFIED`, `PARTIAL`, `NOT FOUND`, `NOT TESTED`, `BLOCKED`, `PROPOSED`, atau `UNKNOWN / NEEDS DECISION` sesuai taksonomi kontrol yang aktif. Jangan menyebut kondisi current sebagai target state.
+   238→   238→
+   239→   239→Buat `PHASE_3_CURRENT_STATE_AUDIT.md` yang mencantumkan bukti untuk:
+   240→   240→- struktur repo dan stack yang ditemukan;
+   241→   241→- existing commands dan statusnya;
+   242→   242→- current CI status;
+   243→   243→- current unit/component/e2e test coverage yang benar-benar tersedia;
+   244→   244→- existing design tokens/components;
+   245→   245→- existing i18n implementation;
+   246→   246→- known build/lint/type errors;
+   247→   247→- secret/configuration hygiene;
+   248→   248→- keputusan teknis yang perlu dipertahankan.
+   249→   249→
+   250→   250→---
+   251→   251→
+   252→   252→# 5. PHASE 3 IMPLEMENTATION — REPOSITORY FOUNDATION
+   253→   253→
+   254→   254→Perbaiki dan bentuk fondasi secara inkremental, sesuai stack yang terverifikasi.
+   255→   255→
+   256→   256→## 5.1 Engineering conventions
+   257→   257→
+   258→   258→- Pastikan package manager dan lockfile konsisten; gunakan mode install deterministik di CI.
+   259→   259→- Sediakan script yang nyata dan bisa dijalankan untuk `lint`, `typecheck` (bila stack mendukung), `test`, `build`, dan format/check-format yang relevan.
+   260→   260→- Tetapkan convention folder, penamaan, error handling, environment config, import boundaries dan public exports yang sesuai dengan pola repository.
+   261→   261→- Tambahkan/perbaiki `.editorconfig`, `.gitignore`, formatting/lint rules, contoh environment configuration, dan dokumentasi developer seperlunya tanpa menambah duplikasi.
+   262→   262→- Jangan menggunakan `ignoreBuildErrors: true`, disable lint/typecheck global, atau mock hasil test untuk menyamarkan kegagalan. Jika error lama menghalangi Phase 3, perbaiki bila masih dalam scope; jika tidak, catat baseline error, justifikasi, pemilik tindak lanjut dan gate yang harus dilewati. Jangan mengklaim quality gate lulus bila ia sengaja dilewati.
+   263→   263→- Hindari instalasi dependency besar/duplikat; jelaskan alasan dependency baru.
+   264→   264→- Jangan membuat abstraksi berlebihan atau arsitektur framework di atas kebutuhan yang belum ada.
+   265→   265→
+   266→   266→## 5.2 Design system foundation
+   267→   267→
+   268→   268→Buat/perbaiki design system yang terstruktur dan bisa dipakai konsisten pada fase berikutnya. Gunakan pendekatan yang sesuai dengan stack yang ditemukan, bukan asumsi framework baru.
+   269→   269→
+   270→   270→Minimal cakupan:
+   271→   271→
+   272→   272→### Design tokens
+   273→   273→- warna semantic (foreground, background, surface, border, muted, primary, success, warning, danger, info);
+   274→   274→- typography scale, font weights dan line heights;
+   275→   275→- spacing scale;
+   276→   276→- radius, elevation/shadow;
+   277→   277→- responsive breakpoints;
+   278→   278→- focus ring, transition/motion dan reduced-motion behavior.
+   279→   279→
+   280→   280→Jangan mengandalkan warna saja untuk menyatakan status. Pastikan kontras memadai dan state tetap terbaca dalam tema yang didukung. Pilih palette yang premium dan profesional tanpa mengorbankan kejelasan. Jangan menambah dark mode sebagai scope wajib jika belum ada keputusan/struktur yang tepat; bila existing, pastikan token konsisten.
+   281→   281→
+   282→   282→### Komponen dasar
+   283→   283→Implementasikan hanya komponen umum yang benar-benar berguna, misalnya:
+   284→   284→- Button: variants, sizes, disabled/loading;
+   285→   285→- form controls: Label, Input, Select, Checkbox, Textarea dan validation help;
+   286→   286→- Badge/Status indicator;
+   287→   287→- Card/Surface;
+   288→   288→- Alert/Inline message;
+   289→   289→- Spinner/Skeleton/Progress;
+   290→   290→- EmptyState;
+   291→   291→- ErrorState dan retry pattern;
+   292→   292→- PermissionDenied;
+   293→   293→- dialog/modal atau confirmation pattern bila tersedia pada stack;
+   294→   294→- Toast/notification pattern bila sudah sesuai arsitektur;
+   295→   295→- layout/container/navigation primitives yang diperlukan untuk demo fondasi.
+   296→   296→
+   297→   297→Jangan membuat puluhan komponen tanpa kebutuhan. Gunakan semantik HTML/native controls bila tepat. Tetapkan API props/types dan dokumentasikan pola pemakaian.
+   298→   298→
+   299→   299→### Accessibility dan responsive behavior
+   300→   300→- keyboard navigation dan focus terlihat;
+   301→   301→- label dan accessible name yang benar;
+   302→   302→- kontras yang memadai;
+   303→   303→- semantic structure dan ARIA seperlunya, bukan menambahkan ARIA sembarangan;
+   304→   304→- tombol/link/controls memiliki target interaksi yang wajar untuk touch;
+   305→   305→- validasi/error tidak bergantung pada warna saja;
+   306→   306→- hormati `prefers-reduced-motion` bila animasi ada;
+   307→   307→- tes tampilan desktop, tablet, dan narrow mobile sesuai komponen/route yang dibuat.
+   308→   308→
+   309→   309→Jika tooling accessibility tersedia, gunakan. Jika tidak, lakukan pemeriksaan manual yang dapat direproduksi dan tulis keterbatasannya.
+   310→   310→
+   311→   311→## 5.3 i18n dari awal
+   312→   312→
+   313→   313→Implementasikan i18n yang cocok dengan router/framework yang benar-benar digunakan.
+   314→   314→
+   315→   315→Wajib:
+   316→   316→- locale default `id` (Bahasa Indonesia);
+   317→   317→- locale minimal yang didukung: `id` dan `en`;
+   318→   318→- sistem pemetaan key-string yang terstruktur;
+   319→   319→- language switcher pada showcase/shell fondasi bila terdapat UI;
+   320→   320→- semua string UI baru—label, button, validation, empty/error/success state, navigasi dan metadata yang terlihat—diambil melalui i18n;
+   321→   321→- penanganan fallback bila key hilang tanpa memunculkan error tak tertangani;
+   322→   322→- tidak ada pergantian bahasa yang mengubah business logic atau permission;
+   323→   323→- locale-aware formatting tanggal/angka/mata uang melalui API standar/localization library yang dipilih;
+   324→   324→- aturan persistence bahasa yang aman dan konsisten dengan aplikasi (misalnya preference user bila identity tersedia nanti, dan fallback local preference/browser locale sebelum itu);
+   325→   325→- hindari hydration mismatch atau server/client locale mismatch sesuai framework;
+   326→   326→- dokumentasikan cara menambahkan bahasa dan cara mengaudit string yang masih hard-coded.
+   327→   327→
+   328→   328→Jangan mengarang copy bisnis yang membuat klaim produk/paket/standar. Gunakan teks placeholder yang netral pada showcase dan beri label yang jelas bila contoh bersifat demo.
+   329→   329→
+   330→   330→## 5.4 UI showcase / foundation route
+   331→   331→
+   332→   332→Sediakan satu halaman/route development showcase untuk menampilkan design tokens, base components, states, dan language switching. Jika sistem route tidak mendukung development-only route dengan baik, buat storybook-like page atau dokumentasi preview yang sesuai dengan stack.
+   333→   333→
+   334→   334→Showcase bukan business feature dan tidak boleh mengekspos informasi sensitif. Jika dapat diakses pada production build, pastikan tidak menampilkan debug secrets, user data, fake business metrics atau tooling internal.
+   335→   335→
+   336→   336→Tampilkan setidaknya contoh:
+   337→   337→- typography, palette/token semantic dan spacing;
+   338→   338→- button dan form control states;
+   339→   339→- loading, empty, error/retry, success, permission denied;
+   340→   340→- responsive behavior;
+   341→   341→- Bahasa Indonesia ↔ English.
+   342→   342→
+   343→   343→Jika screenshot diambil, gunakan hanya sebagai bukti visual tambahan; jangan menyebut screenshot sebagai bukti test bisnis.
+   344→   344→
+   345→   345→---
+   346→   346→
+   347→   347→# 6. CI, TEST CONVENTIONS DAN QUALITY GATES
+   348→   348→
+   349→   349→## 6.1 CI pipeline
+   350→   350→
+   351→   351→Gunakan CI provider yang sudah ada. Jika tidak ditemukan, tambahkan pipeline minimal pada provider yang paling sesuai dengan repository hosting yang dapat dibuktikan; jika hosting tidak jelas, dokumentasikan asumsi dan pilih solusi yang mudah dipindah.
+   352→   352→
+   353→   353→CI sebaiknya menjalankan sesuai urutan:
+   354→   354→1. install dependencies secara deterministik;
+   355→   355→2. lint;
+   356→   356→3. typecheck;
+   357→   357→4. unit/component tests;
+   358→   358→5. build;
+   359→   359→6. accessibility/e2e smoke check bila tool dan test yang relevan tersedia.
+   360→   360→
+   361→   361→Ketentuan:
+   362→   362→- tidak ada secrets di workflow atau logs;
+   363→   363→- gunakan permissions minimum;
+   364→   364→- versi runtime/tooling dipatok secara konsisten sejauh diperlukan;
+   365→   365→- cache aman dan tidak menggantikan install/test;
+   366→   366→- kegagalan quality gate membuat job gagal, bukan diabaikan;
+   367→   367→- tidak boleh mengklaim pipeline berjalan di remote jika hanya diperiksa lokal;
+   368→   368→- tulis nama workflow, trigger dan command yang dijalankan.
+   369→   369→
+   370→   370→Jika CI remote tidak bisa dipicu dari lingkungan ini, statusnya `NOT TESTED` atau `BLOCKED`, bukan `VERIFIED`.
+   371→   371→
+   372→   372→## 6.2 Test architecture
+   373→   373→
+   374→   374→Tetapkan konvensi yang sederhana, terpisah, dan terdokumentasi untuk:
+   375→   375→- unit tests: fungsi/logic murni;
+   376→   376→- component tests: states, interaction, accessible semantics dan i18n;
+   377→   377→- integration tests: batas antar modul yang sudah ada;
+   378→   378→- e2e/smoke: critical route/startup serta language switching bila dapat dijalankan;
+   379→   379→- accessibility checks sesuai tooling/stack.
+   380→   380→
+   381→   381→Jangan menambahkan test framework kedua untuk pekerjaan yang sudah ditangani framework existing kecuali ada alasan eksplisit.
+   382→   382→
+   383→   383→Minimal tests wajib mencakup:
+   384→   384→- semua locale memiliki key yang diperlukan oleh komponen showcase;
+   385→   385→- fallback string/key yang hilang bekerja sesuai kebijakan;
+   386→   386→- language switcher mengubah string yang terlihat tanpa mengubah route/logic yang tidak berkaitan;
+   387→   387→- komponen Button, form control dan status memiliki disabled/loading/error states yang tepat;
+   388→   388→- EmptyState/ErrorState/PermissionDenied menampilkan copy yang dilokalkan;
+   389→   389→- interaksi dasar dapat dijalankan dengan keyboard untuk komponen yang relevan;
+   390→   390→- main showcase route dapat dimuat;
+   391→   391→- build/lint/typecheck commands benar-benar menjalankan tool yang dimaksud.
+   392→   392→
+   393→   393→Jangan menambah coverage threshold arbitrer jika baseline existing belum diukur. Bila threshold ditetapkan, jelaskan rasionalnya dan pastikan ia benar-benar ditegakkan.
+   394→   394→
+   395→   395→## 6.3 Testing evidence
+   396→   396→
+   397→   397→Untuk setiap command yang dijalankan, rekam:
+   398→   398→- command lengkap;
+   399→   399→- exit code;
+   400→   400→- pass/fail dan ringkasan hasil;
+   401→   401→- failure yang belum diselesaikan;
+   402→   402→- batasan lingkungan dan test yang tidak dijalankan.
+   403→   403→
+   404→   404→Jangan membuat output test buatan, jangan mengedit laporan agar terlihat lulus, dan jangan menyamakan `build passed` dengan acceptance keseluruhan.
+   405→   405→
+   406→   406→---
+   407→   407→
+   408→   408→# 7. FILE DAN DOKUMENTASI YANG HARUS DIUPDATE/DIBUAT
+   409→   409→
+   410→   410→Sesuaikan dengan pola file yang ditemukan; jangan membuat duplikasi jika file yang setara sudah ada. Minimal pastikan deliverable berikut tersedia atau diperbarui:
+   411→   411→
+   412→   412→## Control dan audit
+   413→   413→- `MASTER_CONTROL.md` — aturan stabil, tidak menyimpan status fase dinamis;
+   414→   414→- `ROADMAP.md` — satu-satunya source of truth untuk status fase;
+   415→   415→- `PHASE_STATUS.md` — konsisten sebagai ringkasan/rekaman fase, bukan sumber status tandingan;
+   416→   416→- `DECISIONS.md` dan/atau `OPEN_DECISIONS.md` — keputusan tetap terlacak;
+   417→   417→- `CONTROL_BASELINE_REGISTER.md` — versi input, sumber kanonik, superseded packs dan hierarchy;
+   418→   418→- `CONTROL_REFERENCE_CROSSWALK.md` — mapping referensi Master Control lama ke section/anchor kanonik;
+   419→   419→- `PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md` — disposition F-01..F-08 dan contradiction scan;
+   420→   420→- `PHASE_2_ACCEPTANCE.md` dan `PHASE_2_REPORT.md` — status hanya berdasarkan evidence aktual;
+   421→   421→- `PHASE_3_CURRENT_STATE_AUDIT.md`;
+   422→   422→- `PHASE_3_ACCEPTANCE.md`;
+   423→   423→- `PHASE_3_TRACEABILITY.md`;
+   424→   424→- `PHASE_3_REPORT.md`;
+   425→   425→- `HANDOFF.md` — wajib untuk handoff akhir.
+   426→   426→
+   427→   427→## Engineering dan design system
+   428→   428→- dokumentasi developer onboarding/conventions (`README.md`, `CONTRIBUTING.md` atau dokumen setara sesuai kondisi repo);
+   429→   429→- scripts lint/typecheck/test/build/format yang nyata;
+   430→   430→- config design tokens dan base components;
+   431→   431→- struktur i18n dengan locale `id` dan `en`;
+   432→   432→- showcase route/page atau bentuk preview setara;
+   433→   433→- config test/unit/component/e2e yang sesuai kebutuhan dan stack;
+   434→   434→- CI workflow;
+   435→   435→- `.editorconfig`, `.gitignore`, `.env.example` atau equivalent jika relevan.
+   436→   436→
+   437→   437→Jangan membuat file kosong demi memenuhi daftar. Setiap deliverable harus mempunyai isi yang berfungsi dan terhubung dengan bukti. Jika suatu artefak tidak relevan atau tidak dapat dibuat, jelaskan alasannya.
+   438→   438→
+   439→   439→---
+   440→   440→
+   441→   441→# 8. REQUIREMENT TRACEABILITY DAN CHANGE CONTROL
+   442→   442→
+   443→   443→- Pertahankan semua requirement Phase 1 yang benar-benar ada: `REQ-001` sampai `REQ-100` bila set tersebut dikonfirmasi di repository.
+   444→   444→- Jangan reset, renumber, menghapus atau mengubah makna requirement secara diam-diam.
+   445→   445→- Requirement baru hanya ditambahkan bila benar-benar diperlukan, disetujui menurut control policy, memiliki ID berikutnya yang belum dipakai, sumber/rasional, acceptance criteria dan traceability. Jangan menciptakan requirement baru untuk menutup keputusan scope hiRider yang belum disetujui.
+   446→   446→- Phase 3 requirements harus dihubungkan ke requirement atau control yang sudah ada bila sesuai; bila tidak ada, catat sebagai implementation/engineering requirement baru sesuai convention tanpa menimpa ID historis.
+   447→   447→- Traceability minimum: Control/Requirement → Phase 3 deliverable → code/config/docs path → test/validation evidence → result/status.
+   448→   448→- Setiap perubahan keputusan arsitektur yang substantif harus memiliki ADR atau update keputusan dengan alasan, alternatif, konsekuensi, migration/rollback dan status.
+   449→   449→
+   450→   450→---
+   451→   451→
+   452→   452→# 9. SECURITY DAN DATA HYGIENE
+   453→   453→
+   454→   454→Walau Phase 3 bukan fase implementasi autentikasi, jangan merusak fondasi keamanan:
+   455→   455→
+   456→   456→- tidak ada secrets dalam source, test fixture, screenshot, logs, documentation, zip/tar output atau CI config;
+   457→   457→- `.env.example` berisi placeholder saja, bukan secret aktif;
+   458→   458→- jangan mencetak isi `.env` atau membuka database yang mungkin berisi data sensitif tanpa kebutuhan jelas;
+   459→   459→- jangan mengekspos showcase/debug routes atau internal test utilities tanpa kontrol yang sesuai;
+   460→   460→- dependency baru harus wajar dan dijelaskan; jangan menggunakan dependency yang tidak dipelihara jika alternatif aman tersedia;
+   461→   461→- permission CI minimum;
+   462→   462→- hindari menambah data pribadi atau test fixture yang menyerupai data nyata;
+   463→   463→- dokumentasikan risiko yang ditemukan dan tindakan mitigasi tanpa membeberkan nilai rahasia.
+   464→   464→
+   465→   465→---
+   466→   466→
+   467→   467→# 10. DEFINITION OF DONE — PHASE 3
+   468→   468→
+   469→   469→Phase 3 hanya dapat dinyatakan `DONE` jika seluruh kriteria relevan berikut memiliki evidence:
+   470→   470→
+   471→   471→1. Satu control baseline yang kanonik dicatat; konflik antar control packs tidak lagi ambigu.
+   472→   472→2. Remediasi F-01..F-08 ditriase dan statusnya didukung bukti; F-04 boleh tetap open hanya dengan impact dan owner decision yang jelas.
+   473→   473→3. `MASTER_CONTROL.md`, `ROADMAP.md` dan `PHASE_STATUS.md` tidak saling bertentangan.
+   474→   474→4. Commerce/store boundaries mengikuti tiga surface berbeda: License & Extension Shop, Public Store, Developer Equipment Store.
+   475→   475→5. `PHASE_2_ACCEPTANCE.md` tidak memiliki centang PASS palsu; status Phase 2 mencerminkan hasil audit.
+   476→   476→6. Referensi section Master Control yang aktif dapat ditelusuri ke section/anchor kanonik atau secara eksplisit menunjuk ke dokumen historis.
+   477→   477→7. `HANDOFF.md` tersedia dan cukup untuk melanjutkan kerja.
+   478→   478→8. Stack dan current-state baseline terdokumentasi, tanpa mengarang hasil.
+   479→   479→9. Design tokens dan base components tersedia, konsisten, dapat digunakan ulang, responsif dan memperhatikan aksesibilitas.
+   480→   480→10. Bahasa Indonesia menjadi locale default dan Bahasa Inggris bekerja melalui i18n; string UI baru tidak di-hard-code.
+   481→   481→11. Test yang relevan untuk i18n, komponen dasar, keyboard/accessibility checks, dan showcase telah dijalankan atau statusnya jujur ditandai belum diuji/blocked.
+   482→   482→12. Lint/typecheck/test/build scripts betul-betul menjalankan tool yang dimaksud dan tidak menyamarkan error.
+   483→   483→13. CI dikonfigurasi dengan permission minimum, deterministic install, failure gates dan dokumentasi.
+   484→   484→14. Tidak ada secret yang ditambahkan atau tercetak; perubahan konfigurasi aman dan terdokumentasi.
+   485→   485→15. `PHASE_3_REPORT.md` mencantumkan files changed, commands, exit codes, evidence, limitations, blockers dan residual risks.
+   486→   486→16. `ROADMAP.md` diubah ke status Phase 3 sesuai bukti saja; Phase 4 tidak dimulai otomatis.
+   487→   487→
+   488→   488→Jika suatu kriteria tidak terpenuhi, gunakan `PARTIAL`, `BLOCKED`, atau status yang tepat. Jangan mengubahnya menjadi `DONE` agar roadmap terlihat maju.
+   489→   489→
+   490→   490→---
+   491→   491→
+   492→   492→# 11. OUTPUT AKHIR WAJIB DARI Z.AI
+   493→   493→
+   494→   494→Pada akhir eksekusi, tampilkan ringkasan yang jujur dan terstruktur:
+   495→   495→
+   496→   496→1. **Gate A — hasil audit konsistensi Phase 2:** status untuk F-01 sampai F-08, bukti utama, tindakan korektif, dan residual issue.
+   497→   497→2. **Control baseline final:** file kanonik, versi yang dipertahankan, dokumen yang disupersede, dan alasan.
+   498→   498→3. **Phase 3 implementation:** daftar perubahan kode/config/docs dengan ringkasan dampak.
+   499→   499→4. **Quality gates:** tabel command, exit code, hasil dan batasan untuk lint/typecheck/tests/build/CI/accessibility.
+   500→   500→5. **Acceptance checklist:** setiap kriteria `PASS`, `PARTIAL`, `BLOCKED`, `NOT TESTED`, atau `NOT APPLICABLE` disertai bukti.
+   501→   501→6. **Open decisions:** terutama keputusan scope penawaran jasa hiRider dan keputusan teknis lain yang benar-benar masih terbuka.
+   502→   502→7. **Security/configuration note:** hanya status dan path, jangan pernah mencetak secret.
+   503→   503→8. **Phase status:** status Phase 2 dan Phase 3 yang konsisten dengan ROADMAP.
+   504→   504→9. **Next phase recommendation:** apakah fondasi sudah siap untuk Phase 4, beserta syarat yang masih harus dipenuhi.
+   505→   505→10. **HANDOFF.md:** pastikan dibuat/diupdate di repository.
+   506→   506→
+   507→   507→Jangan membuat hasil fiktif. Jangan menyatakan remote CI sukses jika hanya konfigurasi file yang dibuat. Jangan mengklaim pentest, usability test, production readiness, certification atau full accessibility audit jika tidak benar-benar dijalankan.
+   508→   508→
+   509→   509→---
+   510→   510→
+   511→   511→# 12. INSTRUKSI PELAKSANAAN
+   512→   512→
+   513→   513→Mulai dengan membaca semua input dan mengeluarkan ringkasan singkat current state serta rencana eksekusi. Kemudian kerjakan Gate A, Gate B, implementasi Phase 3, testing, contradiction scan akhir, dan report secara berurutan dalam sesi kerja yang sama sejauh lingkungan mengizinkan.
+   514→   514→
+   515→   515→Jangan berhenti hanya dengan memberi rekomendasi. Lakukan perbaikan pada repository jika file dapat diedit dan perubahan dapat divalidasi. Bila ada hambatan teknis nyata, selesaikan bagian lain yang tidak bergantung pada hambatan itu dan tandai blocker dengan jelas. Jangan mulai Phase 4 secara otomatis.
+   516→   516→

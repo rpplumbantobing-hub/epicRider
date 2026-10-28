@@ -229,3 +229,25 @@ kriteria, bukti per item di file tersebut). Kualifikasi jujur:
 
 Phase 3 (repository foundations, design system, i18n & CI/testing foundation) dapat dimulai;
 arsitektur ini adalah kontrak rujukannya.
+
+---
+
+## 15. ADDENDUM — Konsistensi remediasi (Phase 3 Gate A, 2026-10-28)
+
+Audit eksternal `epicRider_phase2_consistency_audit.md` (REWORK REQUIRED) menemukan bahwa §13 di atas
+("0 active contradictions") **tidak cukup didukung**: konflik status fase (F-02), batas commerce
+(F-03), scope penawaran jasa hiRider (F-04), dan referensi `MC §N` ambigu (F-06) lolos dari scan §13.
+Full disposition per temuan: `PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md`. Ringkasan:
+
+- **F-01** → `CONTROL_BASELINE_REGISTER.md` (satu baseline kanonik; paket lengkap NOT FOUND di workspace ini).
+- **F-02** → `MASTER_CONTROL.md` §0 tidak lagi menyimpan status fase dinamis; `ROADMAP.md` = sumber tunggal status.
+- **F-03** → **ADR-018**: tiga surface commerce terpisah (License & Extension Shop / Public Store / Developer Equipment Store); ADR-013 amended in part; 6 dokumen terkait disinkronkan.
+- **F-04** → **OD-185** terdaftar `OPEN — OWNER DECISION` di `OPEN_DECISIONS.md`; ADR-012 menautkannya; invariant utuh.
+- **F-05** → acceptance dihitung ulang (`PHASE_2_ACCEPTANCE.md`, blok re-assessment); scan ulang cakupan lebih luas: `audit/phase3-scan/contradiction-scan-2026-10-28.txt` → 0 kontradiksi aktif tersisa (sisa hits = negasi kanonik/daftar istilah/arsip/worklog).
+- **F-06** → `CONTROL_REFERENCE_CROSSWALK.md` + nota header di 13 artefak Phase 0/1 + 9 titik referensi salah diperbaiki.
+- **F-07** → `HANDOFF.md` dibuat.
+- **F-08** → label edisi ISO di repo aktif sudah "kandidat — NOT VERIFIED — BLOCKED"; paket yang memuat label bermasalah tidak ada di workspace ini.
+
+Status Phase 2 setelah remediasi: **DONE — architecture baseline (re-verified 2026-10-28)** — dengan
+kualifikasi yang sama seperti di atas, plus OD-185 terbuka menunggu keputusan owner. §13 di atas adalah
+rekaman historis scan 2026-10-27 dan **tidak lagi berdiri sendiri** sebagai bukti acceptance.

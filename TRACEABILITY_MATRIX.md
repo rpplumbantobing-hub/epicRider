@@ -1,5 +1,7 @@
 # TRACEABILITY MATRIX — epicRider
 
+> **Referensi MC §N:** rujukan Master Control pada dokumen ini memakai penomoran era Phase 0/1 (MC-V1, §1–§15 — arsip: `audit/superseded/phase1-era-control/`). Interpretasi ke anchor kanonik aktif: `CONTROL_REFERENCE_CROSSWALK.md`. Substansi dokumen tidak diubah (aturan F-06).
+
 **Status dokumen:** TRACED baseline hasil Task 1-b (Phase 1, WS-B). Dokumentasi saja; tidak ada kode/schema/config yang diubah.
 **Sumber ID:** `REQUIREMENTS.md` (REQ-001..REQ-100; tidak ada REQ baru dibuat). Persona P-01..P-12 sesuai daftar tetap. Use case: `USE_CASES.md` (UC-1001..UC-9003, 55 UC). Phase mengikuti kolom Phase `REQUIREMENTS.md` / `ROADMAP.md`.
 **Hitung awal dari REQUIREMENTS.md (terverifikasi via grep):** Must = **70**, Should = **26**, Could = **4** (total 100).

@@ -84,6 +84,7 @@ Kandidat berikut dibuat oleh workstream Phase 1 di masing-masing artefak (defini
 | OD-182 | Kebijakan usability validation minimum (sumber partisipan) | RISK_REGISTER.md | OPEN |
 | OD-183 | Perilaku UI interim offline pra-OD-07 | RISK_REGISTER.md | OPEN |
 | OD-184 | Matrix minimum perangkat/browser scanner web | RISK_REGISTER.md | OPEN |
+| OD-185 | **Apakah "penawaran jasa" (service offering) tetap menjadi scope hiRider?** (temuan audit F-04, 2026-10-28) | (a) hiRider = recruitment/team-matching saja → nyatakan penawaran jasa sebagai scope disupersede/deferred dengan catatan; (b) penawaran jasa tetap in-scope → tambahkan konsep domain (ServiceOffer), lifecycle, permission/privacy, API boundary, dan requirement BARU ber-ID > REQ-100 setelah disetujui owner | Model domain Phase 2 (DATA_MODEL_CONCEPT §5: CandidateProfile/Skill/Portfolio/RecruitmentOpening/Application/Shortlist/RecruitmentDecision) tidak memuat ServiceOffer; kontrol era Phase 0/1 menyebut "penawaran jasa" di antara fitur hiRider (MC lama §2, ROADMAP lama). DILARANG mendaur ulang/mengarang ID requirement; invariant tetap: `Application != Workspace Membership`, `Application != Event Assignment`, `Acceptance != Automatic Workspace Access`, `hiRider != License/Tier`. Tidak memblokir Phase 3 (fondasi) — hanya memblokir desain detail hiRider (Phase 16). | Owner |
 
 Catatan penomoran: OD-129/OD-149/OD-169 hanya penanda batas range workstream (bukan keputusan). ID OD-167/OD-170-179 tidak dipakai — jangan gunakan tanpa dicatat di sini.
 

@@ -6,12 +6,20 @@ Phase 2 is DONE only when evidence proves the following.
 **Evidence base:** Phase 2 deliverables listed below + validation commands recorded in
 `PHASE_2_REPORT.md` §11 (all checks actually executed; outputs in report + `worklog.md`).
 
+> **RE-ASSESSMENT 2026-10-28 (Phase 3 Gate A, remediasi F-05):** the 2026-10-27 assessment was
+> invalidated in part by `epicRider_phase2_consistency_audit.md` — the "no contradiction" claim
+> (A, last bullet) was not adequately supported (F-02 phase-status conflict, F-03 store-boundary
+> conflict, F-04 unrecorded hiRider scope decision, F-06 ambiguous MC §N references). Remediation
+> executed and recorded in `PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md`; contradiction scan re-run
+> with the wider semantic scope (evidence: `audit/phase3-scan/contradiction-scan-2026-10-28.txt`).
+> Status rows below marked ⟲ were re-evaluated on 2026-10-28. Final verdict at the bottom.
+
 ## A. Architecture
 - [x] bounded contexts documented — `DATA_MODEL_CONCEPT.md` §3 (17/17 contexts, 111 entities); `ARCHITECTURE.md` §3 (owner baseline);
 - [x] domain responsibilities documented — `DATA_MODEL_CONCEPT.md` §3 per-context purpose/ownership; `AUTHORIZATION_MODEL.md` §4 vocabulary per context; `API_ARCHITECTURE.md` §18 boundary ownership map;
 - [x] platform/channel architecture documented — `ARCHITECTURE.md` §8 (client-neutral, OD-02 non-blocking); `API_ARCHITECTURE.md` §2 (web first-class + future Android/iOS/Windows clients, one API, no duplicated business logic);
 - [x] current vs target state separated — `ARCHITECTURE.md` §1 state discipline; all Phase 2 docs marked `PROPOSED`/target-state; repository CURRENT STATE unchanged (no code/schema touched in Phase 2);
-- [x] no contradiction with Master Control — contradiction scan 2026-10-27: zero active hits (`PHASE_2_REPORT.md` §13).
+- [x] no contradiction with Master Control — ⟲ **re-evaluated 2026-10-28:** original claim found unsupported (audit F-02/F-03/F-05); after remediation (MC §0 de-dynamized, ADR-018 three commerce surfaces, OD-185 recorded, crosswalk) the re-run scan shows **zero active contradictions** with remaining hits = canonical negations, scan-term lists, superseded history, worklog — `PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md` §2 + `audit/phase3-scan/contradiction-scan-2026-10-28.txt`.
 
 ## B. Data
 - [x] logical domain model complete enough for Phase 3–5 — `DATA_MODEL_CONCEPT.md` (828 lines; Identity/Workspace/Membership/Event/Entitlement/Extension contexts ready for Phases 4–5);
@@ -55,7 +63,7 @@ Phase 2 is DONE only when evidence proves the following.
 
 ## Exit assessment
 
-**DONE — as architecture baseline** (2026-10-27), with honest qualifications:
+**DONE — as architecture baseline** (2026-10-27; **re-verified after consistency remediation 2026-10-28**), with honest qualifications:
 
 1. All Phase 2 architecture deliverables are coherent, cross-referenced, and
    contradiction-clean (validated §A–G above; evidence in `PHASE_2_REPORT.md`).
@@ -67,3 +75,8 @@ Phase 2 is DONE only when evidence proves the following.
 3. No code/schema/config was written or modified in Phase 2 — by design (architecture phase).
    CURRENT STATE of the repository is unchanged; all outputs are `PROPOSED` target-state
    architecture unless marked otherwise.
+4. **Re-assessment 2026-10-28:** audit findings F-01..F-08 triaged (F-01/F-02/F-03/F-05/F-06/F-07/F-08
+   resolved; **F-04 remains OPEN — OWNER DECISION as OD-185** with written impact; it does not block
+   the architecture baseline nor Phase 3 foundation work, but gates hiRider detail design in Phase 16).
+   Owner follow-ups unchanged: ratify 7 PROPOSED ADRs (+ ratify/amend ADR-018), decide OD-01/OD-02,
+   answer OD-185, TC-10 treatment requirement. Status phase source of truth: `ROADMAP.md`.

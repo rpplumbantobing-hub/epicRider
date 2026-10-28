@@ -1,5 +1,7 @@
 # DOCUMENT & EVIDENCE MODEL — epicRider
 
+> **Referensi MC §N:** rujukan Master Control pada dokumen ini memakai penomoran era Phase 0/1 (MC-V1, §1–§15 — arsip: `audit/superseded/phase1-era-control/`). Interpretasi ke anchor kanonik aktif: `CONTROL_REFERENCE_CROSSWALK.md` (contoh: "MC §2" di sini = Produk & batas lisensi era MC-V1, BUKAN Entitlement taxonomy MC aktif; "MC §14" = anti-halusinasi → MC aktif §7). Substansi dokumen tidak diubah (aturan F-06).
+
 **Status dokumen:** DESAIN/PROPOSED (Phase 1, artefak workstream C). Semua struktur di sini adalah **target state** (implementasi Phase 17–18, sebagian 20–21) — bukan kondisi repository saat ini (audit Phase 0: `NOT FOUND`).
 **Sumber:** `MASTER_CONTROL.md` §10 (controlled document & evidence library, audit traceability), §5 (immutability core flow); prompt Phase 1 workstream I; `REQUIREMENTS.md` (REQ-027, REQ-042..044, REQ-053, REQ-078..084); `OPEN_DECISIONS.md` (OD-09, OD-103, OD-104, OD-110, OD-111); `ISO_IMS_BLUEPRINT.md` §3 (hirarki & chain); `PROCESS_MAP.md` (PROC-xxx, KPI-xx); persona P-01..P-12 = register canonical `PERSONAS_AND_JOURNEYS.md` (workstream A).
 **Batas klaim:** Tidak ada klaim kekuatan hukum tanda tangan (OD-103). Periode retensi TIDAK didefinisikan angkanya (OD-104). Klasifikasi & ACL di dokumen ini = **usulan PROPOSED**; final = keputusan owner.

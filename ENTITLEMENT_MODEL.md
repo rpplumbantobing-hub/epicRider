@@ -43,7 +43,7 @@ Resource Context + Object State ───────┘
 
 - One workspace has exactly one active license (its tier); extensions bind to a workspace and are additive.
 - hiRider participation (profiles, applications) requires no license of its own; it operates across the ecosystem above licensed workspaces (MC §1 — recruitment openings belong to workspaces; the portal is a capability).
-- The Public Store is accessible to any user holding a basic miniRider license; it is developer commerce, not a tier feature (MC §1, LICENSE_MATRIX §4). The Developer Equipment Store is available on miniRider only (REQ-010).
+- The **Public Store** is accessible to any user holding a basic miniRider license; it is developer commerce, not a tier feature (MC §1, LICENSE_MATRIX §4). The **Developer Equipment Store** is available on miniRider only (REQ-010). License/extension purchase (including the **first license**) runs through the separate public **License & Extension Shop** surface — corrected 2026-10-28 per ADR-018 (owner, audit F-03); the license-gated Public Store is not the first-purchase path.
 
 ## 3. Effective access formula (canonical)
 
@@ -111,7 +111,7 @@ For capability-by-capability detail, see `LICENSE_MATRIX.md` §2.
 ## 6. Seat & quota model (REQ-009, OD-05 OPEN)
 
 - **Seat concept:** a seat is the capacity for one active workspace membership (kru) within a workspace's quota. Seats are a workspace-scoped countable resource; the seat model exists independent of billing (billing based on seats is blocked pending OD-05 final counting semantics).
-- **Member/quota relationship:** active memberships consume seats. The MC §2 baseline for miniRider is a **maximum of 5 kru per workspace**. Membership states that do not consume a seat (e.g. suspended) are **not defined here — the owner-counting parameter is explicitly OPEN (OD-05: "owner dihitung atau tidak")**; suspended-member counting is likewise part of OD-05's final semantics.
+- **Member/quota relationship:** active memberships consume seats. The miniRider baseline is a **maximum of 5 kru per workspace** (requirement source: REQ-009; historical MC §2 — crosswalk `CONTROL_REFERENCE_CROSSWALK.md`). Membership states that do not consume a seat (e.g. suspended) are **not defined here — the owner-counting parameter is explicitly OPEN (OD-05: "owner dihitung atau tidak")**; suspended-member counting is likewise part of OD-05's final semantics.
 - **Enforcement point (PROPOSED):** server-side on **membership create and on invite** — the 6th kru invite/create on a full-quota miniRider workspace is rejected with `DENY_QUOTA_EXCEEDED` and a clear message (REQ-009 acceptance criteria: "penambahan kru melebihi kuota ditolak server-side dengan pesan jelas"). This is an entitlement check at the membership API/policy layer, never a UI-only limit (UC-1005 F3/F4).
 - **Quota tiers above miniRider:** numeric quotas for tiers other than miniRider are not fixed in the control baseline (OD-05/OD-06 OPEN; noted in `PERSONAS_AND_JOURNEYS.md` §4 reconciliation note). No numbers are invented here.
 - **Additional seat packages as Extension:** the extension catalog includes additional seat packages (REQ-018 catalog example: "+10 seat/workspace") as the sanctioned way to raise a workspace's seat quota above the tier baseline; activation follows the extension lifecycle (§7) and raises the quota enforced at the same server-side point.

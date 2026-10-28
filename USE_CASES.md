@@ -1,5 +1,7 @@
 # USE CASES — epicRider
 
+> **Referensi MC §N:** rujukan Master Control pada dokumen ini memakai penomoran era Phase 0/1 (MC-V1, §1–§15 — arsip: `audit/superseded/phase1-era-control/`). Interpretasi ke anchor kanonik aktif: `CONTROL_REFERENCE_CROSSWALK.md`. Substansi dokumen tidak diubah (aturan F-06).
+
 **Status dokumen:** PROPOSED — hasil Task 1-b (Phase 1, WS-B). Dokumentasi saja; tidak ada kode/schema/config yang diubah.
 **Sumber:** `MASTER_CONTROL.md`, `REQUIREMENTS.md` (REQ-001..REQ-100), `OPEN_DECISIONS.md` (OD-01..OD-116), `ROADMAP.md` (Phase 0..26), `UX_UI_STANDARD.md`.
 **Persona:** P-01 Solo Owner-Operator · P-02 Workspace Owner UKM · P-03 Crew Member · P-04 Event Manager · P-05 Rental/Asset Manager · P-06 Finance/CRM Officer · P-07 Developer/Store Manager · P-08 Platform Admin/Support · P-09 Auditor · P-10 IMS/Sustainability Manager · P-11 Supplier/Contractor · P-12 Customer. (ID tetap; rinci di dokumen persona — tidak diubah di sini.)

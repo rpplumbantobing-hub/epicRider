@@ -62,7 +62,7 @@ Fix the domain boundary of hiRider so that the data model, authorization model, 
 
 ## Dependencies
 
-- **Open decisions:** OD-109 (default visibility & abuse policy), OD-134 (application contact-data policy), OD-123 (multi-workspace crew limits).
+- **Open decisions:** OD-109 (default visibility & abuse policy), OD-134 (application contact-data policy), OD-123 (multi-workspace crew limits), **OD-185 (apakah penawaran jasa/service offering tetap scope hiRider — OPEN — OWNER DECISION, audit F-04 2026-10-28; model ini tidak memuat ServiceOffer; keputusan owner menentukan apakah konsep domain + requirement baru >REQ-100 perlu ditambahkan — jangan mengarang ID)**.
 - **Related ADRs:** ADR-011 (taxonomy), ADR-010 (§8 hiRider authorization specifics).
 - **Candidate decisions (no IDs):** hiRider Opening/Application lifecycle finalization; abuse/moderation model.
 - **Related docs:** `DATA_MODEL_CONCEPT.md`, `THREAT_MODEL.md`, `LEGAL_REGULATORY_REGISTER.md` (LR-002/LR-011).

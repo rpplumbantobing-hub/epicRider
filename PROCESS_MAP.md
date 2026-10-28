@@ -1,5 +1,7 @@
 # PROCESS MAP — epicRider
 
+> **Referensi MC §N:** rujukan Master Control pada dokumen ini memakai penomoran era Phase 0/1 (MC-V1, §1–§15 — arsip: `audit/superseded/phase1-era-control/`). Interpretasi ke anchor kanonik aktif: `CONTROL_REFERENCE_CROSSWALK.md` (contoh: "MC §2" di sini = Produk & batas lisensi era MC-V1, BUKAN Entitlement taxonomy MC aktif; "MC §14" = anti-halusinasi → MC aktif §7). Substansi dokumen tidak diubah (aturan F-06).
+
 **Status dokumen:** DESAIN/PROPOSED (Phase 1, artefak workstream C). Semua isi adalah **target state** untuk implementasi, bukan kondisi repository saat ini. Tidak ada proses di dokumen ini yang boleh dianggap "sudah berjalan" tanpa bukti (MC §14, §15).
 **Sumber:** `MASTER_CONTROL.md` §5 (core flow), §9 (IMS/sustainability), §11 (asset lifecycle & operasi); prompt Phase 1 workstream C/G/H/J; `REQUIREMENTS.md` (REQ-xxx dirujuk apa adanya, TIDAK ada REQ baru dibuat di sini); `OPEN_DECISIONS.md` (OD-xxx); `ISO_IMS_BLUEPRINT.md` §3 (traceability chain); `ROADMAP.md` (phase).
 **Batas klaim:** Dokumen ini BUKAN pernyataan kepatuhan/sertifikasi. Standar hanya dirujuk sebagai metadata (STD-01..STD-10 per `ISO_IMS_BLUEPRINT.md` §1, semuanya `NOT VERIFIED — BLOCKED`). Nol teks standar ISO dikutip (MC §9, REQ-040). Nol angka target/baseline/emisi dikarang.

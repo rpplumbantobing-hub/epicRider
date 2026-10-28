@@ -1,7 +1,7 @@
 # STANDARD REGISTER — epicRider (ISOrider)
 
-**Status dokumen:** Register metadata kandidat standar hasil Phase 1 (workstream WS-D). **TIDAK ADA standar yang terverifikasi.** Semua status verifikasi = `NOT VERIFIED — BLOCKED`. Dokumen ini TIDAK menyatakan kesesuaian, kepatuhan, atau sertifikasi apa pun (MC §9; ISO_IMS_BLUEPRINT §5).
-**Sumber daftar:** `MASTER_CONTROL.md` §9 (baseline kandidat, 10 standar). ID STD-01..STD-10 konsisten dengan acceptance criteria REQ-071 ("STD-01..10").
+**Status dokumen:** Register metadata kandidat standar hasil Phase 1 (workstream WS-D). **TIDAK ADA standar yang terverifikasi.** Semua status verifikasi = `NOT VERIFIED — BLOCKED`. Dokumen ini TIDAK menyatakan kesesuaian, kepatuhan, atau sertifikasi apa pun (MC §7 Quality; ISO_IMS_BLUEPRINT §5; rujukan historis "MC §9" = penomoran MC-V1 — lihat `CONTROL_REFERENCE_CROSSWALK.md`).
+**Sumber daftar:** baseline kandidat owner (historical MC-V1 §9 — crosswalk `CONTROL_REFERENCE_CROSSWALK.md`; daftar kanonik kini hidup di register ini). ID STD-01..STD-10 konsisten dengan acceptance criteria REQ-071 ("STD-01..10").
 **Bukti blocker:** `PHASE_0_AUDIT_REPORT.md` evidence **F0-012** — dari lingkungan pengembangan/sandbox: `curl https://www.iso.org/standard/85590.html` → **HTTP 403**; `catalog.iso.org` → **HTTP 000** (connection failed). Juga tercatat di `ISO_IMS_BLUEPRINT.md` §1 dan ADR-002.
 **Tanggal dokumen dibuat:** 2026-10-27 (Phase 1, workstream WS-D). Tanggal verifikasi standar: **belum ada**.
 
@@ -12,7 +12,7 @@
 1. **Larangan keras:** standar **tanpa `VERIFIED date`** (dari sumber resmi) **TIDAK BOLEH dipakai untuk clause-mapping** (REQ-071; REQ-039). Gate ini mengikat mulai Phase 17 (IMS design).
 2. Klasifikasi pada §2 adalah **klasifikasi KANDIDAT** yang diwarisi dari MC §9. Klasifikasi final (requirements standard / guidance / hukum-kontrak / best practice) baru berlaku setelah verifikasi per §4 dan dicatat di kolom hasil verifikasi.
 3. **DILARANG menyalin teks standar berhak cipta** ke register, aplikasi, atau dokumen apa pun (MC §9; REQ-040). Register hanya menyimpan metadata: nomor, judul, edisi, status, URL sumber, tanggal verifikasi, owner.
-4. Kolom "Status resmi (VERIFIED date/URL)" sengaja **KOSONG** (`—`) untuk semua baris. Mengisinya tanpa sumber resmi = pelanggaran MC §14.
+4. Kolom "Status resmi (VERIFIED date/URL)" sengaja **KOSONG** (`—`) untuk semua baris. Mengisinya tanpa sumber resmi = pelanggaran aturan anti-halusinasi (MC §7 Quality; historical MC-V1 §14 — crosswalk `CONTROL_REFERENCE_CROSSWALK.md`).
 5. Edisi bertahun **2026** (STD-01, STD-04, STD-08) tercantum di MC §9 sebagai **kandidat**. Kemungkinan merujuk revisi yang sedang/akan berjalan di ISO. **Status penerbitannya TIDAK DIKETAHUI** dari lingkungan ini dan **WAJIB dicek saat verifikasi** (apakah sudah published, masih under development/under revision, atau nomor/tahun edisi berbeda). Jangan menyimpulkan apa pun sebelum cek katalog resmi.
 6. Status "requirements/guidance" belum tentu sama dengan status "wajib hukum/kontrak" bagi pelanggan. Applicability per yurisdiksi/kontrak adalah keputusan bisnis/legal terpisah (OD-08, OD-09) — bukan kesimpulan engineer.
 7. Perubahan isi register (edisi, status, klasifikasi) hanya boleh dilakukan setelah eksekusi prosedur §4 dan wajib mencatat tanggal, URL, dan nama verifier.

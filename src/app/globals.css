@@ -37,6 +37,12 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -63,6 +69,13 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
+  /* Semantic status tokens (Phase 3 foundation) — muted/professional, AA-oriented vs their -foreground */
+  --success: oklch(0.508 0.118 155);
+  --success-foreground: oklch(0.985 0 0);
+  --warning: oklch(0.795 0.116 75);
+  --warning-foreground: oklch(0.216 0.056 65);
+  --info: oklch(0.47 0.081 236);
+  --info-foreground: oklch(0.985 0 0);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -97,6 +110,13 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
+  /* Semantic status tokens — dark parity (only for token parity; no dark-mode toggle in Phase 3) */
+  --success: oklch(0.723 0.132 155);
+  --success-foreground: oklch(0.145 0 0);
+  --warning: oklch(0.795 0.116 75);
+  --warning-foreground: oklch(0.216 0.056 65);
+  --info: oklch(0.688 0.093 236);
+  --info-foreground: oklch(0.145 0 0);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -119,4 +139,22 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Global visible keyboard focus (components may add their own ring on top) */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring/70;
+  }
 }
+
+/* Respect users who prefer reduced motion (UX_UI_STANDARD §2.3) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* phase3 token refresh trigger */

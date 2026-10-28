@@ -356,3 +356,82 @@ Stage Summary:
 - Deliverable Phase 2: 8 dokumen root baru + 12 ADR individual + 5 file baseline owner terpasang (7 kontrol diganti, versi lama diarsipkan superseded).
 - Tindak lanjut owner (non-blocking): ratifikasi ADR-008..011/015..017 (PROPOSED); putuskan OD-01 (DB) & OD-02 (client strategy) untuk menutup ADR-006/007; treatment TC-10 (kandidat REQ report/block abuse hiRider).
 - Phase 3 dapat dimulai dengan arsitektur ini sebagai kontrak rujukan.
+
+---
+Task ID: 3-a
+Agent: Z.ai Code (main orchestrator)
+Task: Phase 3 Gate A — audit konsistensi Phase 2 & remediasi kontrol (F-01..F-08) per `upload/epicRider_Phase_3_Prompt_zai.md` + `upload/epicRider_phase2_consistency_audit.md`
+
+Work Log:
+- Baca lengkap prompt Phase 3 (516 baris) + audit konsistensi (131 baris) + MC/ROADMAP/PHASE_STATUS/DECISIONS/OPEN_DECISIONS/PHASE_2_ACCEPTANCE/ADR-013 aktif.
+- F-01: diff root vs `upload/phase2_extract/` → 9 IDENTICAL / 4 DIFFERS (semua = update eksekusi Phase 2 yang sah); `epicRider_Control_Pack_Complete(1).zip` NOT FOUND di workspace ini (audit eksternal memakai TAR lain). Dibuat `CONTROL_BASELINE_REGISTER.md` (P-1..P-7, satu kanonik = root pasca-70005a7 + koreksi prompt).
+- F-02: MC §0 ditulis ulang — status fase dinamis dihapus, ROADMAP = sumber tunggal status; MC §8 digeneralisasi "setiap fase".
+- F-03: ADR-018 dibuat (tiga surface commerce: License & Extension Shop / Public Store / Developer Equipment Store; supersedes ADR-013 in part; ADR-013 diberi nota AMENDED). Sinkron: MC §1, LICENSE_MATRIX §4, DATA_MODEL_CONCEPT §3.12+§4.6, AUTHORIZATION_MODEL §4.12+§9, API_ARCHITECTURE §3+EX-6, ENTITLEMENT_MODEL §2.
+- F-04: OD-185 (penawaran jasa hiRider?) didaftarkan OPEN — OWNER DECISION di OPEN_DECISIONS §3 + ditautkan di ADR-012 Dependencies; tidak ada REQ baru dikarang; invariant dijaga.
+- F-05: acceptance Phase 2 dihitung ulang (blok RE-ASSESSMENT di PHASE_2_ACCEPTANCE + addendum §15 di PHASE_2_REPORT); scan ulang S1–S9 disimpan `audit/phase3-scan/contradiction-scan-2026-10-28.txt`; klaim self-check DMC §11 diberi nota superseded; verifikasi integritas REQ: 100 unique first-column IDs, 0 duplikat.
+- F-06: `CONTROL_REFERENCE_CROSSWALK.md` dibuat (MC-V0/V1 §1–§15 → anchor MC-V3; verifikasi MC-V0≡MC-V1 secara penomoran); nota crosswalk di-header-kan ke 14 artefak Phase 0/1 (substansi tak diubah); 9 titik referensi salah diperbaiki (DMC×5, EM×1, AUTHZ×1, PHASE_STATUS×2, STANDARD_REGISTER header×2).
+- F-07: `HANDOFF.md` dibuat (status/otoritas/keputusan/kontrak teknis/gap/command/rahasia/next actions).
+- F-08: PARTIALLY CONFIRMED — paket MC lengkap berlabel edisi 2026 tidak ada di workspace; register aktif sudah "kandidat — NOT VERIFIED — BLOCKED"; dipertahankan.
+- ROADMAP + PHASE_STATUS disinkronkan (Phase 2 = DONE re-verified 2026-10-28; Phase 3 = IN PROGRESS).
+
+Stage Summary:
+- Gate A exit criteria terpenuhi: baseline kanonik terekam; F-02/F-03/F-05 diperbaiki; F-06/F-07 diperbaiki; acceptance Phase 2 dihitung ulang berbasis bukti; F-04 tetap OPEN — OWNER DECISION dengan dampak tertulis (tidak memblokir Phase 3).
+- Artefak baru: CONTROL_BASELINE_REGISTER.md, CONTROL_REFERENCE_CROSSWALK.md, PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md, HANDOFF.md, adr/ADR-018-commerce-surfaces.md, audit/phase3-scan/contradiction-scan-2026-10-28.txt.
+- Status Phase 2 resmi kembali: DONE — architecture baseline (re-verified 2026-10-28), kualifikasi tercatat.
+
+---
+Task ID: 3-c
+Agent: full-stack-developer (subagent)
+Task: Phase 3 implementation — foundation scripts, design tokens, i18n, foundation components, showcase, tests, CI, README
+
+Work Log:
+- Baca konteks: worklog.md (entri terakhir = Task 3-a; entri "Task 3-b" TIDAK ditemukan di worklog dan folder /agent-ctx belum ada — dicatat jujur), ADR-019, ADR-020, PHASE_3_CURRENT_STATE_AUDIT.md, MASTER_CONTROL §1/§3/§4, UX_UI_STANDARD.md.
+- Konfigurasi (per ADR-019): next.config.ts — `typescript.ignoreBuildErrors` DIHAPUS, `reactStrictMode: true`, `output: "standalone"` dipertahankan. package.json — script baru `typecheck` (tsc --noEmit), `test` (vitest run), `test:watch`, `format`, `format:check`; script dev/build/start/lint/db:* dipertahankan. Dep dev di-install via bun: vitest@3.2.7 (test runner; dipin 3.x sesuai spek), @vitejs/plugin-react@4.7.0 (JSX/React untuk vitest), @testing-library/react@16.3.3 (render component test), @testing-library/user-event@14.6.8 (simulasi interaksi), @testing-library/jest-dom@7.0.1 (matcher DOM), jsdom@30.1.3 (environment DOM), prettier@3.9.10 (formatter untuk format/format:check). Dibuat .prettierrc (printWidth 100, double quote, semi, es5), .prettierignore (node_modules/.next/coverage/bun.lock/db/upload/audit/download/tool-results/*.md — melindungi dokumen kontrol), .editorconfig (UTF-8/LF/2 spasi/final newline), .env.example (placeholder DATABASE_URL="file:./dev.db" + komentar; tanpa nilai nyata). .gitignore sudah memuat `/coverage` — diverifikasi, tanpa perubahan.
+- Design tokens (foundation, §5.2): globals.css — token semantik `--success`/`--warning`/`--info` + `-foreground` ditambahkan ke :root dan .dark (oklch, muted/professional, kontras AA terhadap foreground-nya), diregistrasi di `@theme inline` (`--color-success` dst.); rule global `:focus-visible` (outline 2px ring); `@media (prefers-reduced-motion: reduce)` menonaktifkan animasi/transisi global. Tanpa dark-mode toggle (sesuai batas scope).
+- i18n (per ADR-020): src/i18n/config.ts (locales ['id','en'], defaultLocale 'id', LOCALE_COOKIE 'epicrider_locale', isLocale guard); dictionaries/id.ts (dictionary + type Dictionary, copy Indonesia netral tanpa klaim produk/harga/ISO); dictionaries/en.ts (en: Dictionary — parity type-level); dictionaries/index.ts (registry `dictionaries`); server.ts (getLocale via cookies() async Next 16, fallback default); provider.tsx (I18nProvider + useI18n: t dengan fallback chain locale→defaultLocale→key, setLocale = cookie path=/ max-age 31536000 SameSite=Lax + state + router.refresh, formatter ter-bound); format.ts (Intl per locale: id-ID/en-US; mata uang IDR/USD = DEMO FORMAT SAJA — catatan OD-06); translate.ts (createTranslator murni agar fallback ter-unit-test; console.warn dev-only).
+- Komponen fondasi presentational (src/components/foundation/): status-badge.tsx (StatusBadge tone success/warning/info/danger/neutral — Badge + token warna + ikon lucide per tone, bukan warna saja), empty-state.tsx (EmptyState props-driven), error-state.tsx (ErrorState + onRetry/retrying/retryLabel), permission-denied.tsx (PermissionDenied + resource, ShieldAlert; disclaim: pola UI, otorisasi tetap server-side).
+- Showcase route `/`: page.tsx async server component (getLocale → I18nProvider → wrapper min-h-screen flex-col); layout.tsx async (html lang={locale} dinamis, metadata netral "epicRider — Foundation Showcase", Geist + Toaster dipertahankan); showcase.tsx 'use client' — 9 section: header + language switcher (aria-pressed), warna semantik (11 swatch token), tipografi text-xs→text-4xl, spasi p-4/p-6, tombol (semua varian × ukuran + loading spinner + disabled + icon), formulir (Label/Input/Textarea/Select/Checkbox + validasi inline aria-invalid/aria-describedby/role=alert, bukan warna saja), panel status aria-live="polite" (Loading Skeleton+Progress+spinner / EmptyState / ErrorState dengan retry yang pulih via setTimeout 600ms — demo client-side berlabel / Alert sukses / PermissionDenied), badge & alert (5 tone + Alert default/destructive), format Intl (tanggal tetap Date.UTC(2026,9,28) + timeZone UTC agar bebas hydration mismatch, angka, mata uang + catatan demo), grid responsif 1→2→3→4 kolom; footer sticky mt-auto dengan safe-area inset; grid p-6/gap-6 konsisten, max-w-6xl.
+- Test (vitest): vitest.config.ts (jsdom, setupFiles tests/setup.ts, alias @ → ./src, plugin react); tests/setup.ts (jest-dom/vitest + afterEach cleanup); tests/unit/i18n.test.ts — 15 test (parity key rekursif id↔en dengan daftar key hilang pada pesan gagal; fallback t() via createTranslator: en hilang → nilai id, hilang di mana pun → key itu sendiri, warn dev-only; formatter: "Rp"/"1.500.000" id-ID vs "$"/"1,234,567" en-US, "Oktober" vs "October"; isLocale guard; getLocale cookie valid/tidak-valid/tidak-ada via vi.doMock next/headers + resetModules); tests/components/foundation.test.tsx — 7 test (role status/alert + nama aksesibel + teks; retry button fires onRetry; retrying → disabled + aria-busy + spinner svg; StatusBadge tone → ikon berubah dibandingkan outerHTML glyph — color-independent + data-tone); tests/components/i18n-switcher.test.tsx — 3 test (harness I18nProvider; setLocale('en') → string id→en + document.cookie epicrider_locale=en + router.refresh dipanggil via mock; kembali ke id). Timer deterministik (retry demo 600ms tidak diuji via real-timer; tidak ada e2e/playwright — smoke route manual via agent-browser oleh orkestrator, dicatat jujur di README).
+- CI: .github/workflows/ci.yml — name "CI", trigger push + pull_request, permissions contents: read, job ubuntu-latest: oven-sh/setup-bun@v2 (bun-version 1.3.14, pin) → bun install --frozen-lockfile → bun run lint → bun run typecheck → bun run test → bun run build (step build hanya dieksekusi di CI remote; di sandbox build dilarang platform → status lokal NOT TESTED, dicatat di header workflow).
+- README.md root dibuat: one-liner fondasi (bukan fitur produksi), prasyarat, tabel perintah dengan status jujur, struktur, konvensi (folder/naming/error-handling/env/import boundaries), panduan i18n (3 langkah + prosedur audit string hard-coded), testing conventions (unit vs component, e2e = NOT FOUND, smoke manual), CI (status NOT TESTED — tanpa remote), pointer dokumen kontrol.
+- Verifikasi (perintah aktual + exit codes): `bun install --frozen-lockfile` = exit 0; `bun run lint` = exit 0; `bun run typecheck` = exit 0 (setelah perbaikan: folder platform `examples/` + `skills/` di-exclude dari tsc — error pra-ada scaffold [socket.io dll.]; assignment NODE_ENV readonly di test diganti `vi.stubEnv`); `bun run test` = exit 0 (3 file / 25 test pass); `bun run format:check` = exit 1 (informatif — 66 file scaffold belum rapi; format BELUM diterapkan repo-wide, bukan gate, keputusan penerapan menyusul). dev.log: `GET / 200`, `✓ Compiled in 341ms`, tanpa error; render server diverifikasi via curl: default lang="id" + judul Indonesia + "Rp"; cookie epicrider_locale=en → lang="en" + judul Inggris + "$".
+- Dictionary key parity: id = 85 key, en = 85 key (common 8, showcase 30, states 9, forms 15, buttons 8, status 8, format 4, footer 3).
+- Tidak disentuh: dokumen kontrol root (MASTER_CONTROL, ROADMAP, PHASE_STATUS, DECISIONS, OPEN_DECISIONS, LICENSE_MATRIX, REQUIREMENTS, dll.), semantics rule eslint, prisma/schema.prisma; worklog hanya di-append; tanpa commit; tanpa `bun run build`.
+
+Stage Summary:
+- Dibuat: src/i18n/{config,server,provider,format,translate}.tsx/.ts, src/i18n/dictionaries/{id,en,index}.ts, src/components/foundation/{status-badge,empty-state,error-state,permission-denied,showcase}.tsx, vitest.config.ts, tests/setup.ts, tests/unit/i18n.test.ts, tests/components/{foundation,i18n-switcher}.test.tsx, .prettierrc, .prettierignore, .editorconfig, .env.example, .github/workflows/ci.yml, README.md, agent-ctx/3-c-full-stack-developer.md.
+- Diubah: next.config.ts, package.json (+5 script, +7 dep dev), bun.lock, tsconfig.json (exclude examples/skills untuk tsc), src/app/globals.css, src/app/layout.tsx, src/app/page.tsx.
+- Hasil test: 25/25 pass (unit 15, foundation 7, switcher 3); lint exit 0; typecheck exit 0; install frozen-lockfile exit 0; key parity id=en=85.
+- Batasan jujur: build produksi NOT RUN (larangan platform); CI remote NOT TESTED (repo tanpa git remote); prettier belum diterapkan repo-wide (66 file — termasuk scaffold — belum rapi; format:check bukan gate); eslint tetap longgar (±30 rule off, baseline dipertahankan, pengetatan bertahap = rekomendasi); tidak ada framework e2e (smoke `/` manual via agent-browser); entri worklog Task 3-b tidak ditemukan saat mulai (hanya 3-a; /agent-ctx belum ada saat mulai); mata uang i18n = demo format saja (OD-06); PermissionDenied = pola UI, bukan security control; tidak ada dark-mode toggle (token .dark hanya parity).
+
+---
+Task ID: 3-b
+Agent: Z.ai Code (main orchestrator)
+Task: Phase 3 Gate B — audit current state repository & engineering baseline
+
+Work Log:
+- Inspeksi read-only: stack (Next 16.1.1/React 19/TS5 strict-noImplicitAny-false/Tailwind4/bun 1.3.14/Prisma 6.11.1+SQLite), struktur src, shadcn 52 komponen terpasang, tsconfig, eslint.config (±30 rule off — PARTIAL), next.config (ignoreBuildErrors:true — risiko), package.json scripts, .env (ada, untracked, TIDAK dibuka), .env.example/.editorconfig/CI/test framework/formatter/README = NOT FOUND, git remote kosong.
+- Command status: dev/lint VERIFIED; build NOT RUN (larangan platform); typecheck/test belum ada → akan dibuat.
+- Risiko tercatat #1..#7 (ignoreBuildErrors, lint longgar, noImplicitAny false, token status kurang, metadata scaffold + lang="en", db/custom.db ter-commit, tanpa .env.example).
+
+Stage Summary:
+- Deliverable: PHASE_3_CURRENT_STATE_AUDIT.md (§1 stack VERIFIED/PARTIAL/NOT FOUND; §2 command; §3 risiko+tindakan; §4 baseline error; §5 keputusan yang dipertahankan; §6 taxonomy status jujur).
+- Catatan: entri 3-b ini ditambahkan belakangan (setelah 3-c) — Gate B dikerjakan sebelum delegasi 3-c namun worklog entry tertinggal saat itu; substansi audit dibuat sebelum implementasi (file mtime & urutan laporan membuktikan).
+
+---
+Task ID: 3-d
+Agent: Z.ai Code (main orchestrator)
+Task: Phase 3 verification, acceptance, reporting, handoff finalization
+
+Work Log:
+- Re-run quality gates secara independen: `bun run lint` exit 0; `bun run typecheck` exit 0; `bun run test` exit 0 (25/25 — unit 15, foundation 7, switcher 3).
+- agent-browser end-to-end (route /): render penuh ID default; switcher ID↔EN dua arah (lang html + cookie + seluruh string berubah, tanpa error); state panel Empty/Error→Retry→Success nyata; form validasi kosong (aria-invalid + aria-describedby, bukan color-only); formatting per-locale (1,234,567.89 / $ / Rp); keyboard Tab focus; footer mt-auto + safe-area (halaman panjang terdorong alami, docHeight 3980).
+- Defect ditemukan & diperbaiki: `bg-success` transparent (stale Tailwind build di sandbox) → file touch memicu recompile → computed color terverifikasi lab() hijau/amber/biru; screenshot di-retake.
+- Screenshot evidence: audit/evidence/phase3-showcase-{id-desktop, en-desktop, en-tablet-768, en-mobile-390}.png; console bersih.
+- Deliverable akhir: PHASE_3_TRACEABILITY.md (control→deliverable→path→evidence→status + P3-ENG-01..09), PHASE_3_ACCEPTANCE.md (16/16 PASS + 7 kualifikasi jujur), PHASE_3_REPORT.md (files/commands/exit codes/limitations/risks).
+- ROADMAP + PHASE_STATUS + HANDOFF disinkronkan: Phase 3 = DONE — repository foundation baseline 2026-10-28; Phase 4 TIDAK dimulai.
+- ADR_REGISTER: ADR-018..020 terdaftar (§3b); next free ID = ADR-021.
+
+Stage Summary:
+- Phase 3 selesai dengan kualifikasi jujur: build NOT RUN (larangan platform), CI remote NOT TESTED (tanpa git remote), e2e smoke manual (framework belum dipasang), format:check bukan gate (exit 1 baseline).
+- Kontrak untuk Phase 4 tersedia di HANDOFF.md; open decisions utama: OD-185 (owner), OD-01/OD-02, ratifikasi ADR PROPOSED.

@@ -1,5 +1,7 @@
 # OPERATIONS — epicRider
 
+> **Referensi MC §N:** rujukan Master Control pada dokumen ini memakai penomoran era Phase 0/1 (MC-V1, §1–§15 — arsip: `audit/superseded/phase1-era-control/`). Interpretasi ke anchor kanonik aktif: `CONTROL_REFERENCE_CROSSWALK.md`. Substansi dokumen tidak diubah (aturan F-06).
+
 ## 1. CURRENT STATE — audit Phase 0 (2026-05-22)
 
 | Aspek | Fakta | Status |

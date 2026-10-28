@@ -1,5 +1,7 @@
 # NON-FUNCTIONAL REQUIREMENTS — epicRider
 
+> **Referensi MC §N:** rujukan Master Control pada dokumen ini memakai penomoran era Phase 0/1 (MC-V1, §1–§15 — arsip: `audit/superseded/phase1-era-control/`). Interpretasi ke anchor kanonik aktif: `CONTROL_REFERENCE_CROSSWALK.md`. Substansi dokumen tidak diubah (aturan F-06).
+
 **Status dokumen:** Baseline NFR hasil Phase 1 (workstream WS-D, 2026-10-27), kategori mengikuti prompt Phase 1 workstream L. Semua requirement berstatus `PROPOSED` menunggu persetujuan owner.
 **Aturan keras:** **Semua angka target di dokumen ini berlabel `PROPOSED`** + trade-off singkat + menunggu approval **OD-112** (kinerja/ketersediaan) atau **OD-114** (backup/DR) — TIDAK ADA angka final. Dilarang menyajikan angka sebagai keputusan. WCAG 2.2 AA adalah **requirement** (REQ-033), bukan target bikinan. Dilarang mengarang SLA final, kuota di luar MC, atau klaim tanpa bukti (MC §14).
 **Rujukan utama:** `REQUIREMENTS.md` REQ-092..097, `SECURITY.md`, `OPERATIONS.md`, `UX_UI_STANDARD.md`, `TESTING.md`, MC §3–§11.

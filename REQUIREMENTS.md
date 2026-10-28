@@ -1,5 +1,7 @@
 # REQUIREMENTS — epicRider
 
+> **Referensi MC §N:** rujukan Master Control pada dokumen ini memakai penomoran era Phase 0/1 (MC-V1, §1–§15 — arsip: `audit/superseded/phase1-era-control/`). Interpretasi ke anchor kanonik aktif: `CONTROL_REFERENCE_CROSSWALK.md` (contoh: "MC §2" di sini = Produk & batas lisensi era MC-V1, BUKAN Entitlement taxonomy MC aktif; "MC §14" = anti-halusinasi → MC aktif §7). Substansi dokumen tidak diubah (aturan F-06).
+
 **Status dokumen:** Baseline hasil Phase 1 (desk analysis — tanpa riset pengguna partisipan; keterbatasan dicatat di `PHASE_1_REPORT.md`). Seluruh requirement berstatus **`PROPOSED`** menunggu persetujuan owner sebelum Phase 2; tidak ada yang `APPROVED`.
 **Sumber:** `MASTER_CONTROL.md` (MC §…), prompt Phase 0/1, `PHASE_0_AUDIT_REPORT.md`. Tidak ada requirement yang ditarik dari tebakan pasar/harga/legal.
 **Aturan ID:** ID stabil, tidak didaur ulang. 46 ID pertama (REQ-001..046) diwarisi Phase 0 tanpa perubahan substansi, diperkaya rationale/acceptance criteria/planned phase. REQ-047..100 baru.

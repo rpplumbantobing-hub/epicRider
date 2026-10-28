@@ -1,5 +1,7 @@
 # UX/UI STANDARD — epicRider
 
+> **Referensi MC §N:** rujukan Master Control pada dokumen ini memakai penomoran era Phase 0/1 (MC-V1, §1–§15 — arsip: `audit/superseded/phase1-era-control/`). Interpretasi ke anchor kanonik aktif: `CONTROL_REFERENCE_CROSSWALK.md`. Substansi dokumen tidak diubah (aturan F-06).
+
 **Sumber:** Master Control §7 (quality gate lintas fase) + hasil audit kondisi nyata Phase 0. Dokumen ini adalah **standar target yang mengikat setiap fase implementasi**. Audit UX/UI faktual per fase wajib dicatat (apa yang diuji vs tidak diuji).
 
 ---
