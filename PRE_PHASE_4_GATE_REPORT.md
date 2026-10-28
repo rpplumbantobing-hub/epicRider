@@ -7,7 +7,11 @@
 
 ## Verdict
 
-# **BLOCKED**
+# **PASS** — updated 2026-10-28 (Item 9 resolved by remote CI execution; see §Re-execution 2026-10-28)
+
+**Phase 4 is authorized to start.** `PRE_PHASE_4_GATE = PASS`: all 11 gate items now PASS with evidence. Item 9 (CI workflow execution on a legitimate runner) was resolved after the owner pushed the canonical repository to GitHub and workflow **CI** executed on `push` — run `#1`, commit `2b2141c`, branch `main`, overall status `Success` (run URL recorded in §Re-execution 2026-10-28). Items 1–8, 10 and 11 were re-verified against the current workspace on 2026-10-28 and remain PASS. Phase 4 has **not** been started: correct status = `AUTHORIZED / READY TO START` — no Phase 4 implementation work has been performed.
+
+### Historical verdict (Stage A, 2026-10-28) — BLOCKED (superseded; preserved verbatim, never rewritten)
 
 **Phase 4 must NOT be started or implemented.** Gate items 1–8, 10 and 11 PASS with reproducible evidence; **item 9 (CI workflow execution on a legitimate runner) is BLOCKED** — this repository has no Git remote and this environment has no workflow runner (`docker`/`act` NOT FOUND), so `.github/workflows/ci.yml` has never executed as a workflow anywhere. Per the gate rule (prompt §1.3): *"jika build atau workflow CI masih `NOT TESTED/BLOCKED` … Phase 4 tidak boleh dinyatakan mulai/diimplementasikan."* The CI-equivalent local sequence (install→lint→typecheck→test→build) was executed on an isolated working copy and passed (gate item 8 evidence), but the prompt explicitly states manual execution is **not** equivalent to running the CI workflow — that evidence is therefore **not** claimed as item 9.
 
@@ -23,7 +27,7 @@
 | 6 | STANDARD_REGISTER / ISO_IMS_BLUEPRINT consistent with MC-V4 §7 (published editions recorded; no conformity claims) | **PASS (non-blocking item)** | same file — 3 "PUBLISHED per catatan katalog owner 2026-10-28" records in each; the only remaining "TIDAK DIKETAHUI" text is the rule that marks the old statement obsolete; zero applicability/conformity claims |
 | 7 | `.env` not tracked; `.env.example` tracked placeholder-only; secret scan clean | **PASS** | same file + `gate-7b-10-secretscan-contradiction.txt` — `git ls-files .env` empty; `.env` gitignored; `.env.example` tracked (placeholder `DATABASE_URL="file:./dev.db"`); secret-pattern scan over all tracked files = **0 hits**; `.env` contains only the local SQLite `DATABASE_URL` (no service credentials, no rotation needed) |
 | 8 | Production build runs on an isolated working copy with real log + exit code | **PASS** | `gate-8-isolated-build.log` + `gate-8-next-build-output.log` — isolated copy `/tmp/epicrider-gate-build` (main working copy **untouched**, dev server stayed HTTP 200): `bun install --frozen-lockfile` exit 0 (933 pkgs, 4.02s) → `lint` exit 0 → `typecheck` exit 0 → `test` exit 0 (25/25) → **`bun run build` EXIT 0** (compiled successfully 8.6s; routes `/`, `/_not-found`, `/api` generated). Isolated copy deleted after evidence capture |
-| 9 | CI workflow actually executes on a legitimate runner | **BLOCKED** | `gate-9-11-ci-workflow-gitsafety.txt` — `git remote -v` = empty; `which docker act` = NOT FOUND; workflow has never executed on any runner. Local CI-equivalent sequence (gate 8) is explicitly **not** claimed as workflow execution per prompt §1.3 item 9 |
+| 9 | CI workflow actually executes on a legitimate runner | **PASS** (resolved 2026-10-28 — was **BLOCKED** at Stage A; history preserved) | Stage A: `gate-9-11-ci-workflow-gitsafety.txt` — `git remote -v` = empty; `which docker act` = NOT FOUND; workflow had never executed on any runner. Local CI-equivalent sequence (gate 8) is explicitly **not** claimed as workflow execution per prompt §1.3 item 9. **Resolution (2026-10-28):** remote execution evidence recorded — GitHub Actions run `#1` (`Success`), workflow `CI` (`.github/workflows/ci.yml`), commit `2b2141c`, branch `main`: <https://github.com/rpplumbantobing-hub/epicRider/actions/runs/40733976189> — full details in §Re-execution 2026-10-28 |
 | 10 | Reproducible diff / requirement-integrity / semantic-contradiction scans on final snapshot | **PASS** | `gate-1-2…`, `gate-3-4…`, `gate-5-6-7…`, `gate-7b-10…`, `gate-10-classification.txt` — scope, commands and exclusions explicit; S1–S10 checks clean after classification (hits = negations, scan-term lists, marked history) |
 | 11 | Pre-existing working-tree changes classified & preserved | **PASS** | same file — live tree was clean at HEAD `dca3630` before Stage A (the TAR's "37/208 modified paths" = stale index inside the TAR, changes already committed; nothing was reset/cleaned/discarded); Stage A edits (23 modified control files + new gate files) classified in `PHASE_4_ENTRY_AUDIT.md` §5; `upload/` inputs preserved |
 
@@ -45,6 +49,8 @@
 
 ## Owner action list (to unblock Phase 4)
 
+**Update 2026-10-28:** action 1 is **CLOSED** — the canonical repository was pushed to GitHub and workflow CI executed remotely (run `#1`, `Success`, commit `2b2141c`; see §Re-execution 2026-10-28). The gate was re-run per action 4 and now records **PASS**; Phase 4 is authorized to start.
+
 1. **Push this repository to a Git remote** (e.g. GitHub) so workflow **CI** (`.github/workflows/ci.yml`: install → lint → typecheck → test → build) executes on `push`; record the run URL/logs/exit codes. **This alone closes gate item 9** (and independently corroborates item 8).
 2. Alternative: register an equivalent runner that executes the actual workflow file, and record its logs.
 3. Optional (Phase 2 full completion, not a Phase 4 blocker): ratify ADR-008..011, ADR-015..017, ADR-018; decide OD-01/OD-02.
@@ -60,3 +66,66 @@
 ## Re-execution
 
 This gate can be re-run when item 9 evidence becomes available. Append a new dated section to this report; never rewrite history.
+
+## Re-execution 2026-10-28 — Item 9 resolution: remote CI executed (gate closure)
+
+**Trigger:** the owner pushed the canonical repository to GitHub (`https://github.com/rpplumbantobing-hub/epicRider.git`); workflow **CI** (`.github/workflows/ci.yml`) executed on `push`. This section is appended per the re-execution rule above; no historical evidence was removed or rewritten.
+
+### Item 9 evidence (GitHub Actions — recorded as provided by the owner)
+
+| Field | Value |
+|---|---|
+| Repository | `https://github.com/rpplumbantobing-hub/epicRider.git` |
+| Workflow | `CI` — file `.github/workflows/ci.yml` |
+| Trigger / branch | `push` / `main` |
+| Commit | `2b2141c` |
+| Run number | `#1` |
+| Run URL | <https://github.com/rpplumbantobing-hub/epicRider/actions/runs/40733976189> |
+| Overall status | `Success` |
+| Job | `lint, typecheck, test, build` — `Success` |
+| Total duration | ≈ 40 seconds |
+| Job duration | ≈ 36 seconds |
+
+**Cross-references (verified in this workspace, 2026-10-28):**
+
+- Commit `2b2141c` exists in this workspace's Git object store: `git log --oneline -1 2b2141c` → `2b2141c b2ae86d7-518e-40b6-bec1-182ca57b929a`. (Observation: the local branch was later rewritten by automated environment commits, so `2b2141c` is not on the current HEAD ancestry chain — recorded as observation only; it does not affect the validity of the remote run evidence.)
+- The workflow file matches the executed definition and is **unchanged by this update**: `name: CI`, job display name `lint, typecheck, test, build`, `runs-on: ubuntu-latest`. (A pre-existing file-mode-only working-tree change on this file stands, preserved.)
+- Item 8 (isolated production build, exit 0) is independently corroborated by the remote CI job `Success`.
+
+### Full gate re-evaluation (items 1–11 against the current workspace, 2026-10-28)
+
+| # | Re-check (command / fact) | Result |
+|---|---|---|
+| 1 | `diff -q MASTER_CONTROL.md upload/MASTER_CONTROL_epicRider_2026-10-28.md` = identical; `OBSOLETE_AND_SUPERSEDED_REGISTER.md` present at root and registered in `CONTROL_BASELINE_REGISTER.md` (5 references) | **PASS (unchanged)** |
+| 2 | `ROADMAP.md` / `PHASE_STATUS.md` synchronized: Phase 2 `PARTIAL`, Phase 3 `PARTIAL`; Phase 4 updated by this same governance action to `AUTHORIZED / READY TO START` in both (sync maintained) | **PASS** |
+| 3 | `REQUIREMENTS.md`: 101 requirement table rows, 0 duplicate rows, REQ-001..REQ-100 continuity complete (0 missing rows), `REQ-101` = exactly 1 table row (other occurrences are prose/addendum notes — allowed); REQ-030 = three separate commerce surfaces (License & Extension Shop; Public Store; Developer Equipment Store) | **PASS (re-verified)** |
+| 4 | `grep -ri ServiceOffer src/ prisma/` = 0 hits (target-state only, not implemented — Phase 16 scope unchanged); invariant `ServiceOffer != RecruitmentOpening` present (`MASTER_CONTROL.md` §2.2) | **PASS (re-verified)** |
+| 5 | No content change to any traceability/semantic document since the Stage A scans (working-tree diff = file-mode-only changes + pre-existing binary re-hashes; zero text content lines changed) — classification in `gate-5-6-7-semantic-standard-env.txt` + `gate-10-classification.txt` still applies | **PASS (unchanged)** |
+| 6 | `STANDARD_REGISTER.md` / `ISO_IMS_BLUEPRINT.md` unchanged since Stage A verification (same scan basis); published-editions record per owner catalogue check; no applicability/conformity claims | **PASS (unchanged, non-blocking)** |
+| 7 | `git ls-files .env` = empty; `.gitignore` ignores `.env*` with `!.env.example`; `.env.example` tracked and placeholder-only (`DATABASE_URL="file:./dev.db"`); secret-pattern scan over all tracked files (GitHub/AWS/Slack/private-key/generic API token patterns) = **0 hits** | **PASS (re-verified)** |
+| 8 | Isolated production build evidence (exit 0; `audit/phase4-entry/gate-8-*.log`) stands; independently corroborated by the remote CI job `Success` (item 9) | **PASS (unchanged + corroborated)** |
+| 9 | Remote CI execution evidence recorded in this section (run `#1`, `Success`, commit `2b2141c`, branch `main`) | **PASS (RESOLVED)** |
+| 10 | Scan evidence files in `audit/phase4-entry/` intact; scope, commands and exclusions unchanged | **PASS (unchanged)** |
+| 11 | Pre-existing working-tree changes classified & preserved: repo-wide file-mode sweep (`100644→100755`, 0 content lines), pre-existing binary image re-hashes, and delivery-surface changes (`src/app/page.tsx`, `src/components/delivery/`, `src/app/api/transfer-download/`) — no reset/clean/mass-stage/discard performed by this update | **PASS (re-verified)** |
+
+### CI warnings — NON-BLOCKING OBSERVATIONS (no action taken)
+
+- GitHub Actions displayed a **Node.js 20 actions deprecation notice** for certain actions used by the workflow.
+- GitHub Actions displayed an **Ubuntu runner image migration notice**.
+- Classification: **NON-BLOCKING** (informational runner/action lifecycle notices). Per task scope, **no** dependency, action-version or workflow change was made in this governance update; upgrades remain optional future maintenance, not a gate condition.
+
+### Gate status after re-evaluation
+
+```text
+PRE_PHASE_4_GATE = PASS
+Phase 4 is authorized to start.
+```
+
+- Correct phase status after this update: **Phase 4 = `AUTHORIZED / READY TO START`** — synchronized into `ROADMAP.md` (single source) and `PHASE_STATUS.md` (mirror).
+- Phase 4 is **NOT** `STARTED` and **NOT** `COMPLETE`: no Phase 4 implementation work has been performed. Any Phase 4 work must follow the gated prompt (Stages B/C) under the same control baseline (MC-V4).
+
+### Honesty notes for this re-execution section
+
+- The remote run facts are **owner-provided GitHub Actions data**, recorded verbatim. This sandbox clone has no Git remote configured (`git remote -v` = empty) — observation only; the push was performed by the owner from the canonical repository.
+- Durations are approximate, as reported by GitHub Actions.
+- No secrets, tokens, environment values or database contents are recorded in this evidence (secret-pattern re-scan = 0 hits).

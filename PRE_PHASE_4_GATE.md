@@ -3,6 +3,7 @@
 **Created:** 2026-10-28 (Stage A, per `upload/epicRider_Phase_4_Gated_Prompt_zai.md` §1.3 and `OBSOLETE_AND_SUPERSEDED_REGISTER.md`)
 **Purpose:** mandatory entry gate before any Phase 4 implementation work (identity, authentication, workspace/tenant, membership, invitation, roles, permissions). Phase 4 remains `BLOCKED / NOT STARTED` until this gate records a PASS with evidence.
 **Execution record:** `PRE_PHASE_4_GATE_REPORT.md` (verdict: PASS / PASS WITH CONDITIONS / FAIL / BLOCKED / NOT ASSESSED — never asserted without commands, logs and exit codes).
+**Status (updated 2026-10-28):** `PRE_PHASE_4_GATE = PASS` — item 9 resolved by remote CI execution (workflow `CI`, GitHub Actions run `#1` = `Success`, commit `2b2141c`, branch `main`; run URL and full 11-item re-evaluation in `PRE_PHASE_4_GATE_REPORT.md` §"Re-execution 2026-10-28"). Items 1–8, 10–11 re-verified unchanged PASS. **Phase 4 is authorized to start** — status `AUTHORIZED / READY TO START` (not started; no Phase 4 work performed yet). CI warnings (Node.js 20 action deprecation; Ubuntu runner migration) recorded as NON-BLOCKING OBSERVATIONS.
 
 ## Gate items
 
