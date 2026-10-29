@@ -1,5 +1,7 @@
-// Konfigurasi Vitest — epicRider (Phase 3).
-// Lingkungan jsdom untuk unit + component test; alias `@` → ./src selaras tsconfig.
+// Konfigurasi Vitest — epicRider (Phase 3; diperbarui Phase 4).
+// Lingkungan jsdom untuk unit + component test; file integration meng-override
+// ke node via anotasi `// @vitest-environment node` dan memakai helper database
+// test terisolasi (tests/integration/test-db.ts).
 
 import { fileURLToPath } from "node:url";
 import path from "node:path";

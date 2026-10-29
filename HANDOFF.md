@@ -1,6 +1,6 @@
 # HANDOFF — epicRider
 
-**Diperbarui:** 2026-10-28 (rekonsiliasi pra-Phase 4 Stage A — MC-V4 + `OBSOLETE_AND_SUPERSEDED_REGISTER.md` dipasang; REQ-101 ditambahkan; status Phase 2/3/4 disinkronkan; `PRE_PHASE_4_GATE.md` dibuat & dijalankan) · **Tujuan:** konteks minimum agar fase berikutnya bisa berjalan tanpa kehilangan informasi. File ini wajib diperbarui di akhir setiap fase.
+**Diperbarui:** 2026-10-29 (update R2 — kandidat re-issue terkontrol R2 dari R0 siap; angka inventaris stale dikoreksi dari manifest/filesystem; update kedua 2026-10-28 — implementasi Phase 4 selesai di worktree terisolasi dari canonical `b5defc22`; status Phase 4 → IN PROGRESS; paket transfer siap) · **Tujuan:** konteks minimum agar fase berikutnya bisa berjalan tanpa kehilangan informasi. File ini wajib diperbarui di akhir setiap fase.
 
 ---
 
@@ -12,7 +12,7 @@
 | 1 | DONE — BASELINE | `PHASE_1_REPORT.md`, commit `938932f`; REQ-001..REQ-100 (+REQ-101, 2026-10-28) |
 | 2 | **PARTIAL — arsitektur lengkap & direkonsiliasi; klaim "DONE" lama = klaim historis** (Obsolete Register 2026-10-28; bukti build/CI runner sah + ratifikasi ADR PROPOSED belum tersedia) | `PHASE_2_ACCEPTANCE.md` (A–G + blok re-assessment + nota koreksi status 2026-10-28); `PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md`; commit `70005a7` |
 | 3 | **PARTIAL — kontrol diremediasi 2026-10-28; evidence build/CI belum terpenuhi** (remediasi audit Phase 3 F-01..F-08 dieksekusi — `PHASE_3_REMEDIATION_REPORT.md`; lint/typecheck/test exit 0, build NOT RUN di working copy utama, CI runner NOT TESTED) | `PHASE_3_ACCEPTANCE.md` (re-assessed); `PHASE_3_REPORT.md`; `audit/phase3-remediation/`; commit `dca3630` |
-| 4 | **BLOCKED / NOT STARTED — menunggu `PRE_PHASE_4_GATE.md` lulus** | `PRE_PHASE_4_GATE.md` + `PRE_PHASE_4_GATE_REPORT.md` + `PHASE_4_ENTRY_AUDIT.md` (2026-10-28) |
+| 4 | **IN PROGRESS — implementasi selesai di worktree terisolasi `/home/z/epicRider-phase4-b5defc22` (dari baseline `b5defc22`); menunggu integrasi owner + remote CI; bukan COMPLETE** (lihat batasan) | `PHASE_4_REPORT.md`; `PHASE_4_ACCEPTANCE.md` (PASS WITH LIMITATIONS); `PHASE_4_SECURITY_REVIEW.md`; `PHASE_4_TRACEABILITY.md`; 113/113 test (koreksi R2: termasuk 12 test HTTP routing); 11 screenshot `audit/evidence/phase4/` (koreksi R2); kandidat re-issue R2: `epicRider_PHASE_4_TRANSFER_20261029_R2.zip` + sidecar `.sha256` (R0 `epicRider_PHASE_4_TRANSFER_20261028.zip` = baseline frozen) |
 
 ## 2. Control baseline kanonik & urutan otoritas
 
@@ -70,15 +70,18 @@ Referensi `MC §N` lama ditafsirkan lewat `CONTROL_REFERENCE_CROSSWALK.md` (§2a
 
 ## 8. Yang TIDAK boleh dianggap sudah diimplementasikan
 
-- Tidak ada fitur bisnis (auth, licensing, event, asset, store, recruitment, IMS) — Phase 3 hanya fondasi + showcase.
-- Tidak ada authorization/entitlement enforcement runtime — hanya pola dokumentasi/konsep.
-- Tidak ada klaim ISO/compliance/legal apa pun.
-- Tidak ada performance/accessibility audit formal — hanya pemeriksaan manual + test dasar yang tercatat.
-- Screenshot showcase = bukti visual, BUKAN bukti logika bisnis.
+- Google OIDC round-trip real-provider = **NOT TESTED** (tanpa kredensial nyata; hanya konfigurasi/kebijakan + test terkontrol).
+- Integrasi vendor WhatsApp = **BLOCKED (OD-03)** — hanya abstraksi + test double; produksi 503 gagal-aman.
+- Runtime recovery lintas metode (REQ-047) = **NOT ASSESSED** (menunggu kanal kedua aktif).
+- Entitlement/lisensi runtime (REQ-024 penuh), event runtime (REQ-050 penuh), ServiceOffer/RecruitmentOpening, commerce, IMS = fase berikutnya — TIDAK diimplementasikan Phase 4.
+- Build produksi = **NOT RUN** di sandbox (larangan platform); remote CI Phase 4 = **PENDING — REMOTE CI NOT YET VERIFIED**.
+- Rate limiter = in-memory single-instance (keterbatasan deployment tercatat F-4.1).
+- Pentest formal, audit aksesibilitas formal, klaim ISO/compliance/legal apa pun = tidak ada.
+- Screenshot = bukti visual, BUKAN bukti logika bisnis; logika dibuktikan test + verifikasi runtime tercatat.
 
 ## 9. Next actions (tanpa otomatis memulai fase berikutnya)
 
-1. **Owner/runner (bloker utama):** jalankan workflow CI pada runner sah — push repo ke remote Git (GitHub) dan biarkan `.github/workflows/ci.yml` berjalan (install→lint→typecheck→test→build), ATAU daftarkan runner setara yang mengeksekusi workflow aktual; catat log/exit code/link run. Tanpa ini, `PRE_PHASE_4_GATE.md` item 9 tetap BLOCKED dan Phase 4 tidak boleh dimulai (lihat `PRE_PHASE_4_GATE_REPORT.md`).
-2. Owner: ratifikasi ADR PROPOSED (ADR-008..011, ADR-015..017, ADR-018) + putuskan OD-01/OD-02 (menutup kelulusan penuh Phase 2).
-3. Owner: review `PHASE_4_ENTRY_AUDIT.md` + `PRE_PHASE_4_GATE_REPORT.md`; setelah CI runner terbukti, ulangi gate → bila PASS, Phase 4 boleh dimulai dengan prompt gated yang sama.
-4. Phase 4 hanya dimulai setelah `PRE_PHASE_4_GATE.md` PASS tercatat + instruksi owner eksplisit.
+1. **Owner: integrasi paket transfer Phase 4** — kandidat R2 `epicRider_PHASE_4_TRANSFER_20261029_R2.zip` (re-issue terkontrol dari R0 frozen `epicRider_PHASE_4_TRANSFER_20261028.zip`; manifest SHA-256 di dalam paket): review diff → terapkan file (80 added, 17 modified, 0 deleted — koreksi R2 dari klaim lama "73 added, 11 modified" yang stale; tanpa penghapusan file canonical) → commit → push ke canonical `rpplumbantobing-hub/epicRider` → remote CI (install→lint→typecheck→test→build) → catat run URL/SHA. Setelah CI lulus, status Phase 4 dapat dinilai ulang sesuai kontrol (jangan dinaikkan sebelum bukti).
+2. Owner: kredensial Google OIDC (env `GOOGLE_CLIENT_ID/SECRET` + `NEXTAUTH_SECRET` produksi) untuk mengaktifkan + menguji round-trip nyata (saat ini NOT TESTED, jujur).
+3. Owner: keputusan OD terbuka yang menutup sisa sub-scope — OD-03 (vendor WhatsApp), OD-115 (parameter sesi final), OD-122 (preset role final), OD-01 (DB produksi), OD-05/OD-06/OD-108 (Phase 5), ratifikasi ADR PROPOSED Phase 2 (+ADR-022 welcome).
+4. Otomatisasi lanjutan (opsional, fase sesuai scope): limiter terdistribusi (F-4.1), monitoring next-auth v4 vs Next 16 (F-4.2).

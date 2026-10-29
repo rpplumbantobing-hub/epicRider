@@ -25,6 +25,24 @@ Evidence:
 - Security/tenant-isolation negative tests: Phase 4+ scope — NOT FOUND today.
 - No test result may be claimed beyond these recorded commands.
 
+**Update current status (2026-10-28, Phase 4 — implementasi worktree baseline `b5defc22`):**
+suite bertambah menjadi **13 file / 113 test (semua PASS)** — 25 regresi Phase 3 + **88 test Phase 4**
+(koreksi R2 2026-10-29: + 12 test HTTP routing `tests/integration/http-routing.test.ts`):
+unit (policy matrix otorisasi, rate limiter, auth-config/no-auto-link, OTP domain, UA) dan integration
+database SQLite terisolasi per-file (dibuat via `prisma migrate deploy` dari migrasi terversionisasi —
+`tests/integration/test-db.ts`): workspace+owner transaksi, lifecycle membership, **matriks isolasi tenant
+negatif** (lintas-tenant read/write/invite denied + audited; suspended/removed efektif seketika), **undangan**
+(replay/expired/revoked/wrong-recipient/already-member/role-bound), **sesi** (revoke→ditolak berikutnya,
+expired, perangkat, object-level), **OTP** (sekali-pakai, replay, lockout, rate-limit, audit tanpa kode),
+**HTTP routing** (12 test real-HTTP pada server Next.js port terisolasi, DB SQLite disposable:
+auth 401 problem-details, workspace/membership lifecycle, dynamic member route
+`/api/v1/workspaces/[workspaceId]/members/[membershipId]` PATCH via HTTP, tenant isolation
+404/403, invitation lifecycle + anti-replay, session revoke efektif; PASS mode dev + produksi).
+Gates: lint 0 / typecheck 0 / test 113/113 (Bun 1.3.14, working copy terisolasi; koreksi R2). Build: era R0
+NOT RUN (larangan platform); R2: production build exit 0 pada working copy terisolasi. Remote CI Phase 4 = PENDING (menunggu integrasi owner). Negative security tests
+"Phase 4+ scope" di atas kini TERSEDIA. E2E browser manual tetap via agent-browser (11 screenshot
+`audit/evidence/phase4/`). Bukti: `PHASE_4_REPORT.md` §4.
+
 ## Phase 2 testing purpose
 
 Phase 2 is primarily architecture/documentation/evidence work.

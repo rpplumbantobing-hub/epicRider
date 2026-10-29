@@ -1,8 +1,20 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// epicRider — Prisma schema, Phase 4 (Identity, Authentication, Session,
+// Workspace/Tenant, Membership, Invitation, Roles & Permissions).
+//
+// Sumber model: `DATA_MODEL_CONCEPT.md` §3.1 (Identity), §3.2 (Workspace/Tenant),
+// §3.3 (Membership & Roles), §3.14 (Audit) — status PROPOSED pada dokumen model;
+// implementasi ini adalah realisasi Phase 4 pertama sesuai ADR-008/009/010.
+//
+// Catatan keputusan (lihat `PHASE_4_IMPLEMENTATION_PLAN.md` §6):
+// - Demo model scaffold `User`(email non-null)/`Post` diganti model domain epicRider
+//   (gated prompt §5.1: email bukan kunci utama; Post bukan entitas epicRider).
+// - `next-auth` v4 (database session strategy) memakai `Account`+`Session` di bawah
+//   melalui adapter custom (`src/lib/auth/adapter.ts`).
+// - Uniqueness "live membership" ditegakkan lewat partial unique index pada SQL
+//   migrasi (SQLite): UNIQUE(workspace_id, user_id) WHERE status live — histori
+//   baris lama tetap terjaga (DMC §3.3).
+// - Runtime lisensi/entitlement (Phase 5) TIDAK dimodelkan di sini — tanpa
+//   mengarang license state (gated prompt §6.3).
 
 generator client {
   provider = "prisma-client-js"
@@ -13,20 +25,233 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ===================== Identity context (DMC §3.1) =====================
+
+/// Identitas global user — BUKAN membership, BUKAN role (REQ-025).
+/// Email bukan kunci utama; nullable karena kanal WhatsApp tidak wajib punya email.
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  status        String    @default("ACTIVE") // ACTIVE | DEACTIVATED | ANONYMIZED (PROPOSED; mekanika = OD-09)
+  locale        String? // preferensi locale user (REQ-028; default platform = OD-12)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts       Account[]
+  sessions       Session[]
+  memberships    Membership[]
+  developerRoles DeveloperRoleAssignment[]
+  auditEvents    AuditEvent[]
+
+  @@index([status])
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+/// Kanal login terverifikasi (= DMC `AuthenticationMethod`): akun Google OIDC,
+/// nomor WhatsApp terverifikasi, dsb. Linking aman = lewat kebijakan no-auto-link
+/// (REQ-022/REQ-047; ADR-022).
+model Account {
+  id                String    @id @default(cuid())
+  userId            String
+  type              String
+  provider          String // "google" | "whatsapp" (kanal; vendor WhatsApp = OD-03 OPEN)
+  providerAccountId String
+  refreshToken      String?
+  accessToken       String?
+  expiresAt         DateTime?
+  tokenType         String?
+  scope             String?
+  idToken           String?
+  sessionState      String?
+  linkedAt          DateTime  @default(now())
+  unlinkedAt        DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+/// Sesi aktif terautentikasi (REQ-048; next-auth database strategy).
+/// RevokedAt non-null => sesi ditolak pada request berikutnya (REQ-048 acceptance).
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  deviceLabel  String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+  expires      DateTime
+  revokedAt    DateTime?
+  lastUsedAt   DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+}
+
+/// Challenge OTP sekali pakai untuk proof-of-control nomor WhatsApp (REQ-021; ADR-009).
+/// Hanya hash kode yang disimpan — kode mentah TIDAK pernah disimpan/di-log.
+/// Vendor pengiriman = OD-03 OPEN (interface `OtpDeliveryProvider`).
+model VerificationRequest {
+  id            String    @id @default(cuid())
+  channel       String    @default("WHATSAPP")
+  target        String // nomor telepon format E.164
+  tokenHash     String    @unique // SHA-256 kode OTP
+  status        String    @default("PENDING") // PENDING | CONSUMED | EXPIRED | BLOCKED
+  attemptCount  Int       @default(0)
+  maxAttempts   Int       @default(5) // PROPOSED (security-config)
+  expiresAt     DateTime
+  usedAt        DateTime?
+  lastAttemptAt DateTime?
+  blockedUntil  DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([target, status, createdAt])
+  @@index([status, expiresAt])
+}
+
+/// Role developer platform (portal/store) — TIDAK membawa permission workspace
+/// dan sebaliknya (REQ-052; AUTHORIZATION_MODEL §5.3; katalog detail = OD-101).
+model DeveloperRoleAssignment {
+  id        String    @id @default(cuid())
+  userId    String
+  role      String    @default("DEVELOPER")
+  scope     String    @default("PORTAL")
+  grantedBy String?
+  grantedAt DateTime  @default(now())
+  revokedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+}
+
+// ===================== Workspace/Tenant context (DMC §3.2) =====================
+
+/// Akar tenant — pemilik membership, event, aset, dokumen (REQ-023).
+model Workspace {
+  id              String   @id @default(cuid())
+  name            String
+  status          String   @default("ACTIVE") // ACTIVE | SUSPENDED | ARCHIVED (PROPOSED)
+  createdByUserId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  memberships Membership[]
+  roles       Role[]
+  invitations Invitation[]
+
+  @@index([status])
+}
+
+// ===================== Membership & Roles context (DMC §3.3) =====================
+
+/// Membership satu user di satu workspace — BUKAN user, BUKAN role, BUKAN
+/// assignment (REQ-025/REQ-049). Setiap transisi status mengubah akses efektif
+/// seketika (policy layer membaca status terkini per request).
+model Membership {
+  id          String   @id @default(cuid())
+  workspaceId String
+  userId      String
+  status      String   @default("ACTIVE") // INVITED | ACTIVE | SUSPENDED | REMOVED | LEFT (REQ-049)
+  version     Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace   Workspace                  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roles       MembershipRoleAssignment[]
+  invitations Invitation[]
+
+  @@index([workspaceId, status])
+  @@index([userId, status])
+}
+
+/// Role workspace-scoped. Preset minimum Phase 4: `owner` + `member`
+/// (PROPOSED — katalog final per tier = OD-122 OPEN; tanpa role editor dinamis).
+model Role {
+  id          String   @id @default(cuid())
+  workspaceId String
+  key         String // "owner" | "member"
+  isSystem    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  workspace   Workspace                  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  assignments MembershipRoleAssignment[]
+  invitations Invitation[]
+
+  @@unique([workspaceId, key])
+}
+
+/// Role mana yang dipegang membership mana (satu user boleh beda role di
+/// workspace berbeda tanpa konflik — REQ-025).
+model MembershipRoleAssignment {
+  id          String    @id @default(cuid())
+  membershipId String
+  roleId      String
+  grantedBy   String?
+  grantedAt   DateTime  @default(now())
+  revokedAt   DateTime?
+
+  membership Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@index([membershipId, revokedAt])
+}
+
+/// Undangan aman (REQ-051): token acak kriptografis (32 byte) — hanya hash yang
+/// disimpan; workspace + role yang ditawarkan terikat server-side; kedaluwarsa &
+/// pencabutan; konsumsi satu kali atomik.
+model Invitation {
+  id            String    @id @default(cuid())
+  workspaceId   String
+  roleId        String
+  contactTarget String // email tujuan (kanal terhubung Phase 4: Google OIDC)
+  tokenHash     String    @unique // SHA-256 token 32-byte
+  status        String    @default("PENDING") // PENDING | ACCEPTED | EXPIRED | REVOKED
+  expiresAt     DateTime
+  usedAt        DateTime?
+  revokedAt     DateTime?
+  acceptedAt    DateTime?
+  createdById   String?
+  createdAt     DateTime  @default(now())
+
+  workspace Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  role      Role       @relation(fields: [roleId], references: [id])
+  createdBy Membership? @relation(fields: [createdById], references: [id])
+
+  @@index([workspaceId, status])
+  @@index([contactTarget, status])
+}
+
+// ===================== Audit context (DMC §3.14) =====================
+
+/// Audit/security event — WHO/WHAT/WHEN/decision/reason + tenant. Denial adalah
+/// event first-class (REQ-010/REQ-024). TANPA token/OTP/cookie/secret di payload
+/// (REQ-054; `audit-service` menolak kunci metadata yang mencurigakan).
+/// tenantWorkspaceId sengaja TIDAK ber-FK agar audit tetap hidup meski tenant
+/// dihapus; actorUserId SetNull agar event tetap ada meski user dihapus.
+model AuditEvent {
+  id                String   @id @default(cuid())
+  occurredAt        DateTime @default(now())
+  category          String // AUTH | SESSION | WORKSPACE | MEMBERSHIP | INVITATION | AUTHZ | ABUSE
+  action            String // mis. "auth.login.success" | "authz.denied" | "membership.removed"
+  outcome           String // SUCCESS | DENIED | FAILURE
+  actorUserId       String?
+  tenantWorkspaceId String?
+  targetType        String?
+  targetId          String?
+  reasonCode        String? // vocabulary AUTHORIZATION_MODEL §3
+  metadataJson      String? // ringkas + ter-redaksi
+  userAgent         String?
+
+  actor User? @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([occurredAt])
+  @@index([actorUserId, occurredAt])
+  @@index([tenantWorkspaceId, category, occurredAt])
+  @@index([category, action, outcome])
 }

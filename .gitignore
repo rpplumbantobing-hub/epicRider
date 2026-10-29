@@ -59,4 +59,6 @@ server.log
 
 # hygiene pra-push (disetujui owner, 2026-10-28): artefak runtime/tool tetap tersedia lokal, tidak ter-track
 db/*.db
+# Phase 4 (REQ-092 hygiene): database dev/test worktree TIDAK ter-track.
+prisma/*.db
 .zscripts/*.pid
