@@ -74,6 +74,15 @@ Separate:
 - event assignment;
 - license entitlement.
 
+**Update (2026-10-28, Phase 4 — implementasi worktree baseline `b5defc22`):** rantai konseptual di atas
+kini terwujud dalam skema Prisma (`prisma/schema.prisma` + migrasi terversionisasi pertama):
+`User` (identitas global, email bukan PK) / `Account` (=AuthenticationMethod) / `Session` (revokedAt,
+deviceLabel) / `Membership` (+RoleAssignment; partial unique index live) / `Invitation` (token hash-only)
+/ `DeveloperRoleAssignment` (global, tanpa FK workspace) / `AuditEvent` (redaksi defensif). Enforsemen
+runtime: policy layer terpusat deny-by-default + reason codes (`src/lib/authz/`) + guard per-route;
+otorisasi & isolasi tenant teruji matriks negatif otomatis. Lisensi/entitlement runtime tetap konsep
+(Phase 5). Bukti: `PHASE_4_REPORT.md`, `PHASE_4_TRACEABILITY.md`.
+
 ## 5. Entitlement architecture
 
 Use separate concepts:

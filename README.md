@@ -1,6 +1,6 @@
-# epicRider — Foundation (Phase 3, PARTIAL; entry Phase 4 digerbangi)
+# epicRider — Phase 4 IN PROGRESS (identity, auth, workspace/tenant, membership)
 
-epicRider adalah platform untuk kru produksi multimedia/event. **Repositori ini berada di Phase 3: fondasi — status `PARTIAL`** (kontrol lengkap & diremediasi; bukti build/CI runner sah belum tersedia — `ROADMAP.md`). **Phase 4 (identity/auth/workspace) = `BLOCKED / NOT STARTED`** sampai `PRE_PHASE_4_GATE.md` lulus. **Ini BUKAN fitur produksi**; satu-satunya route yang terlihat user adalah showcase fondasi di `/` (konten demo, tanpa data nyata).
+epicRider adalah platform untuk kru produksi multimedia/event. **Status fase: Phase 4 `IN PROGRESS`** — implementasi identity/authentication/session/workspace/membership/invitation/roles selesai pada worktree terisolasi dari canonical `b5defc22` (baseline gate PASS 2026-10-28); menunggu integrasi owner + remote CI — lihat `ROADMAP.md`, `PHASE_4_REPORT.md`, `HANDOFF.md`. **Ini BUKAN fitur produksi**; login Google aktif hanya dengan kredensial env (tanpa kredensial: status aman "belum dikonfigurasi"); kanal WhatsApp menunggu vendor (OD-03). Route demo: showcase fondasi `/` + halaman Phase 4 (`/login`, `/workspaces`, `/invitations`, `/account` — konten demo/dev, tanpa data nyata).
 
 Dokumen kontrol proyek (status fase, baseline, keputusan): lihat `CONTROL_BASELINE_REGISTER.md` dan `HANDOFF.md`.
 

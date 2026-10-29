@@ -15,6 +15,9 @@ Re-verified current state as of 2026-10-28 (per `PHASE_3_CURRENT_STATE_AUDIT.md`
 
 These are CURRENT STATE findings, not target-state claims.
 
+**Update current state (2026-10-28, Phase 4 — implementasi worktree `b5defc22`):** authentication/session kini TERIMPLEMENTASI (next-auth v4 database strategy + adapter Prisma custom; ADR-022; no-auto-link; provider Google kondisional env-only — tanpa kredensial = status aman, round-trip real-provider NOT TESTED); WhatsApp proof-of-control = abstraksi vendor-netral + test double (OD-03 tetap OPEN; produksi 503 gagal-aman); authorization/tenant isolation runtime TERIMPLEMENTASI (policy layer deny-by-default + reason codes + guards; matriks negative test otomatis 113/113 (koreksi R2) termasuk cross-tenant/privilege-escalation + 12 test HTTP routing end-to-end — `PHASE_4_SECURITY_REVIEW.md`); audit/security events + redaksi defensif aktif; application security test suite Phase 4 tersedia (`tests/unit/*`, `tests/integration/*`); dependency scanning/SAST formal tetap BELUM dijalankan. Detail + residual risks: `PHASE_4_SECURITY_REVIEW.md` (F-4.1..F-4.7).
+
+
 ## Phase 2 target security architecture
 
 Phase 2 must define:
