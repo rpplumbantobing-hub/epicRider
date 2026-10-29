@@ -82,3 +82,30 @@ WhatsApp = OD-03 (produksi 503 aman); (5) flow recovery runtime (REQ-047) menung
 **Karena kriteria #13 mencakup bukti remote CI untuk kelulusan penuh, status FASE tetap
 `IN PROGRESS`** (bukan COMPLETE) sampai owner mengintegrasikan, push, dan remote CI lulus —
 sesuai aturan kontrol aktif. Tidak ada klaim kelulusan tanpa bukti.
+
+## E. Closure update 2026-10-30 (post-merge verification — appended, history preserved)
+
+Kondisi penahan verdict §D ("status FASE tetap `IN PROGRESS` sampai owner mengintegrasikan, push, dan
+remote CI lulus") kini **terpenuhi dan diverifikasi**:
+
+1. Owner mengintegrasikan — **PR #1 "Phase 4 R2 — Controlled Promotion" = Merged**; merge commit
+   **`a1af59d8e00d3a0d8e28b25f1a7f05961182a6a0`** pada `main` (parents `b5defc22` + `f29f152`;
+   commit promosi `80f5329`/`5e002db`/`f29f152` — semua ancestor `main`; diverifikasi langsung dari
+   remote Git 2026-10-30).
+2. Remote CI pada `main` post-merge **lulus** — GitHub Actions run **#5** / 40928261468
+   (<https://github.com/rpplumbantobing-hub/epicRider/actions/runs/40928261468>): `Success`;
+   job `lint, typecheck, test, build` success (≈1m 4s; diverifikasi live: halaman run `Status: Success`
+   + badge `ci.yml?branch=main` = "CI - passing"). Ini sekaligus bukti `bun run build` pertama pada
+   runner sah untuk konten Phase 4 — batasan (1)/(2) §D teratasi.
+3. Audit closure 16/16 kriteria §C = PASS terhadap repository aktual; review semantik invariants lulus;
+   scan secret 0 temuan; provenance R2 (`e12b9dbc…cf97fe`, 637.394 byte, 80/17/0, 97/97 hash manifest)
+   diverifikasi ulang — detail: `PHASE_4_GOVERNANCE_CLOSURE.md`.
+
+**Status Fase 4 (efektif pada `ROADMAP.md` = sumber tunggal): `DONE` — 2026-10-30.**
+
+Limitations §D yang tetap berlaku (jujur, tidak berubah oleh closure): Google OIDC real round-trip =
+`NOT TESTED` (L-1); vendor WhatsApp = OD-03 `OPEN` → sub-scope integrasi vendor tetap `BLOCKED` (L-2);
+REQ-047 runtime recovery = `NOT ASSESSED` (L-3); OD-115/OD-122 = `PROPOSED` (L-4); limiter single-instance
+(F-4.1) & next-auth v4/Next 16 (F-4.2) = residual risk tercatat. Placeholder CI
+(`phase4-ci-build-only-placeholder-not-a-secret`) = nilai build-only non-rahasia — bukan bukti integrasi
+autentikasi produksi. Daftar lengkap + dampak scope: `PHASE_4_GOVERNANCE_CLOSURE.md` §8–§9.
