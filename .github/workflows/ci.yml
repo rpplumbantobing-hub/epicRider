@@ -44,4 +44,4 @@ jobs:
       - name: Build
         run: bun run build
         env:
-          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_SECRET: "phase4-ci-build-only-placeholder-not-a-secret"
