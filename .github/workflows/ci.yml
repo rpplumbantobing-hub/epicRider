@@ -43,3 +43,5 @@ jobs:
       # (platform constraint), jadi status step ini NOT TESTED secara lokal.
       - name: Build
         run: bun run build
+        env:
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
