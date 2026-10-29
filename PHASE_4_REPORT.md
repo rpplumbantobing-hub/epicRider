@@ -238,3 +238,30 @@ build produksi **exit 0** (working copy terisolasi; `NEXTAUTH_SECRET` placeholde
 fail-safe by design, bukan secret nyata; 25 route ter-register termasuk dynamic member route,
 byte-proven di `app-path-routes-manifest.json`) · security scan **0 temuan** · inventaris
 **80 ADDED / 17 MODIFIED / 0 DELETED** konsisten antara worktree/manifest/ZIP/dokumentasi.
+
+## 10. Governance closure addendum (2026-10-30 — appended; §1–§9 = historical record yang dipertahankan)
+
+Penahan status terakhir §1 ("`IN PROGRESS` — bukan COMPLETE sampai remote CI terbukti") telah terpenuhi
+dan diverifikasi langsung dari remote canonical (2026-10-30):
+
+- **PR #1 "Phase 4 R2 — Controlled Promotion" = Merged** → merge commit
+  **`a1af59d8e00d3a0d8e28b25f1a7f05961182a6a0`** pada `main` (parents `b5defc22` + `f29f152`;
+  tree `39f1216e` == tree PR head — konten identik dengan kandidat yang di-review).
+- **CI post-merge pada `main` lulus**: GitHub Actions run #5 / 40928261468
+  (<https://github.com/rpplumbantobing-hub/epicRider/actions/runs/40928261468>) — `Success`; job
+  `lint, typecheck, test, build` success; diverifikasi live (halaman run `Status: Success` + badge
+  `CI - passing`). Build produksi kini terbukti pada runner sah (mengganti status "PENDING" §4).
+- Diff merge vs baseline = 98 path (80 ADDED + 18 MODIFIED + 0 DELETED) = manifest R2 (80/17/0) +
+  `.github/workflows/ci.yml` (2 commit CI terkontrol) — konsisten; tidak ada file lain yang berubah.
+- Provenance R2 diverifikasi ulang saat closure: `epicRider_PHASE_4_TRANSFER_20261029_R2.zip`
+  SHA-256 `e12b9dbc3476f8701c8da63b43d35d7f4c54ca4c37ad0e05c9446985ffcf97fe` (637.394 byte);
+  manifest 97/97 hash cocok (80/17/0).
+
+**Status Fase 4 = `DONE` (2026-10-30)** — ditetapkan di `ROADMAP.md` (sumber tunggal) dan dicerminkan
+`PHASE_STATUS.md`; audit 16/16 kriteria acceptance = PASS; batasan §1 yang tetap berlaku dicatat jujur
+(Google OIDC real round-trip `NOT TESTED`; OD-03 vendor WhatsApp `OPEN` — hanya sub-scope integrasi
+vendor; REQ-047 runtime `NOT ASSESSED`; OD-115/OD-122 `PROPOSED`). Catatan closure lengkap (bukti Git,
+matriks audit, limitations, pernyataan tanpa-ubah-source, Phase 5 NOT STARTED):
+**`PHASE_4_GOVERNANCE_CLOSURE.md`**. Perubahan governance closure = documentation-only
+(5 dokumen status/governance diperbarui + 1 catatan closure baru; tanpa perubahan source/test/schema/
+config/CI — lihat diff commit closure).
