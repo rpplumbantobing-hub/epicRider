@@ -43,6 +43,23 @@ NOT RUN (larangan platform); R2: production build exit 0 pada working copy teris
 "Phase 4+ scope" di atas kini TERSEDIA. E2E browser manual tetap via agent-browser (11 screenshot
 `audit/evidence/phase4/`). Bukti: `PHASE_4_REPORT.md` §4.
 
+**Update current status (2026-10-30, Phase 5-B — fondasi domain/database licensing, branch `integration/phase5-b-licensing-domain-db`):**
+suite bertambah menjadi **16 file / 145 test (semua PASS)** — 113 regresi Phase 4 + **32 test Phase 5-B**:
+**vocabulary** (`tests/unit/licensing-vocabulary.test.ts`, 11 — tepat 3 tier MC §2.1; `HI_RIDER`/`TOTAL_RIDER`
+bukan tier; **tanpa silent fallback**; kode language-neutral DMC §2.9; matriks = LICENSE_MATRIX §2; kuota
+miniRider 5 kru; OD-05 tidak dijawab), **domain** (`tests/integration/licensing-domain.test.ts`, 13 —
+lisensi↔workspace Phase 4, **tepat satu ACTIVE per workspace** via partial unique index dibaca dari domain
+layer, histori non-ACTIVE tersimpan, onDelete Restrict REQ-099, CHECK closed-set tier DB-level, unique
+katalog CapabilityRule/TierQuota, DMMF himpunan model 11 Phase 4 + 8 fondasi tanpa duplikasi, co-exist
+Phase 4), **migration-on-existing-data** (`tests/integration/licensing-migration.test.ts`, 8 — deploy
+Phase 4 → data representatif → deploy Phase 5-B **tanpa reset**; data Phase 4 utuh; seed/reference
+tersedia; constraint aktif; SQL aditif-only; migration Phase 4 tidak berubah vs HEAD; `_prisma_migrations`
+= 2 baris; deploy ketiga idempoten).
+Gates (semua exit 0; Prisma CLI dari node_modules lokal): `prisma validate` / `generate` / `migrate deploy`
+(DB kosong tmp) / `migrate diff --exit-code` ("No difference detected") / `migrate status`; lint; typecheck;
+production build (placeholder build-time; efek samping tsconfig otomatis dikembalikan + diverifikasi ulang).
+Bukti: `PHASE_5_REPORT.md` §E/§G.
+
 ## Phase 2 testing purpose
 
 Phase 2 is primarily architecture/documentation/evidence work.

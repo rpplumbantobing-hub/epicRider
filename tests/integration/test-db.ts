@@ -62,6 +62,16 @@ export async function createTestDatabase(): Promise<TestDatabase> {
 
 /** Bersihkan seluruh baris (dependency order) — db disposable, aman. */
 export async function resetDb(db: PrismaClient): Promise<void> {
+  // Phase 5-B: licensing child-first (FK Restrict — harus sebelum workspace/
+  // licenseTier/capability/extensionType/extensionDefinition dihapus).
+  await db.extensionInstance.deleteMany();
+  await db.tierQuota.deleteMany();
+  await db.capabilityRule.deleteMany();
+  await db.extensionDefinition.deleteMany();
+  await db.extensionType.deleteMany();
+  await db.capability.deleteMany();
+  await db.license.deleteMany();
+  await db.licenseTier.deleteMany();
   await db.membershipRoleAssignment.deleteMany();
   await db.invitation.deleteMany();
   await db.membership.deleteMany();
