@@ -13,8 +13,15 @@
 // - Uniqueness "live membership" ditegakkan lewat partial unique index pada SQL
 //   migrasi (SQLite): UNIQUE(workspace_id, user_id) WHERE status live — histori
 //   baris lama tetap terjaga (DMC §3.3).
-// - Runtime lisensi/entitlement (Phase 5) TIDAK dimodelkan di sini — tanpa
-//   mengarang license state (gated prompt §6.3).
+// - Runtime lisensi/entitlement penuh (evaluasi engine, issuance, checkout)
+//   TETAP tidak dimodelkan di sini (Phase 5-C/D/E) — tanpa mengarang license
+//   state final, tanpa harga/komersial (OD-06), tanpa durasi (OD-108).
+// - Phase 5-B (2026-10-30, branch integration/phase5-b-licensing-domain-db)
+//   menambahkan FONDASI domain/database licensing (DMC §3.5/§3.6/§6.2/§8;
+//   REQ-002/018/024/026/029/098/099): LicenseTier, License, Capability,
+//   CapabilityRule, ExtensionType, ExtensionDefinition, ExtensionInstance,
+//   TierQuota — struktur data SAJA. Detail keputusan: PHASE_5_REPORT.md dan
+//   adr/ADR-023-phase5b-licensing-domain-foundation.md (PROPOSED).
 
 generator client {
   provider = "prisma-client-js"
@@ -77,12 +84,12 @@ model Account {
 /// Sesi aktif terautentikasi (REQ-048; next-auth database strategy).
 /// RevokedAt non-null => sesi ditolak pada request berikutnya (REQ-048 acceptance).
 model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
+  id           String    @id @default(cuid())
+  sessionToken String    @unique
   userId       String
   deviceLabel  String?
   userAgent    String?
-  createdAt    DateTime @default(now())
+  createdAt    DateTime  @default(now())
   expires      DateTime
   revokedAt    DateTime?
   lastUsedAt   DateTime?
@@ -140,9 +147,11 @@ model Workspace {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  memberships Membership[]
-  roles       Role[]
-  invitations Invitation[]
+  memberships        Membership[]
+  roles              Role[]
+  invitations        Invitation[]
+  licenses           License[] // Phase 5-B: lisensi yang dipegang tenant (DMC §3.5; onDelete Restrict — histori tidak terhapus cascade)
+  extensionInstances ExtensionInstance[] // Phase 5-B: extension terprovisi pada tenant (DMC §3.6)
 
   @@index([status])
 }
@@ -189,12 +198,12 @@ model Role {
 /// Role mana yang dipegang membership mana (satu user boleh beda role di
 /// workspace berbeda tanpa konflik — REQ-025).
 model MembershipRoleAssignment {
-  id          String    @id @default(cuid())
+  id           String    @id @default(cuid())
   membershipId String
-  roleId      String
-  grantedBy   String?
-  grantedAt   DateTime  @default(now())
-  revokedAt   DateTime?
+  roleId       String
+  grantedBy    String?
+  grantedAt    DateTime  @default(now())
+  revokedAt    DateTime?
 
   membership Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
   role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
@@ -219,8 +228,8 @@ model Invitation {
   createdById   String?
   createdAt     DateTime  @default(now())
 
-  workspace Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  role      Role       @relation(fields: [roleId], references: [id])
+  workspace Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  role      Role        @relation(fields: [roleId], references: [id])
   createdBy Membership? @relation(fields: [createdById], references: [id])
 
   @@index([workspaceId, status])
@@ -254,4 +263,177 @@ model AuditEvent {
   @@index([actorUserId, occurredAt])
   @@index([tenantWorkspaceId, category, occurredAt])
   @@index([category, action, outcome])
+}
+
+// ============== Licensing & Entitlement foundation (DMC §3.5/§3.6) ==============
+// Phase 5-B — fondasi domain/database licensing. Sumber kontrak: DMC §3.5/§3.6/
+// §6.2/§8, ENTITLEMENT_MODEL.md §2/§4/§7, LICENSE_MATRIX.md §1/§2/§5, MC §2.
+// Fondasi struktur data SAJA: tanpa evaluasi engine (5-C), tanpa issuance/
+// checkout (5-D/E), tanpa harga (OD-06), tanpa durasi/expiry/grace (OD-108),
+// tanpa final seat counting (OD-05). License key TIDAK dimodelkan — tidak ada
+// dasar kontrak (ENTITLEMENT_MODEL.md tidak mendefinisikan license key; lihat
+// PHASE_5_REPORT.md §D). EntitlementGrant + Seat = runtime 5-C (DMC §3.5/§3.3),
+// sengaja belum dimodelkan agar tidak mengarang mekanika enforcement.
+//
+// Kode status/tier/extension disimpan sebagai kode language-neutral (DMC §2.9),
+// mengikuti pola Phase 4 (String + vocabulary, bukan enum Prisma — datasource
+// SQLite; vocabulary divalidasi test + lapisan domain `src/lib/licensing/`).
+// Satu-satunya penegakan DB-level adalah CHECK pada LicenseTier.code: himpunan
+// tiga tier adalah keputusan owner yang SUDAH ditetapkan (MC §2.1, DMC §4.4) —
+// berbeda dengan vocabulary status yang masih PROPOSED (tidak dikunci DB).
+
+/// Tiga license tier resmi (MC §2.1; DMC §4.4) — closed set. hiRider BUKAN tier
+/// (portal/capability); tier keempat ditolak DB-level via CHECK constraint pada
+/// migration dan divalidasi test (TESTING.md: `hiRider != LicenseTier`).
+model LicenseTier {
+  id        String   @id @default(cuid())
+  code      String   @unique // MINI_RIDER | MAX_RIDER | ISO_RIDER (closed; MC §2.1)
+  isActive  Boolean  @default(true) // status aktif/nonaktif dapat dikelola (prompt §5.1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  licenses        License[]
+  tierQuotas      TierQuota[]
+  capabilityRules CapabilityRule[]
+}
+
+/// Lisensi tier yang dipegang workspace (tenant) — DMC §3.5. Histori = baris
+/// append-only (tanpa unique(workspaceId)); aturan kanonik "tepat satu lisensi
+/// ACTIVE per workspace" (ENTITLEMENT_MODEL §2) ditegakkan partial unique index
+/// pada migration (preseden Membership live-key Phase 4). purchasedAt/window
+/// hanya struktur — diisi tahap issuance (5-D), durasi = OD-108 OPEN.
+model License {
+  id                    String    @id @default(cuid())
+  workspaceId           String
+  tierId                String
+  status                String    @default("PURCHASED") // PURCHASED | ACTIVE | RENEWAL_DUE | EXPIRED | GRACE | DOWNGRADED (DMC §6.2; REQ-098)
+  purchasedAt           DateTime? // tidak diisi otomatis di 5-B (issuance = tahap berikutnya; OD-06)
+  termStartsAt          DateTime?
+  termEndsAt            DateTime?
+  renewalWindowStartsAt DateTime?
+  graceEndsAt           DateTime?
+  sourceType            String? // referensi sumber pemberian (mis. "SHOP_ORDER") — tidak diisi di 5-B
+  sourceRef             String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  workspace Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Restrict) // REQ-099/DMC §2.3: histori lisensi tidak boleh terhapus cascade
+  tier      LicenseTier @relation(fields: [tierId], references: [id], onDelete: Restrict)
+
+  @@index([workspaceId, status]) // resolusi lisensi efektif (DMC §3.5 access pattern)
+  @@index([tierId])
+  @@index([status, termEndsAt]) // sweep renewal (5-C)
+}
+
+/// Definisi capability domain (DMC §3.5) — katalog referensi GLOBAL (bukan
+/// tenant-scoped). Daftar capability mengikuti LICENSE_MATRIX §2 (tidak mengarang
+/// capability baru); deskripsi = i18n key (DMC §2.9), bukan string tampilan.
+model Capability {
+  id             String   @id @default(cuid())
+  code           String   @unique
+  descriptionKey String? // kunci i18n (mis. "licensing.capability.crm") — string tampilan di locale files saat UI ada
+  status         String   @default("ACTIVE") // ACTIVE | DEPRECATED (DMC §3.5)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  rules CapabilityRule[]
+}
+
+/// Aturan ketersediaan capability (DMC §3.5) — Phase 5-B hanya memodelkan aturan
+/// inklusi tier (LICENSE_MATRIX §2). Kondisi extension/role/context/object-state
+/// = input engine evaluasi Phase 5-C; TIDAK dikarang sekarang (tierId nullable
+/// sesuai bentuk DMC, tanpa baris non-tier di 5-B).
+model CapabilityRule {
+  id           String   @id @default(cuid())
+  capabilityId String
+  tierId       String? // null = rule non-tier (belum dipakai di 5-B; bentuk sesuai DMC §3.5)
+  status       String   @default("ACTIVE") // ACTIVE | SUPERSEDED (DMC §3.5)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  capability Capability   @relation(fields: [capabilityId], references: [id], onDelete: Restrict)
+  tier       LicenseTier? @relation(fields: [tierId], references: [id], onDelete: Restrict)
+
+  @@unique([capabilityId, tierId])
+  @@index([capabilityId, status])
+}
+
+/// Jenis extension — daftar tertutup milik owner (MC §2/§3; REQ-018; DMC §3.6).
+/// Penambahan jenis baru = keputusan owner, bukan data runtime.
+model ExtensionType {
+  id        String   @id @default(cuid())
+  code      String   @unique // additional_workspace | seat_package | workspace_landing | mobile_client
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  definitions ExtensionDefinition[]
+}
+
+/// Definisi katalog extension (GLOBAL; DMC §3.6) — struktur SAJA. Tidak ada
+/// definisi produk yang di-seed di 5-B: tidak ada harga/ketersediaan (OD-06);
+/// definisi belum disetujui tidak pernah aktif secara default.
+model ExtensionDefinition {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  typeId      String
+  description String?
+  isActive    Boolean  @default(false) // tidak aktif sampai disetujui owner (OD-06; prompt §5.5)
+  status      String   @default("CATALOG") // CATALOG (published) | WITHDRAWN (PROPOSED; DMC §3.6)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  type      ExtensionType       @relation(fields: [typeId], references: [id], onDelete: Restrict)
+  instances ExtensionInstance[]
+
+  @@index([typeId, isActive])
+}
+
+/// Instance extension terprovisi pada workspace (tenant-scoped; DMC §3.6) —
+/// lifecycle kanonik LICENSE_MATRIX §5. Extension menambah kapasitas DI ATAS
+/// tier; tidak pernah mengubah nilai tier dan bukan tier keempat (MC §2);
+/// kaitan ke workspace/lisensi sesuai domain contract (DMC §3.6/§7).
+model ExtensionInstance {
+  id            String    @id @default(cuid())
+  workspaceId   String
+  definitionId  String
+  status        String    @default("PURCHASED") // PURCHASED | ASSIGNED | ACTIVE | SUSPENDED | EXPIRED | RENEWED | REMOVED (LICENSE_MATRIX §5)
+  quantity      Int? // mis. +10 seat untuk seat_package; satuan mengikuti ExtensionType (REQ-018)
+  provisionedAt DateTime?
+  termStartsAt  DateTime?
+  termEndsAt    DateTime?
+  sourceType    String? // referensi sumber perolehan (mis. "SHOP_ORDER") — tidak diisi di 5-B
+  sourceRef     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  workspace  Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Restrict) // REQ-099: data operasional tidak ikut terhapus cascade
+  definition ExtensionDefinition @relation(fields: [definitionId], references: [id], onDelete: Restrict)
+
+  @@index([workspaceId, status]) // agregasi entitlement efektif (DMC §3.6 access pattern)
+  @@index([definitionId])
+  @@index([status, termEndsAt]) // sweep renewal (5-C)
+}
+
+/// Definisi kuota per tier (DMC §3.5/§8) — HANYA nilai yang ditetapkan owner di
+/// Master Control (miniRider = maks 5 kru per workspace, REQ-009/MC §2.1).
+/// Tidak ada nilai kuota lain yang dikarang (OD-05/OD-06/OD-137 OPEN).
+/// ownerCountedInQuota nullable = parameter eksplisit yang BELUM diputuskan
+/// (OD-05) — keputusan owner cukup mengubah DATA, bukan schema (DMC §8).
+/// Pembedaan konseptual: definition (tabel ini) vs grant (ExtensionInstance
+/// quantity) vs usage/enforcement (runtime 5-C) — tidak ada field angka campur.
+model TierQuota {
+  id                  String   @id @default(cuid())
+  tierId              String
+  quotaCode           String // mis. "crew_seats_per_workspace"
+  limitValue          Int
+  unit                String // mis. "CREW_SEAT"
+  ownerCountedInQuota Boolean? // null = OPEN (OD-05); bukan keputusan atas nama owner
+  status              String   @default("ACTIVE")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  tier LicenseTier @relation(fields: [tierId], references: [id], onDelete: Restrict)
+
+  @@unique([tierId, quotaCode])
+  @@index([tierId, status])
 }

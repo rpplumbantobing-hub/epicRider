@@ -48,8 +48,17 @@ export interface PolicyRequest {
   } | null;
   /** Status objek target bila relevan (mis. status membership target). */
   objectState?: string | null;
-  /** Input entitlement — DIDEKLARASI, dievaluasi mulai Phase 5. */
-  entitlement?: { tierActive: boolean; extensionsActive: readonly string[] } | null;
+  /**
+   * Input entitlement — dideklarasikan Phase 4, DIEVALUASI mulai Phase 5-C
+   * (ADR-024). `null`/undefined = TIDAK dievaluasi (perilaku pemanggil lama
+   * Phase 4 tidak berubah). Bila disediakan: tierActive=false → deny kanonik;
+   * requiredExtensionType disyaratkan tapi tidak ACTIVE → DENY_EXTENSION_MISSING.
+   */
+  entitlement?: {
+    tierActive: boolean;
+    extensionsActive: readonly string[];
+    requiredExtensionType?: string | null;
+  } | null;
 }
 
 export interface PolicyDecision {
@@ -115,9 +124,22 @@ export function evaluatePolicy(request: PolicyRequest): PolicyDecision {
     return { decision: "DENY", reasonCode: ReasonCode.DENY_OBJECT_STATE };
   }
 
-  // 7) Tier entitlement + extension — rantai kanonik, evaluasi = Phase 5.
-  //    TIDAK ada allow implisit dari entitlement; entitlement hanya MEMBATASI.
-  //    (Saat Phase 5 aktif: cek capability permission di bawah tier/extension.)
+  // 7) Tier entitlement + extension — rantai kanonik; evaluasi aktif mulai
+  //    Phase 5-C (ADR-024) BILA pemanggil menyediakan input entitlement.
+  //    Entitlement hanya MEMBATASI (tidak pernah meng-allow sendiri): tanpa
+  //    input, perilaku identik Phase 4; deny kanonik memakai vocabulary §3.
+  if (request.entitlement) {
+    if (!request.entitlement.tierActive) {
+      return { decision: "DENY", reasonCode: ReasonCode.DENY_TIER_ENTITLEMENT_MISSING };
+    }
+    const requiredExtension = request.entitlement.requiredExtensionType;
+    if (
+      requiredExtension &&
+      !request.entitlement.extensionsActive.includes(requiredExtension)
+    ) {
+      return { decision: "DENY", reasonCode: ReasonCode.DENY_EXTENSION_MISSING };
+    }
+  }
 
   return { decision: "ALLOW", reasonCode: ReasonCode.ALLOW };
 }

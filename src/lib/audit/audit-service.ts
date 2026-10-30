@@ -19,6 +19,8 @@ export const AuditCategory = {
   INVITATION: "INVITATION",
   AUTHZ: "AUTHZ",
   ABUSE: "ABUSE",
+  /** Phase 5-C: keputusan entitlement (denial = first-class; ENTITLEMENT_MODEL §10). */
+  LICENSE: "LICENSE",
 } as const;
 export type AuditCategory = (typeof AuditCategory)[keyof typeof AuditCategory];
 

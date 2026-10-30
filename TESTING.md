@@ -43,6 +43,40 @@ NOT RUN (larangan platform); R2: production build exit 0 pada working copy teris
 "Phase 4+ scope" di atas kini TERSEDIA. E2E browser manual tetap via agent-browser (11 screenshot
 `audit/evidence/phase4/`). Bukti: `PHASE_4_REPORT.md` §4.
 
+**Update current status (2026-10-30, Phase 5-B — fondasi domain/database licensing, branch `integration/phase5-b-licensing-domain-db`):**
+suite bertambah menjadi **16 file / 145 test (semua PASS)** — 113 regresi Phase 4 + **32 test Phase 5-B**:
+**vocabulary** (`tests/unit/licensing-vocabulary.test.ts`, 11 — tepat 3 tier MC §2.1; `HI_RIDER`/`TOTAL_RIDER`
+bukan tier; **tanpa silent fallback**; kode language-neutral DMC §2.9; matriks = LICENSE_MATRIX §2; kuota
+miniRider 5 kru; OD-05 tidak dijawab), **domain** (`tests/integration/licensing-domain.test.ts`, 13 —
+lisensi↔workspace Phase 4, **tepat satu ACTIVE per workspace** via partial unique index dibaca dari domain
+layer, histori non-ACTIVE tersimpan, onDelete Restrict REQ-099, CHECK closed-set tier DB-level, unique
+katalog CapabilityRule/TierQuota, DMMF himpunan model 11 Phase 4 + 8 fondasi tanpa duplikasi, co-exist
+Phase 4), **migration-on-existing-data** (`tests/integration/licensing-migration.test.ts`, 8 — deploy
+Phase 4 → data representatif → deploy Phase 5-B **tanpa reset**; data Phase 4 utuh; seed/reference
+tersedia; constraint aktif; SQL aditif-only; migration Phase 4 tidak berubah vs HEAD; `_prisma_migrations`
+= 2 baris; deploy ketiga idempoten).
+Gates (semua exit 0; Prisma CLI dari node_modules lokal): `prisma validate` / `generate` / `migrate deploy`
+(DB kosong tmp) / `migrate diff --exit-code` ("No difference detected") / `migrate status`; lint; typecheck;
+production build (placeholder build-time; efek samping tsconfig otomatis dikembalikan + diverifikasi ulang).
+Bukti: `PHASE_5_REPORT.md` §E/§G.
+
+**Update current status (2026-10-30, Phase 5-C — entitlement engine & enforcement, branch yang sama di atas commit 5-B `20a0169`):**
+suite bertambah menjadi **18 file / 221 test (semua PASS)** — 145 baseline + **76 test Phase 5-C**:
+**engine unit** (`tests/unit/entitlement-engine.test.ts`, 52 — matriks LICENSE_MATRIX §2 penuh 3 tier × 10
+capability; `HI_RIDER`/`TOTAL_RIDER` → `DENY_INVALID_TIER` fail closed; capability allowed/denied/unknown/
+disabled terbedakan via `kind`; state lisensi no-license/non-ACTIVE/ACTIVE; fail closed drift/invariant/
+input-invalid; determinisme deep-equal; wiring policy — entitlement membatasi, input absen = perilaku
+Phase 4 utuh), **domain integration** (`tests/integration/entitlement-domain.test.ts`, 24 — evaluasi
+per-tier di atas seed; state lisensi termasuk rotasi DOWNGRADED→ACTIVE baru tanpa kehilangan data; status
+korup → deny deterministik tanpa crash; **isolasi workspace** license & extension; extension-aware
+ACTIVE/SUSPENDED; **pemisahan Entitlement × Authorization** (DENY_PERMISSION_MISSING/DENY_NOT_MEMBER/
+short-circuit owner/DENY_NO_SESSION); fail closed DB nyata; **audit evidence** denial/grant/opt-out).
+Perbaikan minimal test baseline 5-B: `licensing-migration.test.ts` asumsi state pasca-commit (intent
+anti-destruktif dipertahankan — `PHASE_5_REPORT.md` §5C-N).
+Gates 5-C (semua exit 0; alat dari node_modules lokal): test 76/76; full suite 221/221; `prisma validate`/
+`generate`/`migrate deploy` (DB kosong)/`migrate diff --exit-code`/"status" ; lint; typecheck; production
+build; `git diff --quiet` schema + migration Phase 4/5-B vs HEAD. Bukti: `PHASE_5_REPORT.md` §5C-E/§5C-G.
+
 ## Phase 2 testing purpose
 
 Phase 2 is primarily architecture/documentation/evidence work.
