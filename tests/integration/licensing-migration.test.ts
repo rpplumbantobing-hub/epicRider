@@ -408,11 +408,21 @@ describe("migration Phase 5-B aditif — tidak destruktif (REQ-029; OD-01)", () 
     });
     expect(status.status).toBe(0);
     const lines = status.stdout.split("\n").filter((l) => l.trim().length > 0);
-    expect(lines.length).toBeGreaterThanOrEqual(1);
+    // Tidak boleh ada modifikasi/penghapusan file lama — baris apa pun yang
+    // muncul wajib tambahan (untracked) milik direktori Phase 5-B saja.
+    // Tree bersih (0 baris) sah pada state pasca-commit Phase 5-B.
     for (const line of lines) {
-      // Hanya tambahan (untracked) — tidak ada modifikasi/penghapusan file lama.
       expect(line.startsWith("?? ")).toBe(true);
       expect(line).toContain(PHASE5B);
     }
+    // Direktori migration Phase 5-B wajib ada dalam SATU dari dua state:
+    // untracked (pra-commit) atau ter-track di HEAD (pasca-commit).
+    const tracked = spawnSync(
+      "git",
+      ["ls-files", "--error-unmatch", `prisma/migrations/${PHASE5B}/migration.sql`],
+      { cwd: ROOT, encoding: "utf8" }
+    );
+    const listedUntracked = lines.some((l) => l.includes(PHASE5B));
+    expect(tracked.status === 0 || listedUntracked).toBe(true);
   });
 });

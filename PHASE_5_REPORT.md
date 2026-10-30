@@ -153,3 +153,184 @@ REQ-002/018/024/026/029/098/099 → kontribusi 5-B + bukti test. Sumber owner: M
 2. Akses `r.tier` nullable (`CapabilityRule.tier?`) → optional chaining — 2 file.
 3. Efek samping `next build` pada `tsconfig.json` → dikembalikan ke HEAD (§H).
 Suite existing (113) tidak pernah gagal selama eksekusi; tidak ada perubahan pada kode/migration Phase 4.
+
+---
+
+## Phase 5-C — Entitlement Engine & Enforcement (FINAL EVIDENCE REPORT)
+
+**Tanggal:** 2026-10-30 · **Task ID:** Phase-5-C · **Otorisasi:** prompt owner Phase 5-C (2026-10-30)
+
+> **VERDICT Phase 5-C: PASS — implementation complete, seluruh evidence gate lokal PASS.**
+> Status: `PHASE_5C_STATUS = IMPLEMENTATION PASS — LOCAL CANDIDATE — NOT INTEGRATED`.
+> **TIDAK** `PHASE_5C_DONE_CLOSED` — belum melalui integration/CI gate (pola Phase 4; MC-V4 §11).
+> `PHASE_5B_STATUS = IMPLEMENTATION PASS — COMMITTED LOCALLY — NOT INTEGRATED` (tidak berubah).
+> Canonical `origin/main = 8cbc4ef` (tidak diubah). Phase 4 tetap **DONE — CLOSED**; Phase 2 tetap **PARTIAL**.
+
+### §5C-A Baseline
+
+| Item | Nilai |
+|---|---|
+| Baseline implementasi lokal | `20a0169f1c6ce69013a2d1334c7324dd24edef4f` — `feat(licensing): add phase 5b domain and database foundation` (parent `8cbc4ef`) |
+| Branch | `integration/phase5-b-licensing-domain-db` (lanjutan di atas commit 5-B — 5-B TIDAK di-reset/rebase) |
+| Canonical `origin/main` | `8cbc4ef` (diverifikasi ulang via ls-remote; tidak diubah oleh 5-C) |
+| Working tree awal 5-C | Clean di `20a0169` (verifikasi sebelum coding) |
+
+### §5C-B Scope yang diimplementasikan (engine + enforcement SAJA)
+
+| Komponen | Peran | Sumber kontrak |
+|---|---|---|
+| `src/lib/licensing/entitlement.ts` | **Evaluator MURNI** (tanpa I/O/timestamp/random) — deterministic, fail-closed; objek keputusan `EntitlementDecision` (`ALLOWED/DENIED`, `kind` = `GRANTED/POLICY_DENIAL/UNKNOWN/SYSTEM_ERROR`, reason code, evidence) | MC §2 formula + ENTITLEMENT_MODEL §3 (short-circuit deny, additive, gating vs granting, never UI-derived, deny-by-default); prompt owner §6/§9 |
+| `src/lib/licensing/entitlement-service.ts` | Resolusi fakta dari DB (pola Phase 4: guards + evaluator murni); audit keputusan; **titik integrasi Entitlement × Authorization** (`authorizeWorkspaceCapability` — entitlement meng-gate, policy Phase 4 menilai aktor; keduanya terpisah dalam hasil) | AUTHORIZATION_MODEL §2/§3; ENTITLEMENT_MODEL §3.4/§10; prompt owner §7/§12 |
+| Wiring `src/lib/authz/policy.ts` | **Aditif-minimal**: input entitlement yang sejak Phase 4 DIDEKLARASI kini DIEVALUASI (`tierActive=false` → `DENY_TIER_ENTITLEMENT_MISSING`; extension disyaratkan tidak aktif → `DENY_EXTENSION_MISSING`; input absen = perilaku Phase 4 tidak berubah) | Komentar file policy Phase 4 ("evaluasi = Phase 5"); ADR-010; ADR-024 |
+| Audit `LICENSE` category | Kategori audit baru (aditif) + penulisan `entitlement.denied`/`entitlement.granted` via `logAudit` Phase 4 (sanitizer dihormati; denial = first-class) | ENTITLEMENT_MODEL §10; REQ-024; DMC §3.14 |
+| Test 5-C | 76 test baru (unit 52 + integration 24) | Prompt owner §14 |
+
+**TIDAK diimplementasikan (sesuai batas):** billing/checkout/payment/pricing; UI licensing; lifecycle
+renewal/expiry/grace/downgrade (5-D; OD-108); extension lifecycle (5-D); enforcement kuota seat
+(OD-05 — `DENY_QUOTA_EXCEEDED` tetap tidak dievaluasi; `TierQuota` tidak dikonsumsi engine);
+issuance (5-E; OD-06); API HTTP baru / route baru (eksposur API = 5-E); Phase 6+.
+
+### §5C-C File yang berubah (5-C saja, di atas `20a0169`)
+
+New (5): `src/lib/licensing/entitlement.ts` (374), `src/lib/licensing/entitlement-service.ts` (283),
+`tests/unit/entitlement-engine.test.ts`, `tests/integration/entitlement-domain.test.ts`,
+`adr/ADR-024-phase5c-entitlement-engine.md`.
+Modified (3): `src/lib/authz/policy.ts` (evaluasi input entitlement — aditif), `src/lib/audit/audit-service.ts`
+(+kategori `LICENSE` — aditif), `tests/integration/licensing-migration.test.ts` (perbaikan asumsi state
+pasca-commit — lihat §5C-N).
+Dokumen: PHASE_5_REPORT/TRACEABILITY/ACCEPTANCE, PHASE_STATUS, ROADMAP, TESTING, worklog.
+
+**Tanpa perubahan schema/migration:** `prisma/schema.prisma` dan `prisma/migrations/**` **identik vs
+`20a0169`** (`git diff --quiet HEAD` exit 0 pada kedua path) — engine murni kode di atas fondasi 5-B;
+tidak ada migration baru, tidak ada `db:push`, tidak ada `migrate reset`.
+
+### §5C-D Keputusan implementasi (bukan keputusan bisnis baru) — ringkasan ADR-024
+
+1. **Pola evaluator murni + service guards** (identik pola authz Phase 4) — keputusan DETERMINISTIK:
+   fakta sama → keputusan sama (tanpa timestamp di objek keputusan; audit menambahkan `occurredAt`).
+2. **Reason code**: 3 kode kanonik AUTHORIZATION_MODEL §3 kini DIEVALUASI (`DENY_TIER_ENTITLEMENT_MISSING`,
+   `DENY_LICENSE_STATE`, `DENY_EXTENSION_MISSING`) + 6 kode tambahan 5-C terdokumentasi
+   (`DENY_NO_ACTIVE_LICENSE`, `DENY_CAPABILITY_DISABLED`, `DENY_UNKNOWN_CAPABILITY`, `DENY_INVALID_TIER`,
+   `DENY_WORKSPACE_CONTEXT_INVALID`, `ENTITLEMENT_UNEVALUABLE_INPUT`). Vocabulary kanonik Phase 4
+   **tidak diubah**; kode `DENY_QUOTA_EXCEEDED` (OD-05) dan `DENY_STORE_TIER` (Phase 11) tetap deklarasi.
+3. **Tiga bentuk deny terbedakan** — `POLICY_DENIAL` (jawaban policy atas fakta valid) vs `UNKNOWN`
+   (capability tidak dikenal) vs `SYSTEM_ERROR` (drift katalog/vocabulary, invariant breach, input
+   invalid) — semuanya DENIED (fail closed), tidak ada fallback "unknown → allow" (prompt owner §9).
+4. **Sumber entitlement = license status `ACTIVE` saja** (`ACTIVE_LICENSE_STATUS` vocabulary 5-B) —
+   state lain (PURCHASED/RENEWAL_DUE/EXPIRED/GRACE/DOWNGRADED/status tak dikenal) → `DENY_LICENSE_STATE`
+   deterministik. **Tidak ada** semantik expiry/grace/downgrade baru (OD-108 OPEN); engine mengikuti
+   STATUS DATA, bukan membangun transisi.
+5. **Konsistensi matriks DB↔vocabulary divalidasi runtime** — rule DB yang melebihi matriks
+   LICENSE_MATRIX §2, atau matriks yang mengharuskan grant tanpa rule DB, = `SYSTEM_ERROR` fail closed
+   (invariant "seed = vocabulary" kini dijaga di runtime, bukan hanya test).
+6. **Extension-aware tanpa lifecycle**: parameter opsional `requiredExtensionType` (closed list owner
+   MC §2/§3); instance status ACTIVE yang berkontribusi (LICENSE_MATRIX §5); condition-per-rule di
+   schema = 5-D (tidak dikarang).
+7. **Integrasi authorization dua arah yang terpisah**: (a) policy Phase 4 mengevaluasi input entitlement
+   bila disediakan (entitlement hanya MEMBATASI); (b) `authorizeWorkspaceCapability` menyelesaikan
+   entitlement → bila DENIED, short-circuit SEBELUM policy aktor (owner pun tidak lolos) → bila ALLOWED,
+   membership/role/permission tetap dinilai policy (deny-by-default tetap berlaku). Hasil memuat KEDUA
+   lapisan terpisah (`entitlement`, `authorization`, `final`) — entitlement ≠ authorization.
+8. **Membership/role/fakta sesi dari sumber tepercaya server** — status membership di luar vocabulary
+   diperlakukan fail-closed (bukan "lanjutkan"); client tidak pernah menjadi sumber keputusan.
+
+### §5C-E Hasil test baru Phase 5-C — 76/76 PASS
+
+| # | File | Test | Membuktikan (prompt owner §14) |
+|---|---|---|---|
+| 1 | `tests/unit/entitlement-engine.test.ts` | 52 | Matriks LICENSE_MATRIX §2 penuh (3 tier × 10 capability, 24 grant + 6 deny per kombinasi); `HI_RIDER`/`TOTAL_RIDER` → `DENY_INVALID_TIER` fail closed; tier non-aktif → `DENY_LICENSE_STATE`; capability allowed/denied/unknown/disabled terbedakan (`kind`); state lisensi no-license/non-ACTIVE/ACTIVE; fail closed (invariant breach >1 ACTIVE, drift seed, input extension invalid); konteks workspace invalid; extension missing/present; **determinisme** (deep-equal dua evaluasi); wiring policy (entitlement membatasi, input absen = perilaku Phase 4 utuh) |
+| 2 | `tests/integration/entitlement-domain.test.ts` | 24 | Di atas DB hasil migration: evaluasi per-tier dari seed (`MINI_RIDER` core ALLOWED + evidence licenseId/tierCode/ruleId; crm DENIED; `MAX_RIDER` crm ALLOWED/ims DENIED; `ISO_RIDER` ims ALLOWED); state lisensi (no license; PURCHASED; histori EXPIRED + ACTIVE tetap ALLOWED; rotasi DOWNGRADED→DENY lalu lisensi ACTIVE baru→ALLOWED **tanpa kehilangan data** — semangat REQ-002/REQ-099); status korup via SQL → DENY deterministik tanpa crash; **isolasi workspace** (A tidak mewarisi license ISO milik B; extension instance B tidak menghitung untuk A); extension-aware (ACTIVE → ALLOWED + evidence; SUSPENDED → DENY); **pemisahan authorization** (entitlement ALLOWED + member tanpa permission → `DENY_PERMISSION_MISSING`; non-member → `DENY_NOT_MEMBER`; entitlement DENIED short-circuit bahkan untuk owner; sesi ABSENT → `DENY_NO_SESSION`); fail closed di DB nyata (unknown capability; extension type di luar closed list; CHECK HI_RIDER/TOTAL_RIDER tetap menolak); **audit evidence** (denial = category LICENSE/outcome DENIED/reasonCode; grant = snapshot evidence; `audit=false` opt-out) |
+
+### §5C-F Hasil regression — 221/221 PASS (18 file)
+
+`vitest run` exit 0. Komposisi: **145 baseline** (113 Phase 4 + 32 Phase 5-B) + **76 baru Phase 5-C**.
+**Tidak ada regresi** — seluruh suite Phase 4 dan 5-B lulus; perilaku Phase 4 policy tidak berubah bila
+input entitlement tidak disediakan (terbukti test unit + 113 regresi existing green).
+
+### §5C-G Evidence gate lengkap (command aktual + exit code)
+
+| # | Gate | Command | Exit | Hasil |
+|---|---|---|---|---|
+| 1 | Test 5-C | `vitest run tests/unit/entitlement-engine.test.ts tests/integration/entitlement-domain.test.ts` | 0 | 76/76 (2 file) |
+| 2 | Full suite | `vitest run` | 0 | **221/221** (18 file; 145 + 76) |
+| 3a | Schema validation | `prisma validate` (DATABASE_URL → tmp) | 0 | "schema is valid" |
+| 3b | Client generate | `prisma generate` | 0 | Prisma Client v6.19.2 (node_modules lokal) |
+| 4a | Migration deploy (DB kosong) | `prisma migrate deploy` | 0 | 2 migration ter-aplikasi |
+| 4b | Drift migrations ⇔ schema | `prisma migrate diff --exit-code …` | 0 | "No difference detected." |
+| 4c | Migration status | `prisma migrate status` | 0 | "Database schema is up to date!" |
+| 5 | Lint | `eslint .` | 0 | tanpa error |
+| 6 | Typecheck | `tsc --noEmit` | 0 | tanpa error |
+| 7 | Production build | `NEXTAUTH_SECRET=… bun run build` (placeholder build-time — preseden Phase 4 R2) | 0 | sukses; `tsconfig.json` tidak berubah (diverifikasi) |
+| 8 | Phase 4 & 5-B utuh | `git diff --quiet HEAD -- prisma/migrations/<phase4>` ; `-- prisma/schema.prisma` | 0 | Phase 4 migration & schema **tidak berubah** vs `20a0169` |
+
+**Prinsip alat:** seluruh vitest/prisma/eslint/tsc/next dari node_modules project lokal; DB test =
+SQLite disposable tmpdir; DB dev/produksi tidak disentuh; tanpa `migrate reset`; tanpa `db:push`.
+
+### §5C-H git status (5-C)
+
+```text
+ M src/lib/audit/audit-service.ts        (+3 — kategori LICENSE)
+ M src/lib/authz/policy.ts               (evaluasi input entitlement — aditif)
+ M tests/integration/licensing-migration.test.ts (asumsi state pasca-commit — §5C-N)
+ ?? src/lib/licensing/entitlement.ts
+ ?? src/lib/licensing/entitlement-service.ts
+ ?? tests/unit/entitlement-engine.test.ts
+ ?? tests/integration/entitlement-domain.test.ts
+ ?? adr/ADR-024-phase5c-entitlement-engine.md
+ (+ dokumen: PHASE_5_*, PHASE_STATUS, ROADMAP, TESTING, worklog)
+```
+
+### §5C-I Enforcement points (server-side authoritative)
+
+1. `resolveWorkspaceCapabilityEntitlement` — resolusi entitlement capability per workspace (server-only).
+2. `authorizeWorkspaceCapability` — enforcement gabungan entitlement → authorization (integrasion point
+   untuk seluruh endpoint tier-gated; kontrak stabil untuk pemakaian 5-E tanpa mengubah semantik).
+3. Policy Phase 4 (`evaluatePolicy`) — input entitlement kini menyokong deny kanonik di rantai aktor.
+4. Audit — setiap keputusan entitlement (deny first-class + grant snapshot) via audit-service Phase 4.
+Client/UI tidak pernah menjadi sumber kebenaran (tidak ada kode entitlement di sisi client).
+
+### §5C-J Keputusan owner yang tetap OPEN (tidak dikunci oleh 5-C)
+
+| OD | Isu | Cara 5-C menjaga keterbukaan |
+|---|---|---|
+| **OD-05** | Owner dihitung sebagai seat / final counting | Engine TIDAK mengonsumsi `TierQuota`; tidak ada perhitungan seat/owner; `DENY_QUOTA_EXCEEDED` tetap tidak dievaluasi |
+| **OD-06** | Harga/billing/checkout/issuance | Tidak ada kode komersial; extension hanya input status instance; tidak ada issuance/purchase |
+| **OD-108** | Expiry/grace/downgrade | Engine hanya membaca status data (ACTIVE vs bukan); tidak ada transisi/durasi/auto-downgrade; semua state non-ACTIVE → deny deterministik tanpa memilih kebijakan |
+
+### §5C-K Residual risk & limitations
+
+1. **Belum ter-integrasi**: kandidat lokal di atas commit 5-B yang juga belum ter-integrasi; CI owner
+   belum berjalan atas 5-B/5-C. Closure = setelah push/PR/CI/merge oleh owner (pola Phase 4).
+2. Tanpa eksposur HTTP/API/UI — pemakaian enforcement oleh endpoint nyata = 5-E (kontrak service sudah
+   tersedia dan teruji).
+3. Extension-aware evaluation hanya via parameter pemanggil (`requiredExtensionType`); kondisi
+   extension di `CapabilityRule` (schema) = 5-D bila dikehendaki owner.
+4. Snapshot evidence audit tersimpan di `metadataJson` (retensi/akses = OD-138 OPEN).
+5. SQLite dev; produksi = ADR-006 (partial index/CHECK re-review engine produksi).
+6. Vocabulary status PROPOSED (DMC §6.2) sampai ratifikasi owner; hanya closed set tier yang dikunci DB.
+
+### §5C-L Traceability (ringkas — detail di `PHASE_5_TRACEABILITY.md`)
+
+REQ-024 (entitlement server-side) → engine + enforcement + audit; REQ-026 (permission memeriksa
+lisensi) → input entitlement pada policy + integrasi `authorizeWorkspaceCapability`; REQ-002 (kontinuitas
+data lintas tier) → rotasi status diuji tanpa kehilangan akses data; REQ-098/099 → status sebagai sumber
+entitlement tanpa memaksa kebijakan (OD-108); REQ-023 (isolasi tenant) → isolasi license/extension per
+workspace diuji. Sumber: MC §2; ENTITLEMENT_MODEL §3/§4/§7/§10; AUTHORIZATION_MODEL §2/§3; LICENSE_MATRIX §2/§5; ADR-010/ADR-011/ADR-023.
+
+### §5C-M Status
+
+- **Phase 5-C: IMPLEMENTATION PASS — LOCAL CANDIDATE — NOT INTEGRATED.**
+- Phase 5 keseluruhan tetap IN PROGRESS; 5-D/5-E NOT STARTED; tidak ada klaim DONE—CLOSED.
+- Next action owner: review bukti → integrasi (push/PR/CI) untuk 5-B+5-C bersama → penilaian closure.
+
+### §5C-N Koreksi selama eksekusi (transparan)
+
+1. **Test baseline 5-B** `licensing-migration.test.ts` mengasumsikan changeset 5-B masih untracked
+   (state pra-commit); setelah 5-B di-commit (`20a0169`) asersi "≥1 baris untracked" tidak berlaku lagi.
+   **Perbaikan minimal** (intent anti-destruktif dipertahankan penuh): baris apa pun pada
+   `git status prisma/migrations` wajib tambahan untracked milik 5-B; tree bersih sah pada state
+   pasca-commit; migration 5-B wajib ter-track ATAU untracked. Kode/migration produksi tidak tersentuh.
+2. Dua test 5-C diperbaiki selama penulisan (defect test, bukan engine): skenario rule-absen untuk
+   `DENY_TIER_ENTITLEMENT_MISSING` memakai capability di luar matriks tier; skenario rotasi status
+   lisensi melengkapi langkah penurunan status sebelum evaluasi.
+3. Key metadata audit memakai nama aman-sanitizer (`tier`, bukan `tierCode`) — regex redaksi Phase 4.

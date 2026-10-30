@@ -532,3 +532,25 @@ Work Log:
 Stage Summary:
 - Phase 5-B: IMPLEMENTATION COMPLETE — seluruh evidence gate lokal PASS (`PHASE_5_REPORT.md`); acceptance lokal 18/18; status Phase 5 = IN PROGRESS (closure menunggu integrasi owner: review → commit/push → CI runner owner — pola Phase 4). Phase 4 tetap DONE — CLOSED; Phase 2 tetap PARTIAL.
 - Next action owner: review bukti, integrasi branch. 5-C/D/E menunggu otorisasi terpisah (TIDAK dimulai oleh sesi ini).
+
+---
+
+Task ID: Phase-5-C
+Agent: Z.ai Code (main orchestrator)
+Task: Phase 5-C — Entitlement Engine & Enforcement (otorisasi owner 2026-10-30; baseline lokal `20a0169`)
+
+Work Log:
+- Konteks: baseline implementasi lokal = commit 5-B `20a0169f1c6ce69013a2d1334c7324dd24edef4f` (parent `8cbc4ef`; origin/main tetap `8cbc4ef` — tidak diubah). Desain 5-B tidak disentuh; tanpa recon ulang; tanpa reset/rebase.
+- Sumber dibaca penuh: ENTITLEMENT_MODEL, AUTHORIZATION_MODEL (§2/§3 vocabulary DENY_*), LICENSE_MATRIX (§2 matriks; §5 lifecycle), OPEN_DECISIONS (OD-05/06/108), MASTER_CONTROL, schema/migration/vocabulary 5-B, policy/guards/audit Phase 4. Catatan: `REQUIREMENTS(2).md` tidak ada di repo — sumber kebutuhan = `REQUIREMENTS.md` (tanpa mengubah teksnya).
+- Engine (evaluator murni `src/lib/licensing/entitlement.ts`, 374 baris): deterministic (tanpa timestamp/random); decision object `ALLOWED/DENIED` + `kind` (GRANTED/POLICY_DENIAL/UNKNOWN/SYSTEM_ERROR) + reason code + evidence (workspaceId/licenseId/tierCode/ruleId/extensionsActive); urutan short-circuit ENTITLEMENT_MODEL §3 (workspace → capability → license → tier → rule/matriks → extension); fail-closed penuh (unknown ≠ denied ≠ system-error, semuanya DENIED); matriks DB↔vocabulary divalidasi runtime (drift → SYSTEM_ERROR); hanya status ACTIVE sebagai sumber entitlement (tanpa semantik expiry/grace baru — OD-108); guard tier closed-set lapis kedua di atas CHECK DB.
+- Service (`src/lib/licensing/entitlement-service.ts`, 283 baris): resolusi fakta DB (pola Phase 4 guards); `resolveWorkspaceExtensionFacts` (data saja); `recordEntitlementAudit` (denial first-class + grant snapshot via logAudit Phase 4; kategori LICENSE baru-aditif; key metadata aman-sanitizer); `authorizeWorkspaceCapability` = titik integrasi Entitlement×Authorization — entitlement DENIED → short-circuit sebelum policy aktor (authorization=null); ALLOWED → policy Phase 4 tetap menilai sesi/membership/role/permission; kedua lapis terpisah dalam hasil.
+- Wiring aditif policy Phase 4: input `entitlement` yang sejak Phase 4 dideklarasikan kini DIEVALUASI (tierActive=false → DENY_TIER_ENTITLEMENT_MISSING; requiredExtensionType tidak aktif → DENY_EXTENSION_MISSING; input absen = perilaku Phase 4 identik — dibuktikan regresi). Tipe `PolicyRequest.entitlement` diperluas opsional `requiredExtensionType`.
+- Test 5-C: 76 baru (unit 52 + integration 24) — mencakup seluruh §14 prompt owner (3 tier × matriks; HI_RIDER/TOTAL_RIDER; capability 4 bentuk; state lisensi termasuk rotasi tanpa kehilangan data; isolasi workspace license+extension; separasi authorization; fail closed DB nyata; audit evidence).
+- Koreksi: (1) test baseline 5-B `licensing-migration.test.ts` berasumsi state pra-commit (untracked); pasca-commit `20a0169` tree bersih — perbaikan minimal menjaga intent anti-destruktif untuk kedua state (dokumen §5C-N); (2) dua defect test 5-C sendiri (skenario rule-absen & rotasi status); (3) key metadata audit "tier" (sanitizer me-redaksi key mengandung "code"). Kode/migration produksi Phase 4/5-B tidak diubah; schema & migration identik vs HEAD (`git diff --quiet` exit 0).
+- Gate akhir (exit code aktual; alat dari node_modules lokal): test 5-C 76/76; full suite 221/221 (18 file); `prisma validate` 0; `prisma generate` 0 (v6.19.2); `migrate deploy` DB kosong 0 (2 migration); `migrate diff --exit-code` 0 ("No difference detected"); `migrate status` 0; lint 0; typecheck 0; production build 0 (placeholder build-time — preseden Phase 4 R2; tsconfig bersih); git diff schema+migration vs HEAD bersih.
+- Dokumentasi: bagian Phase 5-C di `PHASE_5_REPORT.md` (§5C-A..§5C-N), `PHASE_5_TRACEABILITY.md` (REQ-002/023/024/026/098/099), `PHASE_5_ACCEPTANCE.md` (20/20), `PHASE_STATUS.md`, `ROADMAP.md`, `TESTING.md`, worklog ini, `adr/ADR-024-phase5c-entitlement-engine.md` (PROPOSED).
+- Tanpa: push/PR/merge/force-push; perubahan origin/main; billing/checkout/payment/pricing; UI; API HTTP baru; lifecycle/expiry/grace/downgrade (OD-108); enforcement kuota seat (OD-05 — TierQuota tidak dikonsumsi engine); issuance (OD-06); extension lifecycle (5-D); `db:push`/`migrate reset`; menyentuh DB dev/produksi; Phase 5-D/5-E/6.
+
+Stage Summary:
+- Phase 5-C: IMPLEMENTATION PASS — LOCAL CANDIDATE — NOT INTEGRATED (bukan DONE—CLOSED; menunggu integrasi owner: push/PR/CI — pola Phase 4). PHASE_5B_STATUS tetap IMPLEMENTATION PASS — COMMITTED LOCALLY — NOT INTEGRATED. Phase 4 tetap DONE — CLOSED; Phase 2 tetap PARTIAL; Phase 5 = IN PROGRESS; 5-D/5-E NOT STARTED.
+- Next action owner: review bukti 5-C; integrasi 5-B+5-C (push/PR/CI) atas nama owner.

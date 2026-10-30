@@ -24,3 +24,27 @@ ACTIVE per workspace (ENTITLEMENT_MODEL §2 — D; M) · matriks capability = LI
 
 **Tidak diklaim oleh 5-B:** engine entitlement (5-C), transisi/renewal/expiry/grace/downgrade (5-D),
 checkout/payment/pricing/shop (5-E/OD-06), seat counting final (OD-05), UI/API licensing.
+
+---
+
+## Phase 5-C — Entitlement Engine & Enforcement (2026-10-30)
+
+**Scope dokumen bagian ini:** engine entitlement + enforcement server-side + integrasi authorization,
+di atas commit 5-B `20a0169` (branch sama). **Bukti:** `PHASE_5_REPORT.md` §5C-E/§5C-G;
+test `tests/unit/entitlement-engine.test.ts` (52), `tests/integration/entitlement-domain.test.ts` (24).
+
+| REQ | Kebutuhan (ringkas — sumber) | Kontribusi Phase 5-C | Bukti | Cakupan 5-C |
+|---|---|---|---|---|
+| REQ-024 | Entitlement server-side untuk semua beda lisensi; UI-hiding bukan kontrol (Architecture; MC §5/§6; Must) | **Engine entitlement runtime**: evaluator deterministic fail-closed (`ALLOWED/DENIED` + `kind` + reason code + evidence), resolusi DB (workspace → license ACTIVE → tier → rule → extension), deny direkam audit (denial first-class) | U (matriks 3×10; fail-closed; determinisme); D (per-tier, state, isolasi, audit) | **PENUH untuk sub-scope engine 5-C** — eksposur endpoint HTTP = 5-E |
+| REQ-026 | Permission memeriksa aktor, tenant, objek, aksi, konteks event, **lisensi**, status objek (Architecture; MC §5; Must) | Input entitlement pada policy Phase 4 kini DIEVALUASI (aditif; `null` = perilaku Phase 4 utuh); `authorizeWorkspaceCapability` merangkai entitlement (gate) → role/permission (grant) dengan kedua lapis terpisah | U (wiring policy); D (separasi: ALLOWED+member-tanpa-permission → DENY_PERMISSION_MISSING; short-circuit owner; DENY_NOT_MEMBER; DENY_NO_SESSION) | **PENUH untuk sub-scope 5-C** — konteks event/object-state runtime = Phase 6 |
+| REQ-002 | Pertumbuhan lisensi tanpa pindah aplikasi/rebuild data (Platform; MC §1; Must) | Rotasi status lisensi (ACTIVE → DOWNGRADED → lisensi ACTIVE baru) dievaluasi engine **tanpa kehilangan data/akses ulang** — upgrade/downgrade = perubahan DATA | D (skenario rotasi ALLOWED→DENY→ALLOWED) | PARTIAL — jalur issuance/upgrade fungsional = 5-D |
+| REQ-098 | Siklus lisensi purchase→active→renewal→expiry→grace→downgrade; aturan = keputusan owner (OD-06/OD-108) | Status = sumber entitlement: hanya ACTIVE; state lain deny deterministik (engine MENGIKUTI status data, tidak membangun transisi) | U (5 state non-ACTIVE → DENY_LICENSE_STATE); D (PURCHASED; korup → deny tanpa crash) | PARTIAL — mesin transisi = 5-D; durasi = OD-108 OPEN |
+| REQ-099 | Saat tier turun: restrict/archive/delete sesuai OD-108; tidak ada kehilangan data diam-diam | Deny entitlement = **restrict akses** (data tidak disentuh); histori license tetap dihormati (EXPIRED + ACTIVE → ALLOWED); rotasi tidak menghapus apa pun | D (state turun → deny; lisensi baru → allow lagi; data utuh) | PARTIAL — kebijakan akhir = OD-108 |
+| REQ-023 | Isolasi tenant — CRUD lintas-tenant ditolak (TESTING.md; MC §5) | Resolusi entitlement/extension strictly per workspace: license & extension instance workspace lain tidak pernah memengaruhi keputusan | D (license ISO milik B tidak meng-grant A; extension B ≠ A) | PENUH untuk permukaan entitlement 5-C |
+
+**Invarian yang kini dijaga RUNTIME (bukan hanya test):** matriks DB ⇔ vocabulary LICENSE_MATRIX §2
+(drift → fail closed); closed set tier (guard engine lapis kedua di atas CHECK DB); hanya ACTIVE sebagai
+sumber entitlement; fail-closed untuk input unknown/unevaluable (tanpa fallback allow).
+
+**Tidak diklaim oleh 5-C:** eksposur HTTP/UI (5-E), lifecycle/transisi lisensi (5-D), enforcement kuota
+seat (OD-05), issuance/purchase (5-E; OD-06), extension lifecycle (5-D), DENY_STORE_TIER (Phase 11).
