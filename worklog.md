@@ -554,3 +554,63 @@ Work Log:
 Stage Summary:
 - Phase 5-C: IMPLEMENTATION PASS — LOCAL CANDIDATE — NOT INTEGRATED (bukan DONE—CLOSED; menunggu integrasi owner: push/PR/CI — pola Phase 4). PHASE_5B_STATUS tetap IMPLEMENTATION PASS — COMMITTED LOCALLY — NOT INTEGRATED. Phase 4 tetap DONE — CLOSED; Phase 2 tetap PARTIAL; Phase 5 = IN PROGRESS; 5-D/5-E NOT STARTED.
 - Next action owner: review bukti 5-C; integrasi 5-B+5-C (push/PR/CI) atas nama owner.
+
+## 2026-10-31 — Phase 5-D RECOVERY (license & extension lifecycle)
+
+- Konteks: candidate 5-D pertama (`b687ace`, branch lama) PERNAH dibuat dan dipaketkan
+  pada sesinya (Git bundle + ZIP dengan ukuran/SHA-256 tercatat historis), namun saat
+  recovery dilakukan branch/artifact tersebut tidak lagi tersedia pada environment dan
+  tidak ditemukan pada GitHub (tidak ada bukti push). Recovery dieksekusi terkendali di
+  atas baseline canonical `165b3ba` (origin/main; merge PR #3) pada branch
+  `integration/phase5-d-license-extension-lifecycle` — TANPA menyentuh
+  implementasi/migration 5-B/5-C, tanpa reset/rebase, tanpa push/PR/merge.
+- Implementasi: `license-lifecycle.ts` (8 aksi kanonik DMC §6.2; verify-only; fail-closed),
+  `extension-lifecycle.ts` (6 aksi LICENSE_MATRIX §5; satu-LIVE-instance per
+  (workspace,type) via kolom denormalisasi `typeId` + partial unique index migration
+  aditif `20261031090000_phase5d_lifecycle_invariants`), `lifecycle-shared.ts` (aktor
+  SYSTEM/USER; otorisasi kanonik §4.5/§4.6 + fallback owner PROPOSED; audit), +4 permission
+  key aditif. REQ-099 data preservation; REQ-098 semua transisi teruji.
+- Gate lokal (semua exit 0): full regression 275/275 (221 + 54 baru; 2× stabil), lint,
+  typecheck, build (placeholder NEXTAUTH_SECRET pola CI owner), prisma
+  validate/generate/migrate deploy disposable/migrate diff "No difference detected".
+- Dokumen: ADR-025 (PROPOSED), PHASE_5D_REPORT/ACCEPTANCE/TRACEABILITY, ROADMAP,
+  PHASE_STATUS. OD-05/OD-06/OD-108 tetap OPEN — tidak ada keputusan owner yang diambil.
+- Tanpa: push/PR/merge; perubahan main; harga/checkout (OD-06); scheduler (OD-108); kuota
+  (OD-05); UI/API HTTP baru; license key; perubahan implementation/migration lama.
+
+Stage Summary:
+- Phase 5-D: IMPLEMENTATION PASS — LOCAL CANDIDATE (RECOVERY) — NOT INTEGRATED (menunggu
+  integrasi owner: push/PR/CI — pola Phase 4). Phase 5 = IN PROGRESS; 5-E NOT STARTED;
+  Phase 4 DONE — CLOSED; Phase 2 PARTIAL.
+- Next action owner: review bukti 5-D recovery; unduh transfer package (bundle + sha256 +
+  manifest + zip) dari Live Preview; verifikasi SHA; import bundle; push branch; buat PR;
+  review CI; merge — seluruh GitHub action = OWNER ONLY.
+
+## 2026-10-31 — Phase 5-D REMEDIASI PR #4 (migration backfill, authorization, doc correction)
+
+- Temuan A (migration): migration `20261031090000_phase5d_lifecycle_invariants` diperluas
+  — preflight (instance tanpa ExtensionDefinition valid; definition.typeId NULL/tidak
+  resolve ke ExtensionType) → backfill aditif `typeId` dari relasi
+  `definitionId → ExtensionDefinition.typeId` SEBELUM partial unique index → postflight
+  (backfill lengkap; satu-LIVE-instance per (workspace,type)). Kegagalan validasi =
+  `RAISE(ABORT, 'PHASE5D_BACKFILL_FAILED: …')` eksplisit; TANPA delete/auto-pick/status
+  change. Migration Phase 4/5-B historis tidak disentuh (diuji `git diff --quiet HEAD`).
+- Temuan B (otorisasi): jalur ALLOW `OWNER_FALLBACK_PROPOSED` DIHAPUS dari
+  `authorizeLifecycleAction` — explicit permission only; tanpa permission terdokumentasi
+  (dan grant preset yang disahkan — OD-122 OPEN) SEMUA USER actor termasuk role `owner`
+  ditolak `DENY_PERMISSION_MISSING`; label kebutuhan keputusan owner kini
+  `ownerRatificationStatus: "PROPOSED"` (tidak pernah dibaca fungsi otorisasi);
+  `viaOwnerFallback` selalu false. SYSTEM tetap internal-only.
+- Temuan C (dokumentasi historis): formulasi "tidak pernah dipush/dipack" dikoreksi pada
+  PHASE_5D_REPORT/TRACEABILITY, ADR-025, ROADMAP, PHASE_STATUS, worklog — candidate
+  `b687ace` pernah dibuat & dipaketkan; yang akurat: tidak tersedia di environment saat
+  recovery dan tidak ditemukan di GitHub (tanpa bukti push).
+- Test baru remediasi: +16 (migration backfill POSITIVE + 3 NEGATIVE + struktur; license
+  authz +6; extension authz +4; unit tabel authz +1). Full regression **291/291** (221
+  regresi + 70 baru 5-D; 2× stabil); lint/typecheck/build exit 0; prisma
+  validate/generate OK; migrate diff "No difference detected"; migrate deploy disposable
+  (kosong + legacy 5-B nyata) PASS; secret scan PASS.
+- Governance: OD-01/OD-05/OD-06/OD-108/OD-122 tetap OPEN; ADR-025 tetap PROPOSED; master
+  control tidak diubah; Phase 5-D = IMPLEMENTATION PASS — LOCAL CANDIDATE (RECOVERY +
+  REMEDIASI) — NOT INTEGRATED; Phase 5-E NOT STARTED. Satu commit remediasi di atas
+  `cb4fc97`; tanpa push/PR/merge — integrasi = OWNER ONLY.

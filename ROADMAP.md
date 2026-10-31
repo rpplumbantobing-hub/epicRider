@@ -22,6 +22,33 @@
 
 *Pembaruan Phase 5-C (2026-10-30):* owner mengotorisasi **Phase 5-C saja** (entitlement engine & enforcement; tanpa 5-D/E). Implementasi pada branch yang sama **di atas commit 5-B `20a0169`** (tanpa reset/rebase): evaluator murni deterministic fail-closed (`src/lib/licensing/entitlement.ts`) + resolusi DB/audit/integrasi authorization (`src/lib/licensing/entitlement-service.ts`) + wiring aditif policy Phase 4 (input entitlement kini dievaluasi; input absen = perilaku Phase 4 utuh) + kategori audit `LICENSE` + 76 test baru. Seluruh gate lokal lulus (test 76/76; full regression **221/221** = 145 + 76; lint/typecheck/build/validate/migrate-diff exit 0; schema/migration tidak berubah — `PHASE_5_REPORT.md` §5C-G). OD-05 (kuota/seat counting tidak dikonsumsi engine), OD-06 (tanpa kode komersial), OD-108 (engine hanya membaca status data; tanpa transisi) tetap OPEN.
 
+*Pembaruan Phase 5-D (2026-10-31, RECOVERY + REMEDIASI PR #4):* Phase 5-D (license &
+extension lifecycle) dieksekusi ulang terkendali di atas baseline canonical `165b3ba`
+pada branch `integration/phase5-d-license-extension-lifecycle` — candidate pertama
+(`b687ace`) PERNAH dibuat dan dipaketkan pada sesinya (Git bundle + ZIP dengan
+ukuran/SHA-256 tercatat historis), namun saat recovery dilakukan branch/artifact tersebut
+tidak lagi tersedia pada environment dan tidak ditemukan pada GitHub (tidak ada bukti
+push); candidate tidak direkonstruksi dari ingatan. Hasil recovery: mesin transisi
+lisensi 8 aksi kanonik fail-closed (DMC §6.2; verify-only, tanpa scheduler — OD-108),
+lifecycle extension 6 aksi (LICENSE_MATRIX §5) dengan invariant satu-LIVE-instance per
+(workspace, type) ditegakkan DB (migration aditif
+`20261031090000_phase5d_lifecycle_invariants`; kolom denormalisasi `typeId`), aktor
+SYSTEM internal-only (tanpa route HTTP), idempotensi state-convergence + optimistic
+guard (ADR-017; teruji SQLite lokal — OD-01 jujur), audit dua arah (sukses atomik;
+denial first-class), REQ-099 data preservation. *Remediasi PR #4 (satu commit di atas
+`cb4fc97`):* (A) migration mem-backfill existing data (`definitionId →
+ExtensionDefinition.typeId`, SEBELUM unique index) dengan preflight/postflight gagal
+eksplisit — tanpa delete/auto-pick/status change; (B) jalur ALLOW
+`OWNER_FALLBACK_PROPOSED` DIHAPUS — explicit permission only; tanpa ratifikasi katalog
+owner (OD-122 OPEN), seluruh aksi lifecycle USER = default deny `DENY_PERMISSION_MISSING`
+termasuk role `owner`; (C) koreksi formulasi historis pada dokumentasi. Full regression
+**291/291** (= 221 + 70 baru); lint/typecheck/build/validate/migrate-diff exit 0;
+migrate deploy disposable (kosong + legacy 5-B nyata) PASS. Dokumen:
+`PHASE_5D_REPORT.md` + `PHASE_5D_ACCEPTANCE.md` (27/27 VERIFIED dengan limitations
+jujur) + `PHASE_5D_TRACEABILITY.md` + `adr/ADR-025-phase5d-license-extension-
+lifecycle.md` (PROPOSED). OD-05/OD-06/OD-108 tetap OPEN; 5-E NOT STARTED; closure menunggu
+integrasi owner.
+
 | Phase | Nama (outcome yang direncanakan — MC §12) | Status | Bukti / Blocker / Dependency |
 |---|---|---|---|
 | 0 | Audit repository, verifikasi bukti & penguncian control baseline | **DONE — existing evidence** | `PHASE_0_ACCEPTANCE.md` (9/9); commit `03293b6`; verifikasi ISO `BLOCKED` (F0-012, OD-160) |
@@ -29,7 +56,7 @@
 | 2 | Architecture/domain model, threat model, data model & ADR | **PARTIAL — arsitektur lengkap & direkonsiliasi (2026-10-28), namun evidence gate belum terpenuhi ulang di bawah kontrol terbaru** | `PHASE_2_ACCEPTANCE.md` A–G (assessment 2026-10-27 + re-assessment 2026-10-28 — klaim "DONE as architecture baseline" lama = klaim historis, bukan otoritas status); `PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md`; seluruh 8 deliverable ada & konsisten; yang belum: build/CI bukti reproduktif pada runner sah + ratifikasi owner ADR PROPOSED (+ADR-018) + keputusan OD-01/OD-02 — non-blocking untuk arsitektur, blocking untuk kelulusan penuh di bawah kebijakan kontrol 2026-10-28 (Obsolete Register §2) |
 | 3 | Repository foundations, design system, i18n & CI/testing foundation (+ Gate A remediasi konsistensi Phase 2; + remediasi audit Phase 3 F-01..F-08) | **PARTIAL — kontrol diremediasi 2026-10-28; evidence build/CI belum terpenuhi** | `PHASE_3_ACCEPTANCE.md` (re-assessed: kriteria 12 = PARTIAL — build NOT RUN karena dilarang platform sandbox; CI remote NOT TESTED); `PHASE_3_REPORT.md`; `PHASE_3_REMEDIATION_REPORT.md`; lint/typecheck/test exit 0 (25/25); screenshot showcase. Status naik ke DONE hanya setelah `bun run build` + CI remote terbukti di runner owner |
 | 4 | Identity, authentication, workspace/tenant, memberships & permissions | **DONE — closed 2026-10-30** (implementasi R2 dipromosikan via PR #1 Merged; CI post-merge `main` lulus; audit closure 16/16 kriteria PASS dengan limitations tercatat — `PHASE_4_GOVERNANCE_CLOSURE.md`; status sebelumnya: `IN PROGRESS` mulai 2026-10-28 setelah `PRE_PHASE_4_GATE = PASS` 2026-10-28) | Merge commit `a1af59d8e00d3a0d8e28b25f1a7f05961182a6a0` (PR #1 "Phase 4 R2 — Controlled Promotion", parents `b5defc22` + `f29f152`; commit promosi `80f5329`/`5e002db`/`f29f152` — semua ancestor `main`, diverifikasi Git 2026-10-30); CI post-merge run #5 <https://github.com/rpplumbantobing-hub/epicRider/actions/runs/40928261468> `Success` (job `lint, typecheck, test, build`; ≈1m 4s; diverifikasi live + badge `CI - passing`); bukti lokal R2: 113/113 test (25 regresi Phase 3 + 88 Phase 4 termasuk 12 HTTP routing), lint/typecheck exit 0, build exit 0 (review 3 + CI); provenance R2 `e12b9dbc…cf97fe` (637.394 byte; 80/17/0; 97/97 hash manifest). Limitations: Google OIDC real round-trip `NOT TESTED`; vendor WhatsApp = OD-03 (OPEN — hanya sub-scope itu); REQ-047 runtime `NOT ASSESSED`; OD-115/OD-122 `PROPOSED` — daftar lengkap `PHASE_4_GOVERNANCE_CLOSURE.md` §8 |
-| 5 | Licensing, entitlements, renewal/expiry & extensions model | **IN PROGRESS — 5-B (fondasi domain/database) + 5-C (entitlement engine & enforcement) terimplementasi 2026-10-30 pada branch terpisah, menunggu integrasi owner; 5-D (lifecycle) / 5-E (checkout/shop) NOT STARTED** | Bukti lokal: `PHASE_5_REPORT.md` (5-B: test 145/145 = 113 + 32; **5-C: 221/221 = 145 + 76**; lint/typecheck/build/validate/migrate-diff exit 0 pada kedua sub-fase); `PHASE_5_ACCEPTANCE.md` 18/18 (5-B) + 20/20 (5-C) lokal; ADR-023 + ADR-024 PROPOSED. Sub-scope tertahan: OD-05 (final seat counting), OD-06 (charging/harga final), OD-108 (expiry/grace/downgrade) — arsitektur katalog/entitlement tidak tertahan |
+| 5 | Licensing, entitlements, renewal/expiry & extensions model | **IN PROGRESS — 5-B + 5-C terintegrasi owner (merge PR #3, `165b3ba`); 5-D (lifecycle) RECOVERY terimplementasi 2026-10-31 pada branch `integration/phase5-d-license-extension-lifecycle` (base `165b3ba`), menunggu integrasi owner; 5-E (checkout/shop) NOT STARTED** | Bukti lokal: `PHASE_5_REPORT.md` (5-B: 145/145; 5-C: 221/221) + `PHASE_5D_REPORT.md` (recovery: **275/275** = 221 + 54; lint/typecheck/build/validate/migrate-diff exit 0; migration aditif 5-D `20261031090000`); `PHASE_5D_ACCEPTANCE.md` 26/26 VERIFIED dengan limitations jujur; ADR-023 + ADR-024 + ADR-025 PROPOSED. Sub-scope tertahan: OD-05 (final seat counting), OD-06 (charging/harga final), OD-108 (expiry/grace/downgrade) — arsitektur katalog/entitlement/lifecycle tidak tertahan |
 | 6 | Home/dashboard & event foundation | NOT STARTED | — |
 | 7 | Technical rider & templates | NOT STARTED | — |
 | 8 | Asset foundation & asset/set templates | NOT STARTED | — |
