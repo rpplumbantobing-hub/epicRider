@@ -61,6 +61,16 @@ const PHASE5B_MODELS = [
   "TierQuota",
 ] as const;
 
+// Phase 5-E (ADR-026): entity family commerce surface "License & Extension
+// Shop" (DMC §3.12a — direkonsiliasi 5-E). Tiga model Shop* SAJA; Public
+// Store (Product/CatalogListing/StoreOrder) dan Equipment Store TETAP TIDAK
+// dimodelkan (ADR-018 surface isolation).
+const PHASE5E_MODELS = [
+  "ShopOrderIntent",
+  "ShopOrderIntentLine",
+  "ShopProduct",
+] as const;
+
 /** Helper asersi penolakan constraint DB (P2002/P2003/CHECK) dari domain layer. */
 function expectDbRejection(error: unknown, match: RegExp): void {
   expect(error).toBeInstanceOf(Error);
@@ -302,9 +312,9 @@ describe("relasi lisensi ↔ workspace Phase 4 (DMC §3.5)", () => {
 });
 
 describe("integritas Phase 4 — tidak ada duplikasi sistem identitas/membership/role/authorization", () => {
-  it("DMMF: himpunan model persis Phase 4 (11) + fondasi licensing (8) — tanpa model baru lain", () => {
+  it("DMMF: himpunan model persis Phase 4 (11) + fondasi licensing (8) + shop 5-E (3) — tanpa model baru lain", () => {
     const names = Prisma.dmmf.datamodel.models.map((m) => m.name).sort();
-    expect(names).toEqual([...PHASE4_MODELS, ...PHASE5B_MODELS].sort());
+    expect(names).toEqual([...PHASE4_MODELS, ...PHASE5B_MODELS, ...PHASE5E_MODELS].sort());
   });
 
   it("License mereferensi Workspace/LicenseTier via relasi — bukan model tenant/identity baru", () => {

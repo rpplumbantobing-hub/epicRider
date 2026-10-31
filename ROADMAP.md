@@ -49,6 +49,25 @@ jujur) + `PHASE_5D_TRACEABILITY.md` + `adr/ADR-025-phase5d-license-extension-
 lifecycle.md` (PROPOSED). OD-05/OD-06/OD-108 tetap OPEN; 5-E NOT STARTED; closure menunggu
 integrasi owner.
 
+*Pembaruan Phase 5-E (2026-10-31, COMMERCE FOUNDATION — working tree, belum commit):*
+Phase 5-E (fondasi domain/backend License & Extension Shop) terimplementasi di atas
+baseline canonical `aafcbe3` dengan boundary ketat: TANPA UI/route HTTP (experience
+commerce = Phase 22), TANPA charging/harga/gateway (OD-06/OD-133), state order intent
+PROVISIONAL (OD-135), term data caller-supplied (OD-108), tanpa binding permission
+(OD-122 — seluruh aksi commerce USER = default deny; operasi internal = aktor SYSTEM).
+Entity family aditif `Shop*` (ShopProduct/ShopOrderIntent/ShopOrderIntentLine; migration
+`20261031120000_phase5e_shop_commerce_foundation` — CREATE TABLE/INDEX saja); rantai
+terpakai-ulang dari 5-B/5-C/5-D (sourceType/sourceRef 5-B diisi; otorisasi rantai 5-D
+reuse; engine 5-C membaca status; aktivasi hanya via lifecycle 5-D). Rekonsiliasi:
+DMC §3.12a DIBUAT (referensi menggantung kini valid) + §3.5 EntitlementGrant direkonsiliasi
+(TIDAK dibuat sebagai tabel — bukan second source of truth). Full regression **354/354**
+(= 291 + 63 baru); lint/typecheck/build/validate/migrate-diff exit 0; deploy kosong +
+legacy PASS. Dokumen: `PHASE_5E_REPORT.md` + `PHASE_5E_ACCEPTANCE.md` (21 VERIFIED,
+1 NOT TESTED jujur, 5 NOT APPLICABLE by-design) + `PHASE_5E_TRACEABILITY.md` +
+`adr/ADR-026-phase5e-shop-commerce-foundation.md` (PROPOSED). Status 5-E:
+IMPLEMENTATION PASS — LOCAL WORKING TREE — NOT COMMITTED/INTEGRATED; closure menunggu
+integrasi owner. OD-05/OD-06/OD-108/OD-122/OD-133/OD-135 tetap OPEN.
+
 | Phase | Nama (outcome yang direncanakan — MC §12) | Status | Bukti / Blocker / Dependency |
 |---|---|---|---|
 | 0 | Audit repository, verifikasi bukti & penguncian control baseline | **DONE — existing evidence** | `PHASE_0_ACCEPTANCE.md` (9/9); commit `03293b6`; verifikasi ISO `BLOCKED` (F0-012, OD-160) |
@@ -56,7 +75,7 @@ integrasi owner.
 | 2 | Architecture/domain model, threat model, data model & ADR | **PARTIAL — arsitektur lengkap & direkonsiliasi (2026-10-28), namun evidence gate belum terpenuhi ulang di bawah kontrol terbaru** | `PHASE_2_ACCEPTANCE.md` A–G (assessment 2026-10-27 + re-assessment 2026-10-28 — klaim "DONE as architecture baseline" lama = klaim historis, bukan otoritas status); `PHASE_2_CONSISTENCY_REMEDIATION_REPORT.md`; seluruh 8 deliverable ada & konsisten; yang belum: build/CI bukti reproduktif pada runner sah + ratifikasi owner ADR PROPOSED (+ADR-018) + keputusan OD-01/OD-02 — non-blocking untuk arsitektur, blocking untuk kelulusan penuh di bawah kebijakan kontrol 2026-10-28 (Obsolete Register §2) |
 | 3 | Repository foundations, design system, i18n & CI/testing foundation (+ Gate A remediasi konsistensi Phase 2; + remediasi audit Phase 3 F-01..F-08) | **PARTIAL — kontrol diremediasi 2026-10-28; evidence build/CI belum terpenuhi** | `PHASE_3_ACCEPTANCE.md` (re-assessed: kriteria 12 = PARTIAL — build NOT RUN karena dilarang platform sandbox; CI remote NOT TESTED); `PHASE_3_REPORT.md`; `PHASE_3_REMEDIATION_REPORT.md`; lint/typecheck/test exit 0 (25/25); screenshot showcase. Status naik ke DONE hanya setelah `bun run build` + CI remote terbukti di runner owner |
 | 4 | Identity, authentication, workspace/tenant, memberships & permissions | **DONE — closed 2026-10-30** (implementasi R2 dipromosikan via PR #1 Merged; CI post-merge `main` lulus; audit closure 16/16 kriteria PASS dengan limitations tercatat — `PHASE_4_GOVERNANCE_CLOSURE.md`; status sebelumnya: `IN PROGRESS` mulai 2026-10-28 setelah `PRE_PHASE_4_GATE = PASS` 2026-10-28) | Merge commit `a1af59d8e00d3a0d8e28b25f1a7f05961182a6a0` (PR #1 "Phase 4 R2 — Controlled Promotion", parents `b5defc22` + `f29f152`; commit promosi `80f5329`/`5e002db`/`f29f152` — semua ancestor `main`, diverifikasi Git 2026-10-30); CI post-merge run #5 <https://github.com/rpplumbantobing-hub/epicRider/actions/runs/40928261468> `Success` (job `lint, typecheck, test, build`; ≈1m 4s; diverifikasi live + badge `CI - passing`); bukti lokal R2: 113/113 test (25 regresi Phase 3 + 88 Phase 4 termasuk 12 HTTP routing), lint/typecheck exit 0, build exit 0 (review 3 + CI); provenance R2 `e12b9dbc…cf97fe` (637.394 byte; 80/17/0; 97/97 hash manifest). Limitations: Google OIDC real round-trip `NOT TESTED`; vendor WhatsApp = OD-03 (OPEN — hanya sub-scope itu); REQ-047 runtime `NOT ASSESSED`; OD-115/OD-122 `PROPOSED` — daftar lengkap `PHASE_4_GOVERNANCE_CLOSURE.md` §8 |
-| 5 | Licensing, entitlements, renewal/expiry & extensions model | **IN PROGRESS — 5-B + 5-C terintegrasi owner (merge PR #3, `165b3ba`); 5-D (lifecycle) RECOVERY terimplementasi 2026-10-31 pada branch `integration/phase5-d-license-extension-lifecycle` (base `165b3ba`), menunggu integrasi owner; 5-E (checkout/shop) NOT STARTED** | Bukti lokal: `PHASE_5_REPORT.md` (5-B: 145/145; 5-C: 221/221) + `PHASE_5D_REPORT.md` (recovery: **275/275** = 221 + 54; lint/typecheck/build/validate/migrate-diff exit 0; migration aditif 5-D `20261031090000`); `PHASE_5D_ACCEPTANCE.md` 26/26 VERIFIED dengan limitations jujur; ADR-023 + ADR-024 + ADR-025 PROPOSED. Sub-scope tertahan: OD-05 (final seat counting), OD-06 (charging/harga final), OD-108 (expiry/grace/downgrade) — arsitektur katalog/entitlement/lifecycle tidak tertahan |
+| 5 | Licensing, entitlements, renewal/expiry & extensions model | **IN PROGRESS — 5-B + 5-C terintegrasi owner (merge PR #3, `165b3ba`); 5-D (lifecycle) terintegrasi owner (merge PR #4 → `aafcbe3` = canonical main, 2026-10-31); 5-E (commerce foundation) terimplementasi 2026-10-31 pada working tree di atas `aafcbe3` — status `IMPLEMENTATION PASS — LOCAL WORKING TREE — NOT COMMITTED/INTEGRATED`, menunggu integrasi owner (pola Phase 4/5-D; MC-V4 §11)** | Bukti lokal: `PHASE_5_REPORT.md` (5-B: 145/145; 5-C: 221/221) + `PHASE_5D_REPORT.md` (291/291) + `PHASE_5E_REPORT.md` (fondasi 5-E: **354/354** = 291 + 63; lint/typecheck/build/validate/migrate-diff exit 0; migration aditif 5-E `20261031120000`; TANPA UI/route/charging — experience commerce = Phase 22); `PHASE_5E_ACCEPTANCE.md` 21 VERIFIED + 1 NOT TESTED (jujur) + 5 NOT APPLICABLE (blocked by design); ADR-023 + ADR-024 + ADR-025 + ADR-026 PROPOSED. Sub-scope tertahan: OD-05 (final seat counting), OD-06 (charging/harga final/gateway), OD-108 (expiry/grace/durasi), OD-122 (binding permission), OD-133/OD-135 (harga/state final) — arsitektur katalog/entitlement/lifecycle/order-intent/issuance tidak tertahan |
 | 6 | Home/dashboard & event foundation | NOT STARTED | — |
 | 7 | Technical rider & templates | NOT STARTED | — |
 | 8 | Asset foundation & asset/set templates | NOT STARTED | — |

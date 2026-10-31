@@ -43,6 +43,10 @@ const PHASE5B = "20261030124013_phase5b_licensing_domain_foundation";
 // lain yang sah di samping 5-B; preseden penyesuaian asumsi state pasca-commit
 // dari Phase 5-C).
 const PHASE5D = "20261031090000_phase5d_lifecycle_invariants";
+// Phase 5-E (ADR-026): direktori migration commerce foundation — tambahan
+// aditif keempat yang sah (CREATE TABLE/INDEX saja; migration historis
+// tetap terlarang diubah — diuji di bawah).
+const PHASE5E = "20261031120000_phase5e_shop_commerce_foundation";
 
 interface Phase4Snapshot {
   usersJson: string;
@@ -393,7 +397,7 @@ describe("migration Phase 5-B aditif — tidak destruktif (REQ-029; OD-01)", () 
     expect(updateHits.length).toBeGreaterThan(0);
   });
 
-  it("file migration Phase 4, 5-B & lock tidak diubah vs HEAD; tambahan = direktori Phase 5-B/5-D; satu-satunya modifikasi yang sah = migration.sql Phase 5-D (remediasi PR #4)", () => {
+  it("file migration Phase 4, 5-B & lock tidak diubah vs HEAD; tambahan = direktori Phase 5-B/5-D/5-E; satu-satunya modifikasi yang sah = migration.sql Phase 5-D (remediasi PR #4)", () => {
     const diffPhase4 = spawnSync(
       "git",
       ["diff", "--quiet", "HEAD", "--", `prisma/migrations/${PHASE4}`],
@@ -432,7 +436,7 @@ describe("migration Phase 5-B aditif — tidak destruktif (REQ-029; OD-01)", () 
     // Tree bersih (0 baris) sah pada state pasca-commit.
     for (const line of lines) {
       if (line.startsWith("?? ")) {
-        expect(line.includes(PHASE5B) || line.includes(PHASE5D)).toBe(true);
+        expect(line.includes(PHASE5B) || line.includes(PHASE5D) || line.includes(PHASE5E)).toBe(true);
       } else if (line.startsWith(" M") || line.startsWith("M ")) {
         expect(line.includes(PHASE5D)).toBe(true);
         expect(line.endsWith("migration.sql")).toBe(true);

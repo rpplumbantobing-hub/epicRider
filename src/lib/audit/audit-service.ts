@@ -21,6 +21,13 @@ export const AuditCategory = {
   ABUSE: "ABUSE",
   /** Phase 5-C: keputusan entitlement (denial = first-class; ENTITLEMENT_MODEL §10). */
   LICENSE: "LICENSE",
+  /**
+   * Phase 5-E: domain commerce License & Extension Shop (katalog, eligibility,
+   * order intent, verified completion, issuance). Denial = first-class.
+   * Kategori BARU bersifat ADITIF — kerangka audit (logAudit + redaksi
+   * metadata) TETAP milik Phase 4; TIDAK ada framework audit kedua (ADR-026).
+   */
+  COMMERCE: "COMMERCE",
 } as const;
 export type AuditCategory = (typeof AuditCategory)[keyof typeof AuditCategory];
 

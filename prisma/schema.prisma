@@ -52,6 +52,9 @@ model User {
   memberships    Membership[]
   developerRoles DeveloperRoleAssignment[]
   auditEvents    AuditEvent[]
+  // Phase 5-E: order intent yang dibeli oleh user ini (atribusi server-side;
+  // SetNull — event order tetap hidup meski user dihapus).
+  shopOrderIntents ShopOrderIntent[] @relation("ShopOrderIntentBuyer")
 
   @@index([status])
 }
@@ -152,6 +155,9 @@ model Workspace {
   invitations        Invitation[]
   licenses           License[] // Phase 5-B: lisensi yang dipegang tenant (DMC §3.5; onDelete Restrict — histori tidak terhapus cascade)
   extensionInstances ExtensionInstance[] // Phase 5-B: extension terprovisi pada tenant (DMC §3.6)
+  // Phase 5-E: order intent License & Extension Shop yang menarget tenant
+  // ini (target issuance SELALU workspace — ENTITLEMENT_MODEL §8).
+  shopOrderIntents   ShopOrderIntent[]
 
   @@index([status])
 }
@@ -295,6 +301,9 @@ model LicenseTier {
   licenses        License[]
   tierQuotas      TierQuota[]
   capabilityRules CapabilityRule[]
+  // Phase 5-E: produk shop yang menarget tier ini (DMC §3.12a; TANPA
+  // duplikasi tier — katalog shop hanya REFER ke LicenseTier).
+  shopProducts    ShopProduct[]
 }
 
 /// Lisensi tier yang dipegang workspace (tenant) — DMC §3.5. Histori = baris
@@ -384,6 +393,9 @@ model ExtensionDefinition {
 
   type      ExtensionType       @relation(fields: [typeId], references: [id], onDelete: Restrict)
   instances ExtensionInstance[]
+  // Phase 5-E: produk shop yang menarget definisi ini (DMC §3.12a; TANPA
+  // duplikasi definisi — katalog shop hanya REFER ke ExtensionDefinition).
+  shopProducts ShopProduct[]
 
   @@index([typeId, isActive])
 }
@@ -444,4 +456,107 @@ model TierQuota {
 
   @@unique([tierId, quotaCode])
   @@index([tierId, status])
+}
+
+// ============== Commerce: License & Extension Shop (DMC §3.12a) ==============
+// Phase 5-E — fondasi commerce domain surface "License & Extension Shop"
+// (ADR-018; ADR-026). Entity family `Shop*` MILIK SATU surface SAJA — terpisah
+// struktur dari Public Store (Product/CatalogListing/StoreOrder — konseptual,
+// TIDAK dimodelkan di sini) dan Developer Equipment Store
+// (EquipmentListing/… — Phase 11). REQ-030: tidak ada tabel bersama, tidak ada
+// cross-link antar surface.
+//
+// Rantai arsitektur (prompt owner 5-E §3/§8/§14):
+//   ShopProduct → ShopOrderIntent (INTENT ≠ PAID ≠ ACTIVE ENTITLEMENT)
+//   → verified completion boundary (sumber internal tepercaya; BUKAN claim
+//     client; sumber produksi = OD-06 OPEN — TIDAK dimodelkan)
+//   → issuance: License(status=PURCHASED) / ExtensionInstance(status=
+//     PURCHASED) dengan sourceType="SHOP_ORDER_INTENT" + sourceRef intent id
+//   → aktivasi HANYA via lifecycle 5-D (bukan dari kode commerce)
+//   → engine entitlement 5-C membaca status (PURCHASED tidak pernah meng-
+//     grant). TIDAK ada EntitlementGrant (DMC §3.5 direkonsiliasi ADR-026 —
+//     bukan second source of truth).
+//
+// TIDAK dimodelkan (OD tetap OPEN, tanpa nilai dikarang): harga, currency,
+// pajak, diskon (OD-06/OD-133); state machine invoice/order final (OD-135 —
+// status intent di sini PROVISIONAL); durasi term/window/grace (OD-108 —
+// term data caller-supplied); kuota/seat counting (OD-05); permission katalog
+// shop (OD-122 — key kanonik satu-satunya: store.order.create §4.12).
+
+/// Produk surface License & Extension Shop (DMC §3.12a — direkonsiliasi
+/// Phase 5-E). Struktur katalog SAJA: apa yang dapat dibeli, target issuance,
+/// surface ownership. Status default INACTIVE — tidak dapat dibeli sampai
+/// diaktifkan eksplisit (fail-safe; mirror ExtensionDefinition.isActive=false).
+/// Closed set kind dikunci CHECK DB (migration Phase 5-E); status katalog
+/// TIDAK dikunci DB (vocabulary structural — ditegakkan lapisan service,
+/// pola status License/ExtensionInstance 5-B/5-D); integritas kind↔target
+/// divalidasi lapisan service (fail-closed) + test.
+model ShopProduct {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  kind        String // LICENSE | EXTENSION (closed set; CHECK DB)
+  displayName String
+  status      String   @default("INACTIVE") // ACTIVE | INACTIVE | WITHDRAWN (closed set; TANPA CHECK DB — ditegakkan lapisan service, pola 5-B/5-D)
+  /// Target issuance kind=LICENSE — LicenseTier TIDAK diduplikasi (§10).
+  tierId      String?
+  /// Target issuance kind=EXTENSION — ExtensionDefinition TIDAK diduplikasi.
+  definitionId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tier       LicenseTier?         @relation(fields: [tierId], references: [id], onDelete: Restrict)
+  definition ExtensionDefinition? @relation(fields: [definitionId], references: [id], onDelete: Restrict)
+  lines      ShopOrderIntentLine[]
+
+  @@index([kind, status])
+  @@index([status])
+}
+
+/// Order intent (Bukan paid order; prompt owner 5-E §12). State machine
+/// PROVISIONAL — final invoice/order state machine = OD-135 OPEN:
+///   OPEN → COMPLETED (verified completion boundary §13) → ISSUED (issuance
+///   §14; License/ExtensionInstance PURCHASED dibuat); CANCELLED dari OPEN.
+/// TIDAK ada state payment/refund/harga (OD-06/OD-135). completionSource hanya
+/// diisi oleh boundary completion dari sumber internal tepercaya (union
+/// tertutup — simulasi non-produksi satu-satunya anggota Phase 5-E).
+/// idempotencyKey unik = anti-duplication (state-convergence; ADR-017; pola
+/// 5-D; replay-cache fisik menunggu OD-01 — dinyatakan jujur di ADR-026).
+model ShopOrderIntent {
+  id               String    @id @default(cuid())
+  workspaceId      String
+  /// Atribusi pembeli yang diselesaikan SERVER (bukan claim client);
+  /// nullable — jalur publik first-license di masa depan dapat anonim.
+  buyerUserId      String?
+  status           String    @default("OPEN") // OPEN | COMPLETED | ISSUED | CANCELLED (PROVISIONAL — OD-135; TANPA CHECK DB — ditegakkan lapisan service, pola 5-B/5-D)
+  idempotencyKey   String    @unique
+  completionSource String? // NON_PRODUCTION_TEST_SIMULATION (closed set; diisi boundary saja)
+  completedAt      DateTime?
+  issuedAt         DateTime?
+  cancelledAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  workspace Workspace              @relation(fields: [workspaceId], references: [id], onDelete: Restrict) // histori order tidak terhapus cascade
+  buyer     User?                  @relation("ShopOrderIntentBuyer", fields: [buyerUserId], references: [id], onDelete: SetNull)
+  lines     ShopOrderIntentLine[]
+
+  @@index([workspaceId, status])
+  @@index([status])
+}
+
+/// Line order intent (DMC §3.12a). quantity dibawa apa adanya ke issuance
+/// (caller-supplied; tanpa perhitungan kuota — OD-05/OD-06). Produk di-refer
+/// langsung (tanpa snapshot duplikat — konsistensi kind/target divalidasi
+/// ulang fail-closed pada waktu issuance).
+model ShopOrderIntentLine {
+  id            String @id @default(cuid())
+  orderIntentId String
+  productId     String
+  quantity      Int    @default(1)
+
+  orderIntent ShopOrderIntent @relation(fields: [orderIntentId], references: [id], onDelete: Restrict)
+  product     ShopProduct     @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderIntentId])
+  @@index([productId])
 }

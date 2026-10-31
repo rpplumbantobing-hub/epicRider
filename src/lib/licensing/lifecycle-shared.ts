@@ -285,7 +285,14 @@ export async function authorizeLifecycleAction(
   db: PrismaClient,
   params: {
     workspaceId: string;
-    action: LicenseLifecycleAction | ExtensionLifecycleAction;
+    /**
+     * Label aksi untuk kejelasan panggilan — TIDAK dibaca oleh logika fungsi
+     * ini (keputusan murni dari `authorization` + `actor`). Tipe dilebarkan
+     * ke `string` pada Phase 5-E agar rantai yang sama dapat dipakai ulang
+     * oleh aksi commerce (`src/lib/shop/authorization.ts`, ADR-026) TANPA
+     * duplikasi dan TANPA perubahan perilaku untuk aksi lifecycle 5-D.
+     */
+    action: string;
     authorization: LifecycleActionAuthorization;
     actor: LifecycleActor;
   }
@@ -345,8 +352,12 @@ export async function authorizeLifecycleAction(
  * Rantai sesi→tenant→membership untuk aksi tanpa key kanonik — cermin
  * urutan evaluasi policy Phase 4 (AUTHORIZATION_MODEL §2), reason code
  * identik. Mengembalikan null bila rantai lolos sampai tahap permission.
+ *
+ * Phase 5-E (ADR-026): diekspor agar lapisan otorisasi commerce
+ * (`src/lib/shop/authorization.ts`) MENGULANG-PAKAI rantai yang sama — bukan
+ * menduplikasinya. Perilaku identik untuk seluruh aksi lifecycle 5-D.
  */
-function denyByLifecycleChain(
+export function denyByLifecycleChain(
   session: SessionValidity,
   facts: LifecycleActorFacts
 ): string | null {

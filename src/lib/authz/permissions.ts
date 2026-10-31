@@ -38,6 +38,12 @@ export const Permission = {
   EXTENSION_ASSIGN: "extension.assign",
   EXTENSION_REMOVE: "extension.remove",
   EXTENSION_RENEW_INITIATE: "extension.renew.initiate",
+  // Developer Commerce/Store (§4.12) — Phase 5-E: key kanonik pada vocabulary
+  // model untuk order/purchase abstraction; dipakai surface License & Extension
+  // Shop (ADR-018). Key TIDAK diikat ke preset role Phase 4 (binding final
+  // menunggu ratifikasi owner — OD-122 OPEN; pola 5-D): tanpa ratifikasi,
+  // seluruh USER = default deny `DENY_PERMISSION_MISSING` termasuk role owner.
+  STORE_ORDER_CREATE: "store.order.create",
 } as const;
 
 export type Permission = (typeof Permission)[keyof typeof Permission];
