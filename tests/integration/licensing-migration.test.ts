@@ -35,6 +35,10 @@ const PRISMA_BIN = path.join(ROOT, "node_modules", ".bin", "prisma");
 const MIGRATIONS_DIR = path.join(ROOT, "prisma", "migrations");
 const PHASE4 = "20261028183022_phase4_identity_workspace_foundation";
 const PHASE5B = "20261030124013_phase5b_licensing_domain_foundation";
+// Phase 5-D: direktori migration lifecycle invariants (satu-satunya tambahan
+// lain yang sah di samping 5-B; preseden penyesuaian asumsi state pasca-commit
+// dari Phase 5-C).
+const PHASE5D = "20261031090000_phase5d_lifecycle_invariants";
 
 interface Phase4Snapshot {
   usersJson: string;
@@ -385,7 +389,7 @@ describe("migration Phase 5-B aditif — tidak destruktif (REQ-029; OD-01)", () 
     expect(updateHits.length).toBeGreaterThan(0);
   });
 
-  it("file migration Phase 4 & lock tidak diubah vs HEAD; satu-satunya tambahan = direktori Phase 5-B", () => {
+  it("file migration Phase 4 & lock tidak diubah vs HEAD; tambahan = direktori Phase 5-B/5-D saja", () => {
     const diffPhase4 = spawnSync(
       "git",
       ["diff", "--quiet", "HEAD", "--", `prisma/migrations/${PHASE4}`],
@@ -409,11 +413,11 @@ describe("migration Phase 5-B aditif — tidak destruktif (REQ-029; OD-01)", () 
     expect(status.status).toBe(0);
     const lines = status.stdout.split("\n").filter((l) => l.trim().length > 0);
     // Tidak boleh ada modifikasi/penghapusan file lama — baris apa pun yang
-    // muncul wajib tambahan (untracked) milik direktori Phase 5-B saja.
-    // Tree bersih (0 baris) sah pada state pasca-commit Phase 5-B.
+    // muncul wajib tambahan (untracked) milik direktori Phase 5-B ATAU 5-D.
+    // Tree bersih (0 baris) sah pada state pasca-commit.
     for (const line of lines) {
       expect(line.startsWith("?? ")).toBe(true);
-      expect(line).toContain(PHASE5B);
+      expect(line.includes(PHASE5B) || line.includes(PHASE5D)).toBe(true);
     }
     // Direktori migration Phase 5-B wajib ada dalam SATU dari dua state:
     // untracked (pra-commit) atau ter-track di HEAD (pasca-commit).

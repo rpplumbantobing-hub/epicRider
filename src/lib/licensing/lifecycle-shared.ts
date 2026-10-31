@@ -1,0 +1,408 @@
+// Shared lifecycle infrastructure — epicRider Phase 5-D (ADR-025).
+//
+// Dipakai bersama oleh `license-lifecycle.ts` dan `extension-lifecycle.ts`:
+// model aktor, otorisasi aksi lifecycle, audit, dan reason code.
+//
+// Sumber kontrak (tidak ada nilai yang dikarang):
+// - Mesin status lisensi: DMC §6.2 (REQ-098) — 8 transisi kanonik eksekusi 5-D;
+//   aturan/durasi = OD-108 OPEN (layanan TIDAK menghitung term/window/grace —
+//   verify-only terhadap data tersimpan; TIDAK ada scheduler).
+// - Lifecycle extension: LICENSE_MATRIX §5 — kanonik.
+// - Permission vocabulary: AUTHORIZATION_MODEL §4.5/§4.6 (`license.renew.
+//   initiate`, `extension.assign`, `extension.remove`, `extension.renew.
+//   initiate`). Aksi transisi TANPA key kanonik pada model (mis. ACTIVATE,
+//   TERM_END, GRACE_*, DOWNGRADE, REACTIVATE, extension activate/suspend/
+//   expire) TIDAK dikarang permission barunya — diberikan fallback OWNER yang
+//   di-label EKSPLISIT `PROPOSED` (bukan keputusan owner final; ratifikasi
+//   katalog menunggu; lihat ADR-025 §6).
+// - Deny-by-default: Phase 4 policy (ADR-010) tetap berlaku; fallback owner
+//   HANYA untuk membership ACTIVE ber-role `owner` — non-member, INVITED,
+//   SUSPENDED, REMOVED, LEFT, role tak dikenal SELALU ditolak.
+// - Aktor sistem: `actorType=SYSTEM` hanya dapat dibentuk oleh pemanggil
+//   internal tepercaya di server. TIDAK ADA route/API HTTP pada Phase 5-D;
+//   aktor USER selalu dibentuk dari sesi server-side (bukan input client),
+//   sehingga client TIDAK dapat menyuplai `SYSTEM` untuk eskalasi hak
+//   (ADR-025 §7; diuji test).
+// - Audit: denial = first-class (REQ-010/REQ-024); kategori LICENSE (5-C);
+//   audit transisi sukses ditulis DALAM transisi yang sama dengan perubahan
+//   status (atomik); audit denial ditulis via `logAudit` (best-effort, pola
+//   Phase 4) SETELAH keputusan — kegagalan tulis audit tidak membatalkan
+//   keputusan deny dan tidak diam-diam menghapus bukti denial dari keputusan
+//   yang dikembalikan ke pemanggil.
+
+import type { PrismaClient, Prisma } from "@prisma/client";
+
+import { logAudit, AuditCategory, AuditOutcome } from "@/lib/audit/audit-service";
+import { MembershipStatus, ReasonCode } from "@/lib/authz/reason-codes";
+import { evaluatePolicy, type SessionValidity } from "@/lib/authz/policy";
+import { Permission } from "@/lib/authz/permissions";
+import { RoleKey } from "@/lib/authz/roles";
+
+// ---------------------------------------------------------------------------
+// Aktor lifecycle
+// ---------------------------------------------------------------------------
+
+/**
+ * Aktor transisi lifecycle.
+ *
+ * - SYSTEM: pemanggil internal tepercaya (server-side; TIDAK pernah berasal
+ *   dari input client — tidak ada surface 5-D yang menerimanya).
+ * - USER: aktor manusia; `session` adalah fakta validitas sesi yang
+ *   diselesaikan dari penyimpanan tepercaya (bukan claim client).
+ */
+export type LifecycleActor =
+  | { type: "SYSTEM"; note?: string }
+  | {
+      type: "USER";
+      userId: string;
+      session: SessionValidity;
+      userAgent?: string | null;
+    };
+
+// ---------------------------------------------------------------------------
+// Reason code lifecycle (baru, terdokumentasi ADR-025; tidak mengubah
+// vocabulary kanonik AUTHORIZATION_MODEL §3 — kode Phase 4 tetap utuh)
+// ---------------------------------------------------------------------------
+
+export const LicenseLifecycleReasonCode = {
+  /** Pasangan (status, action) tidak ada di matriks — fail closed. */
+  DENY_LIFECYCLE_INVALID_TRANSITION: "DENY_LIFECYCLE_INVALID_TRANSITION",
+  /** Lisensi tidak ditemukan / bukan milik konteks tenant. */
+  DENY_LICENSE_NOT_FOUND: "DENY_LICENSE_NOT_FOUND",
+  /** Verifikasi term tersimpan: term belum berakhir (verify-only, OD-108). */
+  DENY_TERM_NOT_ENDED: "DENY_TERM_NOT_ENDED",
+  /** Verifikasi grace tersimpan: grace belum berakhir (verify-only, OD-108). */
+  DENY_GRACE_NOT_ENDED: "DENY_GRACE_NOT_ENDED",
+  /** Tier license dinonaktifkan — tidak boleh menjadi/mengembalikan ACTIVE. */
+  DENY_TIER_INACTIVE: "DENY_TIER_INACTIVE",
+  /** Workspace sudah memegang lisensi ACTIVE lain (invariant tepat satu). */
+  DENY_LICENSE_ACTIVE_EXISTS: "DENY_LICENSE_ACTIVE_EXISTS",
+  /** State berubah konkuren (optimistic guard; kembalikan konflik, bukan silent). */
+  DENY_CONCURRENT_MODIFICATION: "DENY_CONCURRENT_MODIFICATION",
+} as const;
+export type LicenseLifecycleReasonCode =
+  (typeof LicenseLifecycleReasonCode)[keyof typeof LicenseLifecycleReasonCode];
+
+export const ExtensionLifecycleReasonCode = {
+  DENY_LIFECYCLE_INVALID_TRANSITION: "DENY_LIFECYCLE_INVALID_TRANSITION",
+  DENY_INSTANCE_NOT_FOUND: "DENY_INSTANCE_NOT_FOUND",
+  /** Definisi katalog tidak aktif/withdrawn — tidak boleh memulai layanan. */
+  DENY_DEFINITION_INACTIVE: "DENY_DEFINITION_INACTIVE",
+  /** Type code di luar closed list owner (MC §2/§3) — fail closed. */
+  DENY_INVALID_EXTENSION_TYPE: "DENY_INVALID_EXTENSION_TYPE",
+  /** Sudah ada instance live lain untuk (workspace, type) — aturan satu live. */
+  DENY_LIVE_INSTANCE_EXISTS: "DENY_LIVE_INSTANCE_EXISTS",
+  /** Kolom denormalisasi typeId hilang/tidak cocok — invariant dilanggar. */
+  DENY_UNEVALUABLE_INSTANCE: "DENY_UNEVALUABLE_INSTANCE",
+  DENY_TERM_NOT_ENDED: "DENY_TERM_NOT_ENDED",
+  DENY_CONCURRENT_MODIFICATION: "DENY_CONCURRENT_MODIFICATION",
+} as const;
+export type ExtensionLifecycleReasonCode =
+  (typeof ExtensionLifecycleReasonCode)[keyof typeof ExtensionLifecycleReasonCode];
+
+// ---------------------------------------------------------------------------
+// Otorisasi aksi lifecycle (tabel eksplisit — IMPLEMENTED vs PROPOSED jujur)
+// ---------------------------------------------------------------------------
+
+export interface LifecycleActionAuthorization {
+  /**
+   * Permission kanonik AUTHORIZATION_MODEL §4.5/§4.6 bila ADA (vocabulary
+   * dipertahankan persis, tidak dikarang). `null` = model belum mendefinisikan
+   * key untuk aksi ini — aksi diatur fallback owner ber-status PROPOSED.
+   */
+  permission: Permission | null;
+  /**
+   * Fallback owner. Nilai selalu "PROPOSED" pada Phase 5-D — BUKAN keputusan
+   * owner final (ratifikasi katalog permission lifecycle menunggu; lihat
+   * ADR-025 §6). Status ini TIDAK boleh disalahartikan sebagai kebijakan
+   * final yang sudah disetujui owner.
+   */
+  ownerFallback: "PROPOSED";
+  /** Bukti sumber vocabulary (AUTHORIZATION_MODEL §4.5/§4.6). */
+  source: string;
+}
+
+/**
+ * License lifecycle — 8 transisi kanonik eksekusi 5-D (DMC §6.2; REQ-098).
+ * Pasangan lain ditolak fail-closed (termasuk `EXPIRED → ACTIVE` dan
+ * `PURCHASED → DOWNGRADED` — ambiguitas owner belum diselesaikan).
+ */
+export const LicenseLifecycleAction = {
+  ACTIVATE: "ACTIVATE",
+  RENEW: "RENEW",
+  TERM_END: "TERM_END",
+  GRACE_ENTER: "GRACE_ENTER",
+  RENEW_IN_GRACE: "RENEW_IN_GRACE",
+  GRACE_END: "GRACE_END",
+  DOWNGRADE: "DOWNGRADE",
+  REACTIVATE: "REACTIVATE",
+} as const;
+export type LicenseLifecycleAction =
+  (typeof LicenseLifecycleAction)[keyof typeof LicenseLifecycleAction];
+
+export const LICENSE_ACTION_AUTHORIZATION: Record<
+  LicenseLifecycleAction,
+  LifecycleActionAuthorization
+> = {
+  ACTIVATE: { permission: null, ownerFallback: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.5" },
+  RENEW: {
+    permission: Permission.LICENSE_RENEW_INITIATE,
+    ownerFallback: "PROPOSED",
+    source: "AUTHORIZATION_MODEL §4.5 license.renew.initiate",
+  },
+  TERM_END: { permission: null, ownerFallback: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.5" },
+  GRACE_ENTER: { permission: null, ownerFallback: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.5" },
+  RENEW_IN_GRACE: {
+    permission: Permission.LICENSE_RENEW_INITIATE,
+    ownerFallback: "PROPOSED",
+    source: "AUTHORIZATION_MODEL §4.5 license.renew.initiate (renewal)",
+  },
+  GRACE_END: { permission: null, ownerFallback: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.5" },
+  DOWNGRADE: { permission: null, ownerFallback: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.5" },
+  REACTIVATE: { permission: null, ownerFallback: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.5" },
+};
+
+/** Extension lifecycle — aksi atas instance (LICENSE_MATRIX §5). */
+export const ExtensionLifecycleAction = {
+  ASSIGN: "ASSIGN",
+  ACTIVATE: "ACTIVATE",
+  SUSPEND: "SUSPEND",
+  EXPIRE: "EXPIRE",
+  RENEW: "RENEW",
+  REMOVE: "REMOVE",
+} as const;
+export type ExtensionLifecycleAction =
+  (typeof ExtensionLifecycleAction)[keyof typeof ExtensionLifecycleAction];
+
+export const EXTENSION_ACTION_AUTHORIZATION: Record<
+  ExtensionLifecycleAction,
+  LifecycleActionAuthorization
+> = {
+  ASSIGN: {
+    permission: Permission.EXTENSION_ASSIGN,
+    ownerFallback: "PROPOSED",
+    source: "AUTHORIZATION_MODEL §4.6 extension.assign",
+  },
+  ACTIVATE: { permission: null, ownerFallback: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.6" },
+  SUSPEND: { permission: null, ownerFallback: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.6" },
+  EXPIRE: { permission: null, ownerFallback: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.6" },
+  RENEW: {
+    permission: Permission.EXTENSION_RENEW_INITIATE,
+    ownerFallback: "PROPOSED",
+    source: "AUTHORIZATION_MODEL §4.6 extension.renew.initiate",
+  },
+  REMOVE: {
+    permission: Permission.EXTENSION_REMOVE,
+    ownerFallback: "PROPOSED",
+    source: "AUTHORIZATION_MODEL §4.6 extension.remove",
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Resolusi fakta aktor + keputusan otorisasi lifecycle
+// ---------------------------------------------------------------------------
+
+export interface LifecycleActorFacts {
+  membershipStatus: MembershipStatus | null;
+  roleKeys: readonly string[];
+}
+
+/**
+ * Selesaikan fakta aktor dari DB (sumber tepercaya) — TIDAK pernah dari input
+ * client. Status membership di luar vocabulary diperlakukan null (fail closed,
+ * pola 5-C).
+ */
+export async function resolveLifecycleActorFacts(
+  db: PrismaClient,
+  workspaceId: string,
+  actor: LifecycleActor
+): Promise<LifecycleActorFacts> {
+  if (actor.type === "SYSTEM") {
+    return { membershipStatus: null, roleKeys: [] };
+  }
+  // Identitas aktor WAJIB eksplisit — userId kosong/undefined TIDAK PERNAH
+  // di-resolve ke membership siapa pun (fail closed; mencegah query tanpa
+  // filter userId yang akan mencocokkan membership pertama workspace).
+  if (!actor.userId || actor.userId.length === 0) {
+    return { membershipStatus: null, roleKeys: [] };
+  }
+  const membership = await db.membership.findFirst({
+    where: { workspaceId, userId: actor.userId },
+    include: { roles: { include: { role: true } } },
+  });
+  const rawStatus = membership?.status ?? null;
+  const membershipStatus = (Object.values(MembershipStatus) as string[]).includes(rawStatus ?? "")
+    ? (rawStatus as MembershipStatus)
+    : null;
+  return { membershipStatus, roleKeys: membership?.roles.map((r) => r.role.key) ?? [] };
+}
+
+export interface LifecycleAuthorizationDecision {
+  allowed: boolean;
+  /** true bila keputusan berasal dari fallback owner (status PROPOSED). */
+  viaOwnerFallback: boolean;
+  reasonCode: string;
+  /** Fakta membership/role yang dipakai keputusan (untuk audit). */
+  facts: LifecycleActorFacts;
+}
+
+/**
+ * Otorisasi satu aksi lifecycle (deny-by-default).
+ *
+ * 1. SYSTEM → diizinkan (pemanggil internal tepercaya; tidak dapat disuplai
+ *    client — tidak ada surface HTTP 5-D; ADR-025 §7).
+ * 2. USER → rantai policy Phase 4 penuh (sesi → tenant → membership →
+ *    permission kanonik bila ada). Bila policy menolak KARENA permission dan
+ *    aktor adalah pemegang role `owner` membership ACTIVE → fallback owner
+ *    PROPOSED mengizinkan, dengan flag `viaOwnerFallback=true` yang ikut
+ *    diaudit. Kegagalan sesi/membership TIDAK pernah difallback.
+ */
+export async function authorizeLifecycleAction(
+  db: PrismaClient,
+  params: {
+    workspaceId: string;
+    action: LicenseLifecycleAction | ExtensionLifecycleAction;
+    authorization: LifecycleActionAuthorization;
+    actor: LifecycleActor;
+  }
+): Promise<LifecycleAuthorizationDecision> {
+  if (params.actor.type === "SYSTEM") {
+    return {
+      allowed: true,
+      viaOwnerFallback: false,
+      reasonCode: ReasonCode.ALLOW,
+      facts: { membershipStatus: null, roleKeys: [] },
+    };
+  }
+
+  const facts = await resolveLifecycleActorFacts(db, params.workspaceId, params.actor);
+
+  // Aksi TANPA key permission kanonik: TIDAK ada permission yang dapat
+  // mengizinkan (menggunakan placeholder permission sembarang akan membuka
+  // celah eskalasi di masa depan). Rantai sesi→tenant→membership tetap
+  // ditegakkan eksplisit dengan reason code yang sama dengan policy Phase 4;
+  // satu-satunya jalur allow = fallback owner PROPOSED.
+  if (params.authorization.permission === null) {
+    const chainDenial = denyByLifecycleChain(params.actor.session, facts);
+    if (chainDenial !== null) {
+      return { allowed: false, viaOwnerFallback: false, reasonCode: chainDenial, facts };
+    }
+    if (facts.roleKeys.includes(RoleKey.OWNER)) {
+      return {
+        allowed: true,
+        viaOwnerFallback: true,
+        reasonCode: `OWNER_FALLBACK_PROPOSED:${params.action}`,
+        facts,
+      };
+    }
+    return {
+      allowed: false,
+      viaOwnerFallback: false,
+      reasonCode: ReasonCode.DENY_PERMISSION_MISSING,
+      facts,
+    };
+  }
+
+  // Aksi DENGAN key kanonik: rantai policy Phase 4 penuh.
+  const policy = evaluatePolicy({
+    session: params.actor.session,
+    actorUserId: params.actor.userId,
+    workspaceId: params.workspaceId,
+    membershipStatus: facts.membershipStatus,
+    roleKeys: facts.roleKeys,
+    permission: params.authorization.permission,
+  });
+
+  if (policy.decision === "ALLOW") {
+    return { allowed: true, viaOwnerFallback: false, reasonCode: policy.reasonCode, facts };
+  }
+
+  // Fallback owner (PROPOSED): hanya untuk pemegang role `owner` dengan
+  // membership ACTIVE. Kegagalan sesi/membership/tenant tidak difallback.
+  const ownerFallbackEligible =
+    params.actor.session === "VALID" &&
+    facts.membershipStatus === MembershipStatus.ACTIVE &&
+    facts.roleKeys.includes(RoleKey.OWNER);
+
+  if (ownerFallbackEligible) {
+    return {
+      allowed: true,
+      viaOwnerFallback: true,
+      reasonCode: `OWNER_FALLBACK_PROPOSED:${params.action}`,
+      facts,
+    };
+  }
+
+  return { allowed: false, viaOwnerFallback: false, reasonCode: policy.reasonCode, facts };
+}
+
+/**
+ * Rantai sesi→tenant→membership untuk aksi tanpa key kanonik — cermin
+ * urutan evaluasi policy Phase 4 (AUTHORIZATION_MODEL §2), reason code
+ * identik. Mengembalikan null bila rantai lolos sampai tahap permission.
+ */
+function denyByLifecycleChain(
+  session: SessionValidity,
+  facts: LifecycleActorFacts
+): string | null {
+  if (session === "ABSENT") return ReasonCode.DENY_NO_SESSION;
+  if (session === "EXPIRED") return ReasonCode.DENY_SESSION_EXPIRED;
+  if (session === "REVOKED") return ReasonCode.DENY_SESSION_REVOKED;
+  switch (facts.membershipStatus) {
+    case null:
+      return ReasonCode.DENY_NOT_MEMBER;
+    case MembershipStatus.INVITED:
+      return ReasonCode.DENY_NOT_MEMBER;
+    case MembershipStatus.SUSPENDED:
+      return ReasonCode.DENY_MEMBERSHIP_SUSPENDED;
+    case MembershipStatus.REMOVED:
+      return ReasonCode.DENY_MEMBERSHIP_REMOVED;
+    case MembershipStatus.LEFT:
+      return ReasonCode.DENY_NOT_MEMBER;
+    case MembershipStatus.ACTIVE:
+      return null; // lanjut ke tahap permission/fallback
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Audit lifecycle
+// ---------------------------------------------------------------------------
+
+export interface LifecycleAuditInput {
+  domain: "license" | "extension";
+  action: string;
+  outcome: AuditOutcome;
+  actorUserId: string | null;
+  isSystemActor: boolean;
+  workspaceId: string | null;
+  targetId: string | null;
+  reasonCode: string | null;
+  viaOwnerFallback?: boolean;
+  idempotent?: boolean;
+  metadata?: Record<string, unknown>;
+}
+
+/** Tulis audit lifecycle (kategori LICENSE; denial = first-class). */
+export async function recordLifecycleAudit(
+  db: PrismaClient | Prisma.TransactionClient,
+  input: LifecycleAuditInput
+): Promise<void> {
+  await logAudit(db, {
+    category: AuditCategory.LICENSE,
+    action: `${input.domain}.lifecycle.${input.action.toLowerCase()}.${
+      input.outcome === AuditOutcome.SUCCESS ? "success" : "denied"
+    }`,
+    outcome: input.outcome,
+    actorUserId: input.actorUserId,
+    tenantWorkspaceId: input.workspaceId,
+    targetType: input.domain,
+    targetId: input.targetId,
+    reasonCode: input.reasonCode,
+    metadata: {
+      actorType: input.isSystemActor ? "SYSTEM" : "USER",
+      viaOwnerFallback: input.viaOwnerFallback === true ? "PROPOSED" : null,
+      idempotent: input.idempotent === true ? "true" : null,
+      ...(input.metadata ?? {}),
+    },
+  });
+}

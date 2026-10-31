@@ -554,3 +554,32 @@ Work Log:
 Stage Summary:
 - Phase 5-C: IMPLEMENTATION PASS — LOCAL CANDIDATE — NOT INTEGRATED (bukan DONE—CLOSED; menunggu integrasi owner: push/PR/CI — pola Phase 4). PHASE_5B_STATUS tetap IMPLEMENTATION PASS — COMMITTED LOCALLY — NOT INTEGRATED. Phase 4 tetap DONE — CLOSED; Phase 2 tetap PARTIAL; Phase 5 = IN PROGRESS; 5-D/5-E NOT STARTED.
 - Next action owner: review bukti 5-C; integrasi 5-B+5-C (push/PR/CI) atas nama owner.
+
+## 2026-10-31 — Phase 5-D RECOVERY (license & extension lifecycle)
+
+- Konteks: candidate 5-D pertama (`b687ace`, branch lama) hilang bersih dari environment
+  (sandbox ephemeral; tidak pernah dipush GitHub / tidak ada transfer package bertahan).
+  Recovery dieksekusi terkendali di atas baseline canonical `165b3ba` (origin/main; merge
+  PR #3) pada branch `integration/phase5-d-license-extension-lifecycle` — TANPA menyentuh
+  implementasi/migration 5-B/5-C, tanpa reset/rebase, tanpa push/PR/merge.
+- Implementasi: `license-lifecycle.ts` (8 aksi kanonik DMC §6.2; verify-only; fail-closed),
+  `extension-lifecycle.ts` (6 aksi LICENSE_MATRIX §5; satu-LIVE-instance per
+  (workspace,type) via kolom denormalisasi `typeId` + partial unique index migration
+  aditif `20261031090000_phase5d_lifecycle_invariants`), `lifecycle-shared.ts` (aktor
+  SYSTEM/USER; otorisasi kanonik §4.5/§4.6 + fallback owner PROPOSED; audit), +4 permission
+  key aditif. REQ-099 data preservation; REQ-098 semua transisi teruji.
+- Gate lokal (semua exit 0): full regression 275/275 (221 + 54 baru; 2× stabil), lint,
+  typecheck, build (placeholder NEXTAUTH_SECRET pola CI owner), prisma
+  validate/generate/migrate deploy disposable/migrate diff "No difference detected".
+- Dokumen: ADR-025 (PROPOSED), PHASE_5D_REPORT/ACCEPTANCE/TRACEABILITY, ROADMAP,
+  PHASE_STATUS. OD-05/OD-06/OD-108 tetap OPEN — tidak ada keputusan owner yang diambil.
+- Tanpa: push/PR/merge; perubahan main; harga/checkout (OD-06); scheduler (OD-108); kuota
+  (OD-05); UI/API HTTP baru; license key; perubahan implementation/migration lama.
+
+Stage Summary:
+- Phase 5-D: IMPLEMENTATION PASS — LOCAL CANDIDATE (RECOVERY) — NOT INTEGRATED (menunggu
+  integrasi owner: push/PR/CI — pola Phase 4). Phase 5 = IN PROGRESS; 5-E NOT STARTED;
+  Phase 4 DONE — CLOSED; Phase 2 PARTIAL.
+- Next action owner: review bukti 5-D recovery; unduh transfer package (bundle + sha256 +
+  manifest + zip) dari Live Preview; verifikasi SHA; import bundle; push branch; buat PR;
+  review CI; merge — seluruh GitHub action = OWNER ONLY.

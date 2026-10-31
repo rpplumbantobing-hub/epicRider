@@ -392,10 +392,17 @@ model ExtensionDefinition {
 /// lifecycle kanonik LICENSE_MATRIX §5. Extension menambah kapasitas DI ATAS
 /// tier; tidak pernah mengubah nilai tier dan bukan tier keempat (MC §2);
 /// kaitan ke workspace/lisensi sesuai domain contract (DMC §3.6/§7).
+///
+/// Phase 5-D (ADR-025): kolom denormalisasi `typeId` (salinan
+/// `definition.typeId`) menjaga partial unique index "satu instance LIVE per
+/// (workspace, type)" di level DB (SQLite tidak dapat meng-indeks melalui
+/// join). Diisi dan disinkronkan service lifecycle pada setiap penulisan;
+/// nullable = kompatibilitas baris lama. Invariant sinkronisasi diuji test.
 model ExtensionInstance {
   id            String    @id @default(cuid())
   workspaceId   String
   definitionId  String
+  typeId        String? // Phase 5-D: denormalisasi definition.typeId (penjaga unique live-instance; disinkronkan service)
   status        String    @default("PURCHASED") // PURCHASED | ASSIGNED | ACTIVE | SUSPENDED | EXPIRED | RENEWED | REMOVED (LICENSE_MATRIX §5)
   quantity      Int? // mis. +10 seat untuk seat_package; satuan mengikuti ExtensionType (REQ-018)
   provisionedAt DateTime?
@@ -411,6 +418,7 @@ model ExtensionInstance {
 
   @@index([workspaceId, status]) // agregasi entitlement efektif (DMC §3.6 access pattern)
   @@index([definitionId])
+  @@index([typeId]) // Phase 5-D: pemeriksaan satu-live-instance per (workspace, type)
   @@index([status, termEndsAt]) // sweep renewal (5-C)
 }
 

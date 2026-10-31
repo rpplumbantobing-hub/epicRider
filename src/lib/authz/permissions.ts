@@ -29,6 +29,15 @@ export const Permission = {
   MEMBERSHIP_ROLE_ASSIGN: "membership.role.assign",
   // Event & Assignment (§4.4) — reference-only di Phase 4 (runtime event = Phase 6)
   EVENT_READ: "event.read",
+  // Entitlement & License (§4.5) — Phase 5-D: aksi lifecycle yang memiliki key
+  // kanonik pada vocabulary model; key TIDAK diikat ke preset role Phase 4
+  // (binding final menunggu ratifikasi owner — fallback owner PROPOSED, lihat
+  // lifecycle-shared.ts dan ADR-025 §6).
+  LICENSE_RENEW_INITIATE: "license.renew.initiate",
+  // Extension (§4.6) — Phase 5-D: key kanonik aksi instance.
+  EXTENSION_ASSIGN: "extension.assign",
+  EXTENSION_REMOVE: "extension.remove",
+  EXTENSION_RENEW_INITIATE: "extension.renew.initiate",
 } as const;
 
 export type Permission = (typeof Permission)[keyof typeof Permission];
