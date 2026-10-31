@@ -1,8 +1,13 @@
 // @vitest-environment node
-// Integration test extension lifecycle — epicRider Phase 5-D (ADR-025).
+// Integration test extension lifecycle — epicRider Phase 5-D (ADR-025;
+// remediasi PR #4).
 // DB hasil migration terversionisasi (disposable). Membuktikan:
 // - ASSIGN → ACTIVATE → SUSPEND → RENEW → ACTIVATE → EXPIRE → REMOVE bekerja
 //   end-to-end dengan otorisasi + audit (LICENSE_MATRIX §5);
+// - REMEDIASI PR #4: OWNER_FALLBACK_PROPOSED DIHAPUS — tanpa permission
+//   eksplisit terdokumentasi, SIAPA PUN (termasuk role `owner`) ditolak
+//   DENY_PERMISSION_MISSING; success-path memakai aktor SYSTEM (pemanggil
+//   internal tepercaya — jalur internal yang sah);
 // - RENEWED TIDAK memberi entitlement sampai ACTIVATE; SUSPENDED/EXPIRED/
 //   REMOVED tidak memberi entitlement (integrasi engine 5-C);
 // - aturan satu LIVE instance per (workspace, type): service + partial
@@ -63,7 +68,18 @@ async function seedWs(label: string): Promise<Ws> {
   return { workspaceId: ws.workspaceId, ownerId: ws.userId };
 }
 
-function ownerActor(userId: string) {
+/**
+ * Aktor SYSTEM = pemanggil internal tepercaya (test harness berperan sebagai
+ * pemanggil internal — tidak ada surface HTTP 5-D; client tidak dapat
+ * menyuplai aktor ini). Dipakai untuk coverage mesin status, BUKAN untuk
+ * menguji otorisasi USER.
+ */
+function systemActor() {
+  return { type: "SYSTEM" as const, note: "internal trusted caller (integration harness)" };
+}
+
+/** Aktor USER dengan sesi valid — dipakai khusus test otorisasi/denial USER. */
+function userActor(userId: string) {
   return { type: "USER" as const, userId, session: "VALID" as const };
 }
 
@@ -127,7 +143,7 @@ describe("ASSIGN → ACTIVATE — jalur utama + entitlement", () => {
     const premature = await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instance.id,
       action: ExtensionLifecycleAction.ACTIVATE,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(premature.outcome).toBe("DENIED");
@@ -138,13 +154,13 @@ describe("ASSIGN → ACTIVATE — jalur utama + entitlement", () => {
     const assigned = await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instance.id,
       action: ExtensionLifecycleAction.ASSIGN,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
       provisionedAt: NOW,
     });
     expect(assigned.outcome).toBe("SUCCESS");
     if (assigned.outcome === "SUCCESS") {
-      expect(assigned.viaOwnerFallback).toBe(true); // owner fallback PROPOSED (kanonik assign belum diikat preset)
+      expect(assigned.viaOwnerFallback).toBe(false); // fallback dihapus (remediasi PR #4) — selalu false
       expect(assigned.entitlementEffect).toBe("ENTITLEMENT_NOT_CONTRIBUTING");
     }
     const assignedRow = await testDb.db.extensionInstance.findUniqueOrThrow({
@@ -156,7 +172,7 @@ describe("ASSIGN → ACTIVATE — jalur utama + entitlement", () => {
     const activated = await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instance.id,
       action: ExtensionLifecycleAction.ACTIVATE,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(activated.outcome).toBe("SUCCESS");
@@ -193,13 +209,13 @@ describe("ASSIGN → ACTIVATE — jalur utama + entitlement", () => {
     await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instance.id,
       action: ExtensionLifecycleAction.ASSIGN,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instance.id,
       action: ExtensionLifecycleAction.ACTIVATE,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(
@@ -213,7 +229,7 @@ describe("ASSIGN → ACTIVATE — jalur utama + entitlement", () => {
     const suspended = await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instance.id,
       action: ExtensionLifecycleAction.SUSPEND,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(suspended.outcome).toBe("SUCCESS");
@@ -228,7 +244,7 @@ describe("ASSIGN → ACTIVATE — jalur utama + entitlement", () => {
     const renewed = await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instance.id,
       action: ExtensionLifecycleAction.RENEW,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
       newTermEndsAt: FUTURE,
     });
@@ -249,7 +265,7 @@ describe("ASSIGN → ACTIVATE — jalur utama + entitlement", () => {
     const reactivated = await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instance.id,
       action: ExtensionLifecycleAction.ACTIVATE,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(reactivated.outcome).toBe("SUCCESS");
@@ -285,7 +301,7 @@ describe("aturan satu LIVE instance per (workspace, type)", () => {
     const mobileAssign = await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instMobile.id,
       action: ExtensionLifecycleAction.ASSIGN,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(mobileAssign.outcome).toBe("SUCCESS");
@@ -294,26 +310,26 @@ describe("aturan satu LIVE instance per (workspace, type)", () => {
     await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instA.id,
       action: ExtensionLifecycleAction.ASSIGN,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instA.id,
       action: ExtensionLifecycleAction.ACTIVATE,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instA.id,
       action: ExtensionLifecycleAction.EXPIRE,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     const instB = await createInstance(ws.workspaceId, defB.id, defB.typeId); // kini sah
     const instBAssign = await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instB.id,
       action: ExtensionLifecycleAction.ASSIGN,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(instBAssign.outcome).toBe("SUCCESS");
@@ -333,13 +349,13 @@ describe("aturan satu LIVE instance per (workspace, type)", () => {
       applyExtensionLifecycleTransition(testDb.db, {
         instanceId: instSeat.id,
         action: ExtensionLifecycleAction.ASSIGN,
-        actor: ownerActor(ws.ownerId),
+        actor: systemActor(),
         now: NOW,
       }),
       applyExtensionLifecycleTransition(testDb.db, {
         instanceId: instMobile.id,
         action: ExtensionLifecycleAction.ASSIGN,
-        actor: ownerActor(ws.ownerId),
+        actor: systemActor(),
         now: NOW,
       }),
     ]);
@@ -354,7 +370,7 @@ describe("aturan satu LIVE instance per (workspace, type)", () => {
     const replay = await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instSeat.id,
       action: ExtensionLifecycleAction.ASSIGN,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
       provisionedAt: new Date("2027-01-01T00:00:00.000Z"), // data berbeda — replay TIDAK menimpa
     });
@@ -386,7 +402,7 @@ describe("kompatibilitas katalog/type & invariant typeId (fail-closed)", () => {
     const result = await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instance.id,
       action: ExtensionLifecycleAction.ASSIGN,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(result.outcome).toBe("DENIED");
@@ -407,7 +423,7 @@ describe("kompatibilitas katalog/type & invariant typeId (fail-closed)", () => {
     const result = await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instance.id,
       action: ExtensionLifecycleAction.ASSIGN,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(result.outcome).toBe("DENIED");
@@ -425,7 +441,7 @@ describe("kompatibilitas katalog/type & invariant typeId (fail-closed)", () => {
     const result = await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instance.id,
       action: ExtensionLifecycleAction.ASSIGN,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(result.outcome).toBe("DENIED");
@@ -452,19 +468,19 @@ describe("EXPIRE verify-only, REMOVE logis (REQ-099), isolasi tenant", () => {
     await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instance.id,
       action: ExtensionLifecycleAction.ASSIGN,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instance.id,
       action: ExtensionLifecycleAction.ACTIVATE,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     const early = await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instance.id,
       action: ExtensionLifecycleAction.EXPIRE,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(early.outcome).toBe("DENIED");
@@ -474,7 +490,7 @@ describe("EXPIRE verify-only, REMOVE logis (REQ-099), isolasi tenant", () => {
     const expired = await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instance.id,
       action: ExtensionLifecycleAction.EXPIRE,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: new Date("2026-12-02T00:00:00.000Z"),
     });
     expect(expired.outcome).toBe("SUCCESS");
@@ -491,13 +507,13 @@ describe("EXPIRE verify-only, REMOVE logis (REQ-099), isolasi tenant", () => {
     await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instance.id,
       action: ExtensionLifecycleAction.ASSIGN,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     const removed = await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instance.id,
       action: ExtensionLifecycleAction.REMOVE,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(removed.outcome).toBe("SUCCESS");
@@ -511,7 +527,7 @@ describe("EXPIRE verify-only, REMOVE logis (REQ-099), isolasi tenant", () => {
     const after = await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instance.id,
       action: ExtensionLifecycleAction.ACTIVATE,
-      actor: ownerActor(ws.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(after.outcome).toBe("DENIED");
@@ -525,7 +541,7 @@ describe("EXPIRE verify-only, REMOVE logis (REQ-099), isolasi tenant", () => {
     const result = await applyExtensionLifecycleTransition(testDb.db, {
       instanceId: instance.id,
       action: ExtensionLifecycleAction.ASSIGN,
-      actor: ownerActor(wsB.ownerId), // owner workspace B — bukan member A
+      actor: userActor(wsB.ownerId), // owner workspace B — bukan member A
       now: NOW,
     });
     expect(result.outcome).toBe("DENIED");
@@ -551,6 +567,119 @@ describe("EXPIRE verify-only, REMOVE logis (REQ-099), isolasi tenant", () => {
     expect(result.outcome).toBe("DENIED");
     if (result.outcome === "DENIED") {
       expect(result.reasonCode).toBe(ExtensionLifecycleReasonCode.DENY_INSTANCE_NOT_FOUND);
+    }
+  });
+});
+
+describe("otorisasi eksplisit — fallback owner DIHAPUS (remediasi PR #4)", () => {
+  it("owner USER (ACTIVE + sesi VALID) ditolak DENY_PERMISSION_MISSING pada ASSIGN (key kanonik §4.6) — grant menunggu ratifikasi owner (OD-122)", async () => {
+    const ws = await seedWs("remed-owner-assign");
+    const def = await createDefinition("def-seat-remed-assign", "seat_package");
+    const instance = await createInstance(ws.workspaceId, def.id, def.typeId);
+    const result = await applyExtensionLifecycleTransition(testDb.db, {
+      instanceId: instance.id,
+      action: ExtensionLifecycleAction.ASSIGN,
+      actor: userActor(ws.ownerId),
+      now: NOW,
+    });
+    expect(result.outcome).toBe("DENIED");
+    if (result.outcome === "DENIED") {
+      expect(result.reasonCode).toBe("DENY_PERMISSION_MISSING");
+      expect(result.viaOwnerFallback).toBe(false);
+    }
+    // Denial owner = first-class, teraudit; status TIDAK berubah diam-diam.
+    const row = await testDb.db.extensionInstance.findUniqueOrThrow({
+      where: { id: instance.id },
+    });
+    expect(row.status).toBe("PURCHASED");
+    const events = await auditEvents("extension.lifecycle.assign.denied", instance.id);
+    expect(events).toHaveLength(1);
+    expect(events[0].reasonCode).toBe("DENY_PERMISSION_MISSING");
+    expect(events[0].metadataJson).toContain('"actorType":"USER"');
+  });
+
+  it("owner USER ditolak pada aksi keyless (ACTIVATE/SUSPEND/EXPIRE) — tanpa key kanonik = default deny, bukan fallback", async () => {
+    const ws = await seedWs("remed-owner-keyless");
+    const def = await createDefinition("def-seat-remed-keyless", "seat_package");
+    const instance = await createInstance(ws.workspaceId, def.id, def.typeId);
+    for (const action of [
+      ExtensionLifecycleAction.ACTIVATE,
+      ExtensionLifecycleAction.SUSPEND,
+      ExtensionLifecycleAction.EXPIRE,
+    ] as const) {
+      const result = await applyExtensionLifecycleTransition(testDb.db, {
+        instanceId: instance.id,
+        action,
+        actor: userActor(ws.ownerId),
+        now: NOW,
+      });
+      expect(result.outcome).toBe("DENIED");
+      if (result.outcome === "DENIED") {
+        expect(result.reasonCode).toBe("DENY_PERMISSION_MISSING");
+      }
+    }
+    const row = await testDb.db.extensionInstance.findUniqueOrThrow({
+      where: { id: instance.id },
+    });
+    expect(row.status).toBe("PURCHASED");
+  });
+
+  it("member USER tetap ditolak (DENY_PERMISSION_MISSING); non-member tetap ditolak (DENY_NOT_MEMBER) — tidak ada jalur allow lain", async () => {
+    const ws = await seedWs("remed-member-ext");
+    const def = await createDefinition("def-seat-remed-member", "seat_package");
+    const instance = await createInstance(ws.workspaceId, def.id, def.typeId);
+    const member = await seedMember(testDb.db, {
+      email: "member-ext-remed@example.test",
+      name: "Member Ext Remed",
+      workspaceId: ws.workspaceId,
+    });
+    const asMember = await applyExtensionLifecycleTransition(testDb.db, {
+      instanceId: instance.id,
+      action: ExtensionLifecycleAction.ASSIGN,
+      actor: userActor(member.userId),
+      now: NOW,
+    });
+    expect(asMember.outcome).toBe("DENIED");
+    if (asMember.outcome === "DENIED") {
+      expect(asMember.reasonCode).toBe("DENY_PERMISSION_MISSING");
+    }
+    const outsider = await seedWorkspaceWithOwner(testDb.db, {
+      userName: "Outsider Ext",
+      email: "outsider-ext-remed@example.test",
+      workspaceName: "WS outsider ext",
+    });
+    const asOutsider = await applyExtensionLifecycleTransition(testDb.db, {
+      instanceId: instance.id,
+      action: ExtensionLifecycleAction.ASSIGN,
+      actor: userActor(outsider.userId),
+      now: NOW,
+    });
+    expect(asOutsider.outcome).toBe("DENIED");
+    if (asOutsider.outcome === "DENIED") {
+      expect(asOutsider.reasonCode).toBe("DENY_NOT_MEMBER");
+    }
+  });
+
+  it("SYSTEM (pemanggil internal tepercaya) melanjutkan transisi; USER identik ditolak — aktor tidak dapat disuplai client (tidak ada route 5-D)", async () => {
+    const ws = await seedWs("remed-system-ext");
+    const def = await createDefinition("def-seat-remed-system", "seat_package");
+    const instance = await createInstance(ws.workspaceId, def.id, def.typeId);
+    const asUser = await applyExtensionLifecycleTransition(testDb.db, {
+      instanceId: instance.id,
+      action: ExtensionLifecycleAction.ASSIGN,
+      actor: userActor(ws.ownerId),
+      now: NOW,
+    });
+    expect(asUser.outcome).toBe("DENIED");
+    const asSystem = await applyExtensionLifecycleTransition(testDb.db, {
+      instanceId: instance.id,
+      action: ExtensionLifecycleAction.ASSIGN,
+      actor: systemActor(),
+      now: NOW,
+    });
+    expect(asSystem.outcome).toBe("SUCCESS");
+    if (asSystem.outcome === "SUCCESS") {
+      expect(asSystem.viaOwnerFallback).toBe(false);
     }
   });
 });

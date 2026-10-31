@@ -1,10 +1,14 @@
 // @vitest-environment node
-// Integration test license lifecycle — epicRider Phase 5-D (ADR-025).
+// Integration test license lifecycle — epicRider Phase 5-D (ADR-025;
+// remediasi PR #4).
 // DB hasil migration terversionisasi (disposable; bukan dev/produksi).
 // Membuktikan:
 // - 8 transisi kanonik bekerja end-to-end dengan otorisasi + audit;
-// - fallback owner PROPOSED (bukan kebijakan final), penolakan member/
-//   non-member/sesi tidak sah teraudit;
+// - REMEDIASI PR #4: OWNER_FALLBACK_PROPOSED DIHAPUS — tanpa permission
+//   eksplisit terdokumentasi, SIAPA PUN (termasuk role `owner`) ditolak
+//   DENY_PERMISSION_MISSING; penolakan member/non-member/owner/sesi tidak
+//   sah teraudit; success-path memakai aktor SYSTEM (pemanggil internal
+//   tepercaya — jalur internal yang sah);
 // - verify-only term/grace (tanpa perhitungan durasi; tanpa scheduler);
 // - idempotensi state-convergence (retry identik = no-op, bukan efek ganda);
 // - tepat satu ACTIVE per workspace (service + partial unique index DB);
@@ -70,7 +74,18 @@ async function seedWorkspaceWithLicense(
   return { workspaceId: ws.workspaceId, ownerId: ws.userId, tierId: tier.id, licenseId: license.id };
 }
 
-function ownerActor(userId: string) {
+/**
+ * Aktor SYSTEM = pemanggil internal tepercaya (test harness berperan sebagai
+ * pemanggil internal — tidak ada surface HTTP 5-D; client tidak dapat
+ * menyuplai aktor ini). Dipakai untuk coverage mesin status, BUKAN untuk
+ * menguji otorisasi USER.
+ */
+function systemActor() {
+  return { type: "SYSTEM" as const, note: "internal trusted caller (integration harness)" };
+}
+
+/** Aktor USER dengan sesi valid — dipakai khusus test otorisasi/denial USER. */
+function userActor(userId: string) {
   return { type: "USER" as const, userId, session: "VALID" as const };
 }
 
@@ -82,12 +97,35 @@ async function auditEvents(action: string, targetId?: string) {
 }
 
 describe("ACTIVATE — otorisasi, audit, invariant tepat satu ACTIVE", () => {
-  it("owner (fallback PROPOSED) mengaktifkan lisensi; audit sukses + flag fallback", async () => {
+  it("owner USER tanpa permission eksplisit DITOLAK (fallback dihapus — remediasi PR #4); aktor internal SYSTEM mengaktifkan lisensi; audit sesuai aktor", async () => {
     const seed = await seedWorkspaceWithLicense("activate");
+
+    // 1) REMEDIASI PR #4: owner (membership ACTIVE + role owner + sesi VALID)
+    //    TIDAK lagi diizinkan oleh fallback — tidak ada preset yang memegang
+    //    permission lifecycle (katalog = OD-122 OPEN) → default deny.
+    const deniedOwner = await applyLicenseLifecycleTransition(testDb.db, {
+      licenseId: seed.licenseId,
+      action: LicenseLifecycleAction.ACTIVATE,
+      actor: userActor(seed.ownerId),
+      now: NOW,
+    });
+    expect(deniedOwner.outcome).toBe("DENIED");
+    if (deniedOwner.outcome === "DENIED") {
+      expect(deniedOwner.reasonCode).toBe("DENY_PERMISSION_MISSING");
+      expect(deniedOwner.viaOwnerFallback).toBe(false);
+    }
+    const ownerDenials = await auditEvents("license.lifecycle.activate.denied", seed.licenseId);
+    expect(ownerDenials).toHaveLength(1);
+    expect(ownerDenials[0].reasonCode).toBe("DENY_PERMISSION_MISSING");
+    expect(ownerDenials[0].metadataJson).toContain('"actorType":"USER"');
+    expect(JSON.parse(ownerDenials[0].metadataJson ?? "{}").viaOwnerFallback).toBeNull();
+
+    // 2) Coverage mesin status lewat aktor SYSTEM (pemanggil internal
+    //    tepercaya — jalur internal yang sah, bukan jalur USER).
     const result = await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.ACTIVATE,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(result.outcome).toBe("SUCCESS");
@@ -95,14 +133,15 @@ describe("ACTIVATE — otorisasi, audit, invariant tepat satu ACTIVE", () => {
     expect(result.from).toBe("PURCHASED");
     expect(result.to).toBe("ACTIVE");
     expect(result.idempotent).toBe(false);
-    expect(result.viaOwnerFallback).toBe(true); // fallback owner = PROPOSED (ADR-025 §6)
+    expect(result.viaOwnerFallback).toBe(false); // fallback dihapus — selalu false
     expect(result.entitlementEffect).toBe("ENTITLEMENT_GRANTED");
 
     const events = await auditEvents("license.lifecycle.activate.success", seed.licenseId);
     expect(events).toHaveLength(1);
     expect(events[0].outcome).toBe("SUCCESS");
-    expect(events[0].actorUserId).toBe(seed.ownerId);
-    expect(events[0].metadataJson).toContain("PROPOSED");
+    expect(events[0].actorUserId).toBeNull(); // SYSTEM: tanpa actorUserId
+    expect(events[0].metadataJson).toContain('"actorType":"SYSTEM"');
+    expect(events[0].metadataJson).not.toContain("PROPOSED");
 
     const state = await resolveWorkspaceLicenseState(testDb.db, seed.workspaceId);
     expect(state.activeLicenseCount).toBe(1);
@@ -114,13 +153,13 @@ describe("ACTIVATE — otorisasi, audit, invariant tepat satu ACTIVE", () => {
     await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.ACTIVATE,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     const retry = await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.ACTIVATE,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(retry.outcome).toBe("SUCCESS");
@@ -133,7 +172,7 @@ describe("ACTIVATE — otorisasi, audit, invariant tepat satu ACTIVE", () => {
     expect(events[1].metadataJson).toContain('"idempotent":"true"');
   });
 
-  it("member tanpa permission DITOLAK dan denial teraudit (fallback owner bukan untuk member)", async () => {
+  it("member tanpa permission DITOLAK dan denial teraudit (rantai lolos, permission tidak ada)", async () => {
     const seed = await seedWorkspaceWithLicense("activate-member");
     const member = await seedMember(testDb.db, {
       email: "member-activate-member@example.test",
@@ -143,7 +182,7 @@ describe("ACTIVATE — otorisasi, audit, invariant tepat satu ACTIVE", () => {
     const result = await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.ACTIVATE,
-      actor: ownerActor(member.userId),
+      actor: userActor(member.userId),
       now: NOW,
     });
     expect(result.outcome).toBe("DENIED");
@@ -167,7 +206,7 @@ describe("ACTIVATE — otorisasi, audit, invariant tepat satu ACTIVE", () => {
     const result = await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.ACTIVATE,
-      actor: ownerActor(outsider.userId), // owner di workspace LAIN — bukan member sini
+      actor: userActor(outsider.userId), // owner di workspace LAIN — bukan member sini
       now: NOW,
     });
     expect(result.outcome).toBe("DENIED");
@@ -191,9 +230,9 @@ describe("ACTIVATE — otorisasi, audit, invariant tepat satu ACTIVE", () => {
     expect(status.status).toBe("PURCHASED");
   });
 
-  it("sesi tidak sah (REVOKED/ABSENT) DITOLAK — tidak pernah difallback", async () => {
+  it("sesi tidak sah (REVOKED/EXPIRED/ABSENT) DITOLAK — tidak pernah diizinkan jalur mana pun", async () => {
     const seed = await seedWorkspaceWithLicense("activate-session");
-    for (const session of ["REVOKED", "ABSENT"] as const) {
+    for (const session of ["REVOKED", "EXPIRED", "ABSENT"] as const) {
       const result = await applyLicenseLifecycleTransition(testDb.db, {
         licenseId: seed.licenseId,
         action: LicenseLifecycleAction.ACTIVATE,
@@ -202,7 +241,7 @@ describe("ACTIVATE — otorisasi, audit, invariant tepat satu ACTIVE", () => {
       });
       expect(result.outcome).toBe("DENIED");
       if (result.outcome === "DENIED") {
-        expect(["DENY_SESSION_REVOKED", "DENY_NO_SESSION"]).toContain(result.reasonCode);
+        expect(["DENY_SESSION_REVOKED", "DENY_SESSION_EXPIRED", "DENY_NO_SESSION"]).toContain(result.reasonCode);
       }
     }
     const status = await testDb.db.license.findUniqueOrThrow({ where: { id: seed.licenseId } });
@@ -224,7 +263,7 @@ describe("ACTIVATE — otorisasi, audit, invariant tepat satu ACTIVE", () => {
     const result = await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.ACTIVATE,
-      actor: ownerActor(member.userId),
+      actor: userActor(member.userId),
       now: NOW,
     });
     expect(result.outcome).toBe("DENIED");
@@ -239,14 +278,14 @@ describe("ACTIVATE — otorisasi, audit, invariant tepat satu ACTIVE", () => {
     const first = await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.ACTIVATE,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(first.outcome).toBe("SUCCESS");
     const secondResult = await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: second.id,
       action: LicenseLifecycleAction.ACTIVATE,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(secondResult.outcome).toBe("DENIED");
@@ -268,13 +307,13 @@ describe("ACTIVATE — otorisasi, audit, invariant tepat satu ACTIVE", () => {
     await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.TERM_END,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     const reActivate = await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: second.id,
       action: LicenseLifecycleAction.ACTIVATE,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(reActivate.outcome).toBe("SUCCESS");
@@ -287,14 +326,14 @@ describe("alur penuh TERM_END → RENEW → GRACE → EXPIRED (verify-only; OD-1
     await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seeded.licenseId,
       action: LicenseLifecycleAction.ACTIVATE,
-      actor: ownerActor(seeded.ownerId),
+      actor: systemActor(),
       now: NOW,
       term: { termStartsAt: PAST, termEndsAt: FUTURE, renewalWindowStartsAt: FUTURE },
     });
     const tooEarly = await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seeded.licenseId,
       action: LicenseLifecycleAction.TERM_END,
-      actor: ownerActor(seeded.ownerId),
+      actor: systemActor(),
       now: NOW, // termEndsAt = FUTURE > now → verify-only menolak
     });
     expect(tooEarly.outcome).toBe("DENIED");
@@ -304,7 +343,7 @@ describe("alur penuh TERM_END → RENEW → GRACE → EXPIRED (verify-only; OD-1
     const ended = await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seeded.licenseId,
       action: LicenseLifecycleAction.TERM_END,
-      actor: ownerActor(seeded.ownerId),
+      actor: systemActor(),
       now: new Date("2026-12-02T00:00:00.000Z"), // >= termEndsAt tersimpan
       term: { renewalWindowStartsAt: FUTURE },
     });
@@ -319,13 +358,13 @@ describe("alur penuh TERM_END → RENEW → GRACE → EXPIRED (verify-only; OD-1
     await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: noTerm.licenseId,
       action: LicenseLifecycleAction.ACTIVATE,
-      actor: ownerActor(noTerm.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     const explicitEnd = await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: noTerm.licenseId,
       action: LicenseLifecycleAction.TERM_END,
-      actor: ownerActor(noTerm.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(explicitEnd.outcome).toBe("SUCCESS");
@@ -336,20 +375,20 @@ describe("alur penuh TERM_END → RENEW → GRACE → EXPIRED (verify-only; OD-1
     await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.ACTIVATE,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.TERM_END,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     const newTermEnd = new Date("2027-11-01T00:00:00.000Z");
     const renewed = await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.RENEW,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
       term: { termEndsAt: newTermEnd },
     });
@@ -362,7 +401,7 @@ describe("alur penuh TERM_END → RENEW → GRACE → EXPIRED (verify-only; OD-1
     const replay = await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.RENEW,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
       term: { termEndsAt: newTermEnd },
     });
@@ -372,7 +411,7 @@ describe("alur penuh TERM_END → RENEW → GRACE → EXPIRED (verify-only; OD-1
     const conflicting = await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.RENEW,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
       term: { termEndsAt: new Date("2028-01-01T00:00:00.000Z") },
     });
@@ -387,19 +426,19 @@ describe("alur penuh TERM_END → RENEW → GRACE → EXPIRED (verify-only; OD-1
     await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.ACTIVATE,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.TERM_END,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     const grace = await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.GRACE_ENTER,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
       graceEndsAt: FUTURE, // disimpan apa adanya — durasi = OD-108 OPEN
     });
@@ -414,7 +453,7 @@ describe("alur penuh TERM_END → RENEW → GRACE → EXPIRED (verify-only; OD-1
     const earlyEnd = await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.GRACE_END,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(earlyEnd.outcome).toBe("DENIED");
@@ -423,7 +462,7 @@ describe("alur penuh TERM_END → RENEW → GRACE → EXPIRED (verify-only; OD-1
     const recovered = await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.RENEW_IN_GRACE,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
       term: { termEndsAt: new Date("2027-06-01T00:00:00.000Z") },
     });
@@ -439,25 +478,25 @@ describe("alur penuh TERM_END → RENEW → GRACE → EXPIRED (verify-only; OD-1
     await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed2.licenseId,
       action: LicenseLifecycleAction.ACTIVATE,
-      actor: ownerActor(seed2.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed2.licenseId,
       action: LicenseLifecycleAction.TERM_END,
-      actor: ownerActor(seed2.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed2.licenseId,
       action: LicenseLifecycleAction.GRACE_ENTER,
-      actor: ownerActor(seed2.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     const expired = await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed2.licenseId,
       action: LicenseLifecycleAction.GRACE_END,
-      actor: ownerActor(seed2.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(expired.outcome).toBe("SUCCESS");
@@ -470,7 +509,7 @@ describe("alur penuh TERM_END → RENEW → GRACE → EXPIRED (verify-only; OD-1
       const denied = await applyLicenseLifecycleTransition(testDb.db, {
         licenseId: seed2.licenseId,
         action,
-        actor: ownerActor(seed2.ownerId),
+        actor: systemActor(),
         now: NOW,
       });
       expect(denied.outcome).toBe("DENIED"); // EXPIRED terminal — tidak ada jalur langsung ke ACTIVE
@@ -484,7 +523,7 @@ describe("DOWNGRADE / REACTIVATE — REQ-099 data preservation", () => {
     await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.ACTIVATE,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
       term: { termStartsAt: PAST, termEndsAt: FUTURE }, // data term disuplai
     });
@@ -497,7 +536,7 @@ describe("DOWNGRADE / REACTIVATE — REQ-099 data preservation", () => {
     const downgraded = await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.DOWNGRADE,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(downgraded.outcome).toBe("SUCCESS");
@@ -528,7 +567,7 @@ describe("DOWNGRADE / REACTIVATE — REQ-099 data preservation", () => {
     const reactivated = await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.REACTIVATE,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(reactivated.outcome).toBe("SUCCESS");
@@ -544,7 +583,7 @@ describe("DOWNGRADE / REACTIVATE — REQ-099 data preservation", () => {
     const result = await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.DOWNGRADE,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     expect(result.outcome).toBe("DENIED");
@@ -562,20 +601,20 @@ describe("konkurensi, audit, aktor sistem, surface", () => {
     await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.ACTIVATE,
-      actor: ownerActor(seed.ownerId),
+      actor: systemActor(),
       now: NOW,
     });
     const results = await Promise.all([
       applyLicenseLifecycleTransition(testDb.db, {
         licenseId: seed.licenseId,
         action: LicenseLifecycleAction.TERM_END,
-        actor: ownerActor(seed.ownerId),
+        actor: systemActor(),
         now: NOW,
       }),
       applyLicenseLifecycleTransition(testDb.db, {
         licenseId: seed.licenseId,
         action: LicenseLifecycleAction.DOWNGRADE,
-        actor: ownerActor(seed.ownerId),
+        actor: systemActor(),
         now: NOW,
       }),
     ]);
@@ -600,7 +639,7 @@ describe("konkurensi, audit, aktor sistem, surface", () => {
     await applyLicenseLifecycleTransition(testDb.db, {
       licenseId: seed.licenseId,
       action: LicenseLifecycleAction.ACTIVATE,
-      actor: ownerActor(member.userId),
+      actor: userActor(member.userId),
       now: NOW,
     });
     const events = await testDb.db.auditEvent.findMany({
@@ -644,5 +683,151 @@ describe("konkurensi, audit, aktor sistem, surface", () => {
     if (result.outcome === "DENIED") {
       expect(result.reasonCode).toBe(LicenseLifecycleReasonCode.DENY_LICENSE_NOT_FOUND);
     }
+  });
+});
+
+describe("otorisasi eksplisit — fallback owner DIHAPUS (remediasi PR #4)", () => {
+  it("owner USER (ACTIVE + sesi VALID) ditolak DENY_PERMISSION_MISSING pada aksi keyless DAN aksi berkunci kanonik", async () => {
+    const seed = await seedWorkspaceWithLicense("remed-owner-deny");
+    // Aksi TANPA key kanonik (ACTIVATE): rantai lolos → default deny.
+    const keyless = await applyLicenseLifecycleTransition(testDb.db, {
+      licenseId: seed.licenseId,
+      action: LicenseLifecycleAction.ACTIVATE,
+      actor: userActor(seed.ownerId),
+      now: NOW,
+    });
+    expect(keyless.outcome).toBe("DENIED");
+    if (keyless.outcome === "DENIED") {
+      expect(keyless.reasonCode).toBe("DENY_PERMISSION_MISSING");
+      expect(keyless.viaOwnerFallback).toBe(false);
+    }
+    // Aksi DENGAN key kanonik (RENEW = license.renew.initiate): policy Phase 4
+    // penuh — TIDAK ada preset role yang memegang key (grant menunggu
+    // ratifikasi owner, OD-122 OPEN) → DENY_PERMISSION_MISSING tanpa fallback.
+    // (Otorisasi dievaluasi SEBELUM matriks transisi, jadi status tidak perlu
+    // disiapkan untuk membuktikan denial otorisasi.)
+    const keyed = await applyLicenseLifecycleTransition(testDb.db, {
+      licenseId: seed.licenseId,
+      action: LicenseLifecycleAction.RENEW,
+      actor: userActor(seed.ownerId),
+      now: NOW,
+      term: { termStartsAt: PAST, termEndsAt: FUTURE },
+    });
+    expect(keyed.outcome).toBe("DENIED");
+    if (keyed.outcome === "DENIED") {
+      expect(keyed.reasonCode).toBe("DENY_PERMISSION_MISSING");
+      expect(keyed.viaOwnerFallback).toBe(false);
+    }
+    // Denial owner = first-class (teraudit, tanpa allow silent).
+    const allEvents = await testDb.db.auditEvent.findMany({
+      where: { category: AuditCategory.LICENSE, targetId: seed.licenseId },
+    });
+    expect(allEvents.length).toBe(2); // tepat dua denial — tidak ada allow silent
+    expect(allEvents.every((e) => e.outcome === "DENIED")).toBe(true);
+  });
+
+  it("owner USER tidak dapat melakukan GRACE_ENTER/GRACE_END/DOWNGRADE/REACTIVATE tanpa permission (semua aksi tanpa mapping = default deny)", async () => {
+    const seed = await seedWorkspaceWithLicense("remed-keyless-matrix");
+    for (const action of [
+      LicenseLifecycleAction.GRACE_ENTER,
+      LicenseLifecycleAction.GRACE_END,
+      LicenseLifecycleAction.DOWNGRADE,
+      LicenseLifecycleAction.REACTIVATE,
+    ] as const) {
+      const result = await applyLicenseLifecycleTransition(testDb.db, {
+        licenseId: seed.licenseId,
+        action,
+        actor: userActor(seed.ownerId),
+        now: NOW,
+      });
+      expect(result.outcome).toBe("DENIED");
+      if (result.outcome === "DENIED") {
+        expect(result.reasonCode).toBe("DENY_PERMISSION_MISSING");
+      }
+    }
+    const row = await testDb.db.license.findUniqueOrThrow({ where: { id: seed.licenseId } });
+    expect(row.status).toBe("PURCHASED"); // tidak ada perubahan status diam-diam
+  });
+
+  it("member USER tetap ditolak pada aksi berkunci kanonik (RENEW) — deny-by-default REQ-026", async () => {
+    const seed = await seedWorkspaceWithLicense("remed-member-renew");
+    const member = await seedMember(testDb.db, {
+      email: "member-renew@example.test",
+      name: "Member Renew",
+      workspaceId: seed.workspaceId,
+    });
+    await applyLicenseLifecycleTransition(testDb.db, {
+      licenseId: seed.licenseId,
+      action: LicenseLifecycleAction.ACTIVATE,
+      actor: systemActor(),
+      now: NOW,
+    });
+    const result = await applyLicenseLifecycleTransition(testDb.db, {
+      licenseId: seed.licenseId,
+      action: LicenseLifecycleAction.RENEW,
+      actor: userActor(member.userId),
+      now: NOW,
+      term: { termStartsAt: PAST, termEndsAt: FUTURE },
+    });
+    expect(result.outcome).toBe("DENIED");
+    if (result.outcome === "DENIED") {
+      expect(result.reasonCode).toBe("DENY_PERMISSION_MISSING");
+    }
+  });
+
+  it("non-member USER ditolak pada aksi berkunci kanonik (tenant isolation tidak terlewati policy)", async () => {
+    const seed = await seedWorkspaceWithLicense("remed-outsider-renew");
+    const outsider = await seedWorkspaceWithOwner(testDb.db, {
+      userName: "Outsider Renew",
+      email: "outsider-renew@example.test",
+      workspaceName: "WS outsider renew",
+    });
+    const result = await applyLicenseLifecycleTransition(testDb.db, {
+      licenseId: seed.licenseId,
+      action: LicenseLifecycleAction.RENEW,
+      actor: userActor(outsider.userId),
+      now: NOW,
+      term: { termStartsAt: PAST, termEndsAt: FUTURE },
+    });
+    expect(result.outcome).toBe("DENIED");
+    if (result.outcome === "DENIED") {
+      expect(result.reasonCode).toBe("DENY_NOT_MEMBER");
+    }
+  });
+
+  it("sesi EXPIRED ditolak dengan reason code kanonik (actor USER owner, prasyarat sesi dievaluasi lebih dulu)", async () => {
+    const seed = await seedWorkspaceWithLicense("remed-expired-session");
+    const result = await applyLicenseLifecycleTransition(testDb.db, {
+      licenseId: seed.licenseId,
+      action: LicenseLifecycleAction.RENEW,
+      actor: { type: "USER", userId: seed.ownerId, session: "EXPIRED" },
+      now: NOW,
+      term: { termStartsAt: PAST, termEndsAt: FUTURE },
+    });
+    expect(result.outcome).toBe("DENIED");
+    if (result.outcome === "DENIED") {
+      expect(result.reasonCode).toBe("DENY_SESSION_EXPIRED");
+    }
+  });
+
+  it("SYSTEM hanya dari pemanggil internal: hasil USER identical-deny vs SYSTEM allow membuktikan aktor bukan claim client", async () => {
+    const seed = await seedWorkspaceWithLicense("remed-system-boundary");
+    // USER (owner, sesi VALID) → deny.
+    const asUser = await applyLicenseLifecycleTransition(testDb.db, {
+      licenseId: seed.licenseId,
+      action: LicenseLifecycleAction.ACTIVATE,
+      actor: userActor(seed.ownerId),
+      now: NOW,
+    });
+    expect(asUser.outcome).toBe("DENIED");
+    // SYSTEM (internal) → allow; TIDAK ada input HTTP yang membentuk SYSTEM
+    // (tidak ada route 5-D — diuji test "TIDAK ada surface HTTP").
+    const asSystem = await applyLicenseLifecycleTransition(testDb.db, {
+      licenseId: seed.licenseId,
+      action: LicenseLifecycleAction.ACTIVATE,
+      actor: systemActor(),
+      now: NOW,
+    });
+    expect(asSystem.outcome).toBe("SUCCESS");
   });
 });

@@ -21,8 +21,12 @@ import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import {
+  EXTENSION_LIVE_STATUSES,
+  applyExtensionLifecycleTransition,
+} from "@/lib/licensing/extension-lifecycle";
 import {
   CAPABILITY_CODES,
   EXTENSION_TYPE_CODES,
@@ -389,13 +393,21 @@ describe("migration Phase 5-B aditif — tidak destruktif (REQ-029; OD-01)", () 
     expect(updateHits.length).toBeGreaterThan(0);
   });
 
-  it("file migration Phase 4 & lock tidak diubah vs HEAD; tambahan = direktori Phase 5-B/5-D saja", () => {
+  it("file migration Phase 4, 5-B & lock tidak diubah vs HEAD; tambahan = direktori Phase 5-B/5-D; satu-satunya modifikasi yang sah = migration.sql Phase 5-D (remediasi PR #4)", () => {
     const diffPhase4 = spawnSync(
       "git",
       ["diff", "--quiet", "HEAD", "--", `prisma/migrations/${PHASE4}`],
       { cwd: ROOT, encoding: "utf8" }
     );
     expect(diffPhase4.status).toBe(0);
+
+    // Remediasi PR #4: migration 5-B historis WAJIB tetap tidak tersentuh.
+    const diffPhase5B = spawnSync(
+      "git",
+      ["diff", "--quiet", "HEAD", "--", `prisma/migrations/${PHASE5B}`],
+      { cwd: ROOT, encoding: "utf8" }
+    );
+    expect(diffPhase5B.status).toBe(0);
 
     const diffLock = spawnSync(
       "git",
@@ -412,12 +424,21 @@ describe("migration Phase 5-B aditif — tidak destruktif (REQ-029; OD-01)", () 
     });
     expect(status.status).toBe(0);
     const lines = status.stdout.split("\n").filter((l) => l.trim().length > 0);
-    // Tidak boleh ada modifikasi/penghapusan file lama — baris apa pun yang
-    // muncul wajib tambahan (untracked) milik direktori Phase 5-B ATAU 5-D.
+    // Baris apa pun yang muncul pada working tree wajib salah satu dari:
+    // (a) "?? " tambahan untracked milik direktori Phase 5-B/5-D, atau
+    // (b) " M" modifikasi migration.sql Phase 5-D SAJA (backfill existing
+    //     data — remediasi PR #4; migration 5-B/Phase 4 terlarang diubah dan
+    //     sudah dibuktikan via diff --quiet di atas).
     // Tree bersih (0 baris) sah pada state pasca-commit.
     for (const line of lines) {
-      expect(line.startsWith("?? ")).toBe(true);
-      expect(line.includes(PHASE5B) || line.includes(PHASE5D)).toBe(true);
+      if (line.startsWith("?? ")) {
+        expect(line.includes(PHASE5B) || line.includes(PHASE5D)).toBe(true);
+      } else if (line.startsWith(" M") || line.startsWith("M ")) {
+        expect(line.includes(PHASE5D)).toBe(true);
+        expect(line.endsWith("migration.sql")).toBe(true);
+      } else {
+        throw new Error(`status migration tidak diharapkan: ${line}`);
+      }
     }
     // Direktori migration Phase 5-B wajib ada dalam SATU dari dua state:
     // untracked (pra-commit) atau ter-track di HEAD (pasca-commit).
@@ -428,5 +449,385 @@ describe("migration Phase 5-B aditif — tidak destruktif (REQ-029; OD-01)", () 
     );
     const listedUntracked = lines.some((l) => l.includes(PHASE5B));
     expect(tracked.status === 0 || listedUntracked).toBe(true);
+  });
+});
+
+// ============================================================================
+// Remediasi PR #4 — migration Phase 5-D backfill pada data legacy 5-B.
+// Membuktikan terhadap file migration ASLI repo (staging tmpdir, pola di atas):
+// 1. Legacy 5-B (ExtensionInstance TANPA kolom typeId) → migration 5-D
+//    mem-backfill typeId dari relasi definitionId → ExtensionDefinition.typeId.
+// 2. Data legacy tetap utuh (workspace/definition/status/quantity/sourceRef).
+// 3. Lifecycle service dapat mengevaluasi instance hasil migration.
+// 4. Invariant satu-LIVE-instance per (workspace, type) aktif setelah migration.
+// 5. Skenario negatif: migration GAGAL EKSPLISIT (nama check teridentifikasi),
+//    TANPA delete, TANPA auto-pick, TANPA perubahan status diam-diam.
+// ============================================================================
+
+interface Stage {
+  dir: string;
+  url: string;
+  dbPath: string;
+}
+
+/** Stage DB legacy: migration Phase 4 + 5-B SAJA (tanpa 5-D). */
+function stageLegacy5B(tag: string): Stage {
+  const stageDir = mkdtempSync(path.join(tmpdir(), `epicrider-mig-5d-${tag}-`));
+  const dbPath = path.join(stageDir, "legacy-5b.db");
+  const url = `file:${dbPath}`;
+  mkdirSync(path.join(stageDir, "migrations"));
+  cpSync(path.join(MIGRATIONS_DIR, "migration_lock.toml"), path.join(stageDir, "migrations", "migration_lock.toml"));
+  cpSync(path.join(MIGRATIONS_DIR, PHASE4), path.join(stageDir, "migrations", PHASE4), { recursive: true });
+  cpSync(path.join(MIGRATIONS_DIR, PHASE5B), path.join(stageDir, "migrations", PHASE5B), { recursive: true });
+  cpSync(path.join(ROOT, "prisma", "schema.prisma"), path.join(stageDir, "schema.prisma"));
+  const r = runPrismaDeploy(stageDir, url);
+  if (r.status !== 0) {
+    throw new Error(`migrate deploy (legacy 4+5B) gagal:\n${r.stdout}\n${r.stderr}`);
+  }
+  return { dir: stageDir, url, dbPath };
+}
+
+/** Terapkan migration Phase 5-D ke stage legacy; KEMBALIKAN hasil (bukan throw). */
+function applyPhase5D(stage: Stage) {
+  cpSync(path.join(MIGRATIONS_DIR, PHASE5D), path.join(stage.dir, "migrations", PHASE5D), {
+    recursive: true,
+  });
+  return runPrismaDeploy(stage.dir, stage.url);
+}
+
+function openClient(url: string): PrismaClient {
+  return new PrismaClient({ datasources: { db: { url } }, log: ["error"] });
+}
+
+/** Sisipkan katalog + instance legacy via raw SQL (schema legacy TANPA typeId). */
+async function seedLegacyInstance(
+  db: PrismaClient,
+  params: {
+    workspaceId: string;
+    definitionCode: string;
+    typeCode: string;
+    definitionIsActive?: boolean;
+    definitionTypeIdOverride?: string;
+    instanceId?: string;
+    status?: string;
+    quantity?: number | null;
+    sourceRef?: string;
+  }
+): Promise<{ instanceId: string; typeId: string }> {
+  await db.$executeRawUnsafe(`PRAGMA foreign_keys = OFF`);
+  const typeRows = await db.$queryRaw<{ id: string }[]>(
+    Prisma.sql`SELECT "id" FROM "ExtensionType" WHERE "code" = ${params.typeCode} LIMIT 1`
+  );
+  const typeId = params.definitionTypeIdOverride ?? typeRows[0].id;
+  const definitionId = `def-${params.definitionCode}-${Math.random().toString(36).slice(2, 8)}`;
+  await db.$executeRawUnsafe(
+    `INSERT INTO "ExtensionDefinition" ("id","code","typeId","isActive","status","createdAt","updatedAt")
+     VALUES ('${definitionId}','${params.definitionCode}','${typeId}',${params.definitionIsActive === false ? 0 : 1},'CATALOG',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)`
+  );
+  const instanceId = params.instanceId ?? `inst-${Math.random().toString(36).slice(2, 10)}`;
+  await db.$executeRawUnsafe(
+    `INSERT INTO "ExtensionInstance" ("id","workspaceId","definitionId","status","quantity","sourceType","sourceRef","createdAt","updatedAt")
+     VALUES ('${instanceId}','${params.workspaceId}','${definitionId}','${params.status ?? "PURCHASED"}',${params.quantity ?? "NULL"},'SHOP_ORDER','${params.sourceRef ?? `ref-${Math.random().toString(36).slice(2, 8)}`}',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)`
+  );
+  return { instanceId, typeId };
+}
+
+async function countInstances(db: PrismaClient): Promise<number> {
+  const rows = await db.$queryRaw<{ n: bigint }[]>(Prisma.sql`SELECT COUNT(*) AS n FROM "ExtensionInstance"`);
+  return Number(rows[0].n);
+}
+
+describe("migration Phase 5-D backfill pada data legacy 5-B (remediasi PR #4)", () => {
+  it(
+    "POSITIVE: legacy tanpa typeId di-backfill dari definition; data utuh; lifecycle mengevaluasi; invariant live aktif",
+    async () => {
+      const stage = stageLegacy5B("pos");
+      const legacy = openClient(stage.url);
+      try {
+        const owner = await legacy.user.create({
+          data: { name: "Owner Legacy5D", email: "owner-legacy5d@example.test", emailVerified: new Date() },
+        });
+        const ws = await legacy.workspace.create({
+          data: { name: "WS Legacy5D", createdByUserId: owner.id },
+        });
+
+        // Tiga instance legacy: LIVE (PURCHASED), LIVE lain (ACTIVE), dan
+        // terminal (REMOVED) — semuanya tanpa kolom typeId (schema 5-B).
+        const a = await seedLegacyInstance(legacy, {
+          workspaceId: ws.id, definitionCode: "def-legacy-a", typeCode: "seat_package", status: "PURCHASED", quantity: 10,
+        });
+        const b = await seedLegacyInstance(legacy, {
+          workspaceId: ws.id, definitionCode: "def-legacy-b", typeCode: "mobile_client", status: "ACTIVE",
+        });
+        const c = await seedLegacyInstance(legacy, {
+          workspaceId: ws.id, definitionCode: "def-legacy-c", typeCode: "seat_package", status: "REMOVED",
+        });
+        expect(await countInstances(legacy)).toBe(3);
+        // Snapshot legacy (tanpa kolom typeId — kolom belum ada).
+        const before = await legacy.$queryRaw<{ id: string; status: string; sourceRef: string | null }[]>(
+          Prisma.sql`SELECT "id","status","sourceRef" FROM "ExtensionInstance" ORDER BY "id"`
+        );
+        expect(before.map((r) => r.status).sort()).toEqual(["ACTIVE", "PURCHASED", "REMOVED"]);
+
+        // Terapkan migration 5-D di ATAS data legacy — tanpa reset.
+        const r2 = applyPhase5D(stage);
+        if (r2.status !== 0) {
+          throw new Error(`migrate deploy (Phase 5-D over legacy) gagal:\n${r2.stdout}\n${r2.stderr}`);
+        }
+        const out2 = `${r2.stdout}\n${r2.stderr}`;
+        expect(out2).toContain(PHASE5D);
+
+        // Koneksi BARU agar katalog SQLite terbaca ulang (kolom/index baru).
+        await legacy.$disconnect();
+        const db = openClient(stage.url);
+
+        // 1) Backfill: setiap instance typeId == definition.typeId.
+        const rows = await db.extensionInstance.findMany({ include: { definition: true } });
+        expect(rows).toHaveLength(3);
+        for (const row of rows) {
+          expect(row.typeId).toBe(row.definition.typeId);
+        }
+
+        // 2) Data legacy tetap utuh — nilai per baris identik snapshot.
+        const after = await db.extensionInstance.findMany();
+        for (const snap of before) {
+          const row = after.find((r) => r.id === snap.id);
+          expect(row).toBeDefined();
+          expect(row?.status).toBe(snap.status);
+          expect(row?.sourceRef).toBe(snap.sourceRef);
+        }
+
+        // 3) Helper preflight/postflight dibersihkan; kedua index terpasang.
+        const leftovers = await db.$queryRaw<{ name: string }[]>(
+          Prisma.sql`SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '_phase5d_check_%'`
+        );
+        expect(leftovers).toHaveLength(0);
+        const indexes = await db.$queryRaw<{ name: string }[]>(
+          Prisma.sql`SELECT name FROM sqlite_master WHERE type='index' AND name IN ('ExtensionInstance_typeId_idx','ExtensionInstance_workspaceId_typeId_live_key')`
+        );
+        expect(indexes).toHaveLength(2);
+        const migrationRows = await db.$queryRaw<{ migration_name: string; finished_at: Date | null }[]>(
+          Prisma.sql`SELECT "migration_name","finished_at" FROM "_prisma_migrations" ORDER BY "started_at"`
+        );
+        expect(migrationRows[migrationRows.length - 1]).toMatchObject({
+          migration_name: PHASE5D,
+          finished_at: expect.anything(),
+        });
+
+        // 4) Lifecycle service dapat mengevaluasi instance hasil migration
+        //    (aktor SYSTEM = pemanggil internal tepercaya; remediasi PR #4
+        //    menghapus fallback owner sehingga USER tidak lagi jalur allow).
+        const assigned = await applyExtensionLifecycleTransition(db, {
+          instanceId: a.instanceId,
+          action: "ASSIGN" as const,
+          actor: { type: "SYSTEM" as const, note: "internal trusted caller (migration test)" },
+          now: new Date("2026-11-01T00:00:00.000Z"),
+          provisionedAt: new Date("2026-11-01T00:00:00.000Z"),
+        });
+        expect(assigned.outcome).toBe("SUCCESS");
+        const aRow = await db.extensionInstance.findUniqueOrThrow({ where: { id: a.instanceId } });
+        expect(aRow.status).toBe("ASSIGNED");
+        expect(aRow.typeId).toBe(a.typeId); // sinkron setelah penulisan service
+
+        // 5) Invariant satu-LIVE-instance per (workspace, type) AKTIF pada DB
+        //    hasil migration: instance LIVE kedua untuk (workspace, seat_package) ditolak.
+        const sameTypeDef = await db.extensionDefinition.findFirstOrThrow({
+          where: { code: { startsWith: "def-legacy-c" } },
+        });
+        await expect(
+          db.extensionInstance.create({
+            data: {
+              workspaceId: ws.id,
+              definitionId: sameTypeDef.id,
+              typeId: sameTypeDef.typeId,
+              status: "PURCHASED",
+            },
+          })
+        ).rejects.toMatchObject({ code: "P2002" });
+
+        await db.$disconnect();
+      } finally {
+        // Koneksi legacy mungkin sudah ditutup di atas — best-effort.
+        try {
+          await legacy.$disconnect();
+        } catch {
+          /* sudah terputus */
+        }
+        rmSync(stage.dir, { recursive: true, force: true });
+      }
+    },
+    300_000
+  );
+
+  it(
+    "NEGATIVE: instance tanpa ExtensionDefinition valid → migration gagal eksplisit; TIDAK ada record dihapus/diubah",
+    async () => {
+      const stage = stageLegacy5B("neg-orphan");
+      const db = openClient(stage.url);
+      try {
+        const owner = await db.user.create({
+          data: { name: "Owner Orphan", email: "owner-orphan5d@example.test", emailVerified: new Date() },
+        });
+        const ws = await db.workspace.create({ data: { name: "WS Orphan5D", createdByUserId: owner.id } });
+        const valid = await seedLegacyInstance(db, {
+          workspaceId: ws.id, definitionCode: "def-orphan-ok", typeCode: "seat_package",
+        });
+        // Instance orphan: definitionId tidak menunjuk baris mana pun
+        // (FK dimatikan pada koneksi raw — mensimulasikan data rusak).
+        await db.$executeRawUnsafe(`PRAGMA foreign_keys = OFF`);
+        const orphanId = "inst-orphan-5d";
+        await db.$executeRawUnsafe(
+          `INSERT INTO "ExtensionInstance" ("id","workspaceId","definitionId","status","sourceType","sourceRef","createdAt","updatedAt")
+           VALUES ('${orphanId}','${ws.id}','def-yang-tidak-ada','PURCHASED',NULL,'ref-orphan',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)`
+        );
+        const before = await db.$queryRaw<{ id: string; status: string }[]>(
+          Prisma.sql`SELECT "id","status" FROM "ExtensionInstance" ORDER BY "id"`
+        );
+        expect(before).toHaveLength(2);
+
+        const r = applyPhase5D(stage);
+        expect(r.status).not.toBe(0);
+        const out = `${r.stdout}\n${r.stderr}`;
+        expect(out).toContain("_phase5d_check_instance_definition_resolvable");
+
+        // Bukti tidak ada penghapusan / auto-pick / perubahan status.
+        const after = await db.$queryRaw<{ id: string; status: string }[]>(
+          Prisma.sql`SELECT "id","status" FROM "ExtensionInstance" ORDER BY "id"`
+        );
+        expect(after).toEqual(before);
+        // Migration GAGAL: tidak ada baris PHASE5D yang selesai diterapkan.
+        const applied = await db.$queryRaw<{ n: bigint }[]>(
+          Prisma.sql`SELECT COUNT(*) AS n FROM "_prisma_migrations" WHERE "migration_name" = ${PHASE5D} AND "finished_at" IS NOT NULL AND "rolled_back_at" IS NULL`
+        );
+        expect(Number(applied[0].n)).toBe(0);
+        expect(valid.instanceId).toBeDefined();
+      } finally {
+        await db.$disconnect();
+        rmSync(stage.dir, { recursive: true, force: true });
+      }
+    },
+    300_000
+  );
+
+  it(
+    "NEGATIVE: definition.typeId tidak resolve ke ExtensionType → migration gagal eksplisit; data tetap utuh",
+    async () => {
+      const stage = stageLegacy5B("neg-dangling-type");
+      const db = openClient(stage.url);
+      try {
+        const owner = await db.user.create({
+          data: { name: "Owner Dangling", email: "owner-dangling5d@example.test", emailVerified: new Date() },
+        });
+        const ws = await db.workspace.create({ data: { name: "WS Dangling5D", createdByUserId: owner.id } });
+        const seeded = await seedLegacyInstance(db, {
+          workspaceId: ws.id,
+          definitionCode: "def-dangling-type",
+          typeCode: "seat_package",
+          definitionTypeIdOverride: "type-yang-tidak-ada", // sumber kebenaran rusak
+        });
+        expect(await countInstances(db)).toBe(1);
+
+        const r = applyPhase5D(stage);
+        expect(r.status).not.toBe(0);
+        const out = `${r.stdout}\n${r.stderr}`;
+        expect(out).toContain("_phase5d_check_definition_type_resolvable");
+
+        // Data tidak dihapus dan tidak diubah oleh migration yang gagal.
+        expect(await countInstances(db)).toBe(1);
+        const defRows = await db.$queryRaw<{ n: bigint }[]>(
+          Prisma.sql`SELECT COUNT(*) AS n FROM "ExtensionDefinition" WHERE "code" = 'def-dangling-type'`
+        );
+        expect(Number(defRows[0].n)).toBe(1);
+        const applied = await db.$queryRaw<{ n: bigint }[]>(
+          Prisma.sql`SELECT COUNT(*) AS n FROM "_prisma_migrations" WHERE "migration_name" = ${PHASE5D} AND "finished_at" IS NOT NULL AND "rolled_back_at" IS NULL`
+        );
+        expect(Number(applied[0].n)).toBe(0);
+        expect(seeded.typeId).toBe("type-yang-tidak-ada");
+      } finally {
+        await db.$disconnect();
+        rmSync(stage.dir, { recursive: true, force: true });
+      }
+    },
+    300_000
+  );
+
+  it(
+    "NEGATIVE: dua instance LIVE legacy untuk (workspace, type) sama → migration gagal eksplisit; TIDAK ada auto-pick/status change/delete",
+    async () => {
+      const stage = stageLegacy5B("neg-duplicate-live");
+      const db = openClient(stage.url);
+      try {
+        const owner = await db.user.create({
+          data: { name: "Owner Dup", email: "owner-dup5d@example.test", emailVerified: new Date() },
+        });
+        const ws = await db.workspace.create({ data: { name: "WS Dup5D", createdByUserId: owner.id } });
+        // Dua instance LIVE (status berbeda, keduanya LIVE) untuk type sama
+        // via definisi berbeda — melanggar invariant satu-LIVE setelah backfill.
+        const dup1 = await seedLegacyInstance(db, {
+          workspaceId: ws.id, definitionCode: "def-dup-1", typeCode: "seat_package", status: "ACTIVE",
+        });
+        const dup2 = await seedLegacyInstance(db, {
+          workspaceId: ws.id, definitionCode: "def-dup-2", typeCode: "seat_package", status: "PURCHASED",
+        });
+        expect(await countInstances(db)).toBe(2);
+
+        const r = applyPhase5D(stage);
+        expect(r.status).not.toBe(0);
+        const out = `${r.stdout}\n${r.stderr}`;
+        expect(out).toContain("_phase5d_check_live_instance_unique");
+
+        // TIDAK memilih satu instance untuk dipertahankan: KEDUANYA masih ada
+        // dengan status ASLI (tidak dihapus, tidak di-downgrade diam-diam).
+        const rows = await db.$queryRaw<{ id: string; status: string }[]>(
+          Prisma.sql`SELECT "id","status" FROM "ExtensionInstance" ORDER BY "id"`
+        );
+        expect(rows).toHaveLength(2);
+        expect(rows.map((x) => x.status).sort()).toEqual(["ACTIVE", "PURCHASED"]);
+        expect(rows.map((x) => x.id).sort()).toEqual([dup1.instanceId, dup2.instanceId].sort());
+        const applied = await db.$queryRaw<{ n: bigint }[]>(
+          Prisma.sql`SELECT COUNT(*) AS n FROM "_prisma_migrations" WHERE "migration_name" = ${PHASE5D} AND "finished_at" IS NOT NULL AND "rolled_back_at" IS NULL`
+        );
+        expect(Number(applied[0].n)).toBe(0);
+      } finally {
+        await db.$disconnect();
+        rmSync(stage.dir, { recursive: true, force: true });
+      }
+    },
+    300_000
+  );
+
+  it("bentuk migration 5-D: ALTER aditif + UPDATE backfill tunggal + tanpa DELETE + DROP hanya helper + predicate LIVE persis implementasi", () => {
+    const sql = readFileSync(path.join(MIGRATIONS_DIR, PHASE5D, "migration.sql"), "utf8");
+
+    // Tanpa DELETE dan tanpa DROP terhadap tabel pengguna.
+    expect(/DELETE\s+FROM/i.test(sql)).toBe(false);
+    const drops = sql.match(/DROP\s+TABLE\s+"[^"]+"/gi) ?? [];
+    expect(drops.length).toBeGreaterThan(0);
+    for (const d of drops) {
+      expect(d).toMatch(/_phase5d_check_/);
+    }
+
+    // ALTER hanya ADD COLUMN typeId (aditif).
+    const alters = sql.match(/ALTER\s+TABLE[^;]+/gi) ?? [];
+    expect(alters).toHaveLength(1);
+    expect(alters[0]).toMatch(/ADD COLUMN "typeId" TEXT/);
+
+    // Tepat satu UPDATE — backfill dari definisi (sumber kebenaran).
+    const updates = sql.match(/UPDATE\s+"[^"]+"/gi) ?? [];
+    expect(updates).toEqual(["UPDATE \"ExtensionInstance\""]);
+
+    // Urutan wajib: backfill SEBELUM unique index (temuan A).
+    const backfillAt = sql.indexOf('UPDATE "ExtensionInstance"');
+    const uniqueIndexAt = sql.indexOf("CREATE UNIQUE INDEX");
+    expect(backfillAt).toBeGreaterThan(-1);
+    expect(uniqueIndexAt).toBeGreaterThan(backfillAt);
+
+    // Predicate LIVE pada index = PERSIS EXTENSION_LIVE_STATUSES implementasi.
+    for (const status of EXTENSION_LIVE_STATUSES) {
+      expect(sql).toContain(`'${status}'`);
+    }
+    expect(sql).toMatch(
+      /WHERE "status" IN \('PURCHASED', 'ASSIGNED', 'ACTIVE', 'SUSPENDED', 'RENEWED'\)\s+AND "typeId" IS NOT NULL/
+    );
   });
 });

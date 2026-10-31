@@ -1,11 +1,15 @@
 // @vitest-environment node
-// Unit test tabel otorisasi lifecycle — epicRider Phase 5-D (ADR-025).
-// Membuktikan dari lapisan PURE:
+// Unit test tabel otorisasi lifecycle — epicRider Phase 5-D (ADR-025;
+// remediasi PR #4). Membuktikan dari lapisan PURE:
 // - Setiap aksi lifecycle punya entri otorisasi eksplisit (license 8 + extension 6).
 // - Permission kanonik dipetakan PERSIS dari AUTHORIZATION_MODEL §4.5/§4.6 —
 //   tidak ada key yang dikarang; key kanonik tidak diubah nilainya.
-// - Aksi tanpa key kanonik memakai fallback owner ber-status PROPOSED —
-//   status ini bukan keputusan owner final (label tidak pernah "IMPLEMENTED").
+// - REMEDIASI PR #4: tidak ada jalur OWNER_FALLBACK_PROPOSED yang dapat
+//   menghasilkan ALLOW. `ownerRatificationStatus: "PROPOSED"` hanyalah label
+//   status ratifikasi kebijakan owner yang MENUNGGU keputusan (OPEN/PROPOSED,
+//   ADR-025 §6; OD-122 OPEN) — field ini tidak pernah dibaca oleh
+//   `authorizeLifecycleAction` (bukti behavioral di integration test:
+//   owner tanpa permission eksplisit → DENY_PERMISSION_MISSING).
 // - Aktor SYSTEM didefinisikan sebagai pemanggil internal tepercaya; aktor
 //   USER membawa validitas sesi dari sumber tepercaya (bukan claim client).
 
@@ -20,11 +24,11 @@ import {
 } from "@/lib/licensing/lifecycle-shared";
 
 describe("tabel otorisasi license lifecycle", () => {
-  it("lengkap untuk 8 aksi; fallback selalu ber-label PROPOSED", () => {
+  it("lengkap untuk 8 aksi; ratifikasi owner tetap ber-label PROPOSED (menunggu keputusan owner, bukan kebijakan aktif)", () => {
     for (const action of Object.values(LicenseLifecycleAction)) {
       const entry = LICENSE_ACTION_AUTHORIZATION[action];
       expect(entry).toBeDefined();
-      expect(entry.ownerFallback).toBe("PROPOSED");
+      expect(entry.ownerRatificationStatus).toBe("PROPOSED");
       expect(typeof entry.source).toBe("string");
       expect(entry.source.length).toBeGreaterThan(0);
     }
@@ -43,11 +47,11 @@ describe("tabel otorisasi license lifecycle", () => {
 });
 
 describe("tabel otorisasi extension lifecycle", () => {
-  it("lengkap untuk 6 aksi; fallback selalu ber-label PROPOSED", () => {
+  it("lengkap untuk 6 aksi; ratifikasi owner tetap ber-label PROPOSED (menunggu keputusan owner, bukan kebijakan aktif)", () => {
     for (const action of Object.values(ExtensionLifecycleAction)) {
       const entry = EXTENSION_ACTION_AUTHORIZATION[action];
       expect(entry).toBeDefined();
-      expect(entry.ownerFallback).toBe("PROPOSED");
+      expect(entry.ownerRatificationStatus).toBe("PROPOSED");
       expect(typeof entry.source).toBe("string");
       expect(entry.source.length).toBeGreaterThan(0);
     }
@@ -69,6 +73,23 @@ describe("tabel otorisasi extension lifecycle", () => {
       ExtensionLifecycleAction.EXPIRE,
     ] as const) {
       expect(EXTENSION_ACTION_AUTHORIZATION[action].permission).toBeNull();
+    }
+  });
+});
+
+describe("remediasi PR #4 — tidak ada jalur fallback owner pada tabel aksi", () => {
+  it("tidak ada field/jalur otorisasi selain permission eksplisit + label ratifikasi PROPOSED", () => {
+    for (const entry of [
+      ...Object.values(LICENSE_ACTION_AUTHORIZATION),
+      ...Object.values(EXTENSION_ACTION_AUTHORIZATION),
+    ]) {
+      const keys = Object.keys(entry).sort();
+      // Struktur entri TERBATAS: permission, ownerRatificationStatus (label
+      // ratifikasi — bukan jalur allow), source. Tidak ada mekanisme allow
+      // lain (ownerFallback dihapus; tidak dikembalikan dengan nama lain).
+      expect(keys).toEqual(["ownerRatificationStatus", "permission", "source"]);
+      expect(entry.permission === null || typeof entry.permission === "string").toBe(true);
+      expect(entry.ownerRatificationStatus).toBe("PROPOSED"); // bukan "IMPLEMENTED"/"ACCEPTED"
     }
   });
 });

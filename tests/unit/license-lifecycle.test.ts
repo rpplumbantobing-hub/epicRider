@@ -158,7 +158,7 @@ describe("otorisasi aksi — tabel eksplisit IMPLEMENTED vs PROPOSED (ADR-025 §
     expect(LICENSE_ACTION_AUTHORIZATION.RENEW_IN_GRACE.permission).toBe("license.renew.initiate");
   });
 
-  it("aksi tanpa key kanonik TIDAK dikarang permission-nya — fallback owner ber-status PROPOSED", () => {
+  it("aksi tanpa key kanonik TIDAK dikarang permission-nya — ratifikasi owner ber-status PROPOSED (label keputusan menunggu, bukan jalur otorisasi — remediasi PR #4)", () => {
     for (const action of [
       LicenseLifecycleAction.ACTIVATE,
       LicenseLifecycleAction.TERM_END,
@@ -168,7 +168,7 @@ describe("otorisasi aksi — tabel eksplisit IMPLEMENTED vs PROPOSED (ADR-025 §
       LicenseLifecycleAction.REACTIVATE,
     ] as const) {
       expect(LICENSE_ACTION_AUTHORIZATION[action].permission).toBeNull();
-      expect(LICENSE_ACTION_AUTHORIZATION[action].ownerFallback).toBe("PROPOSED");
+      expect(LICENSE_ACTION_AUTHORIZATION[action].ownerRatificationStatus).toBe("PROPOSED");
     }
   });
 });

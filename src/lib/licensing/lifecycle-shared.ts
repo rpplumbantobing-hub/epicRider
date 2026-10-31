@@ -12,12 +12,21 @@
 //   initiate`, `extension.assign`, `extension.remove`, `extension.renew.
 //   initiate`). Aksi transisi TANPA key kanonik pada model (mis. ACTIVATE,
 //   TERM_END, GRACE_*, DOWNGRADE, REACTIVATE, extension activate/suspend/
-//   expire) TIDAK dikarang permission barunya — diberikan fallback OWNER yang
-//   di-label EKSPLISIT `PROPOSED` (bukan keputusan owner final; ratifikasi
-//   katalog menunggu; lihat ADR-025 §6).
-// - Deny-by-default: Phase 4 policy (ADR-010) tetap berlaku; fallback owner
-//   HANYA untuk membership ACTIVE ber-role `owner` — non-member, INVITED,
-//   SUSPENDED, REMOVED, LEFT, role tak dikenal SELALU ditolak.
+//   expire) TIDAK dikarang permission barunya.
+// - Remediasi PR #4 — EXPLICIT PERMISSION ONLY, TANPA fallback: jalur
+//   OWNER_FALLBACK_PROPOSED (policy PROPOSED → ALLOW) DIHAPUS dan tidak
+//   dikembalikan dalam bentuk apa pun. Tidak ada actor USER yang diizinkan
+//   hanya karena role `owner`, kepemilikan workspace, permission tidak
+//   ditemukan, transition tanpa mapping, atau otoritas aktor tak dapat
+//   ditentukan. Kebijakan ber-status PROPOSED TIDAK PERNAH mengizinkan:
+//   tanpa permission eksplisit terdokumentasi (dan grant role/preset yang
+//   disahkan AUTHORIZATION_MODEL §4/§5 — katalog role = OD-122 OPEN) →
+//   DEFAULT DENY `DENY_PERMISSION_MISSING` (deny-by-default MC §2/§4;
+//   REQ-024). Kebutuhan keputusan owner dicatat sebagai PROPOSED/OPEN
+//   (ADR-025 §6), bukan kebijakan aktif.
+// - Deny-by-default: Phase 4 policy (ADR-010) tetap berlaku; non-member,
+//   INVITED, SUSPENDED, REMOVED, LEFT, role tak dikenal, sesi tidak sah,
+//   dan owner tanpa permission eksplisit SELALU ditolak.
 // - Aktor sistem: `actorType=SYSTEM` hanya dapat dibentuk oleh pemanggil
 //   internal tepercaya di server. TIDAK ADA route/API HTTP pada Phase 5-D;
 //   aktor USER selalu dibentuk dari sesi server-side (bukan input client),
@@ -36,7 +45,6 @@ import { logAudit, AuditCategory, AuditOutcome } from "@/lib/audit/audit-service
 import { MembershipStatus, ReasonCode } from "@/lib/authz/reason-codes";
 import { evaluatePolicy, type SessionValidity } from "@/lib/authz/policy";
 import { Permission } from "@/lib/authz/permissions";
-import { RoleKey } from "@/lib/authz/roles";
 
 // ---------------------------------------------------------------------------
 // Aktor lifecycle
@@ -108,16 +116,18 @@ export interface LifecycleActionAuthorization {
   /**
    * Permission kanonik AUTHORIZATION_MODEL §4.5/§4.6 bila ADA (vocabulary
    * dipertahankan persis, tidak dikarang). `null` = model belum mendefinisikan
-   * key untuk aksi ini — aksi diatur fallback owner ber-status PROPOSED.
+   * key untuk aksi ini — aksi DEFAULT DENY untuk seluruh USER actor
+   * (remediasi PR #4; ratifikasi katalog menunggu keputusan owner).
    */
   permission: Permission | null;
   /**
-   * Fallback owner. Nilai selalu "PROPOSED" pada Phase 5-D — BUKAN keputusan
-   * owner final (ratifikasi katalog permission lifecycle menunggu; lihat
-   * ADR-025 §6). Status ini TIDAK boleh disalahartikan sebagai kebijakan
-   * final yang sudah disetujui owner.
+   * Status RATIFIKASI kebijakan owner atas katalog permission lifecycle:
+   * selalu "PROPOSED" — menunggu keputusan owner (ADR-025 §6; OD-122 OPEN).
+   * Ini BUKAN jalur otorisasi: field ini TIDAK PERNAH dibaca oleh
+   * `authorizeLifecycleAction` dan tidak pernah menghasilkan ALLOW
+   * (fallback owner ALLOW dihapus pada remediasi PR #4).
    */
-  ownerFallback: "PROPOSED";
+  ownerRatificationStatus: "PROPOSED";
   /** Bukti sumber vocabulary (AUTHORIZATION_MODEL §4.5/§4.6). */
   source: string;
 }
@@ -126,6 +136,8 @@ export interface LifecycleActionAuthorization {
  * License lifecycle — 8 transisi kanonik eksekusi 5-D (DMC §6.2; REQ-098).
  * Pasangan lain ditolak fail-closed (termasuk `EXPIRED → ACTIVE` dan
  * `PURCHASED → DOWNGRADED` — ambiguitas owner belum diselesaikan).
+ * Remediasi PR #4: `ownerRatificationStatus` = label ratifikasi menunggu —
+ * bukan mekanisme otorisasi; authorization = permission eksplisit saja.
  */
 export const LicenseLifecycleAction = {
   ACTIVATE: "ACTIVATE",
@@ -144,22 +156,22 @@ export const LICENSE_ACTION_AUTHORIZATION: Record<
   LicenseLifecycleAction,
   LifecycleActionAuthorization
 > = {
-  ACTIVATE: { permission: null, ownerFallback: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.5" },
+  ACTIVATE: { permission: null, ownerRatificationStatus: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.5" },
   RENEW: {
     permission: Permission.LICENSE_RENEW_INITIATE,
-    ownerFallback: "PROPOSED",
+    ownerRatificationStatus: "PROPOSED",
     source: "AUTHORIZATION_MODEL §4.5 license.renew.initiate",
   },
-  TERM_END: { permission: null, ownerFallback: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.5" },
-  GRACE_ENTER: { permission: null, ownerFallback: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.5" },
+  TERM_END: { permission: null, ownerRatificationStatus: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.5" },
+  GRACE_ENTER: { permission: null, ownerRatificationStatus: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.5" },
   RENEW_IN_GRACE: {
     permission: Permission.LICENSE_RENEW_INITIATE,
-    ownerFallback: "PROPOSED",
+    ownerRatificationStatus: "PROPOSED",
     source: "AUTHORIZATION_MODEL §4.5 license.renew.initiate (renewal)",
   },
-  GRACE_END: { permission: null, ownerFallback: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.5" },
-  DOWNGRADE: { permission: null, ownerFallback: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.5" },
-  REACTIVATE: { permission: null, ownerFallback: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.5" },
+  GRACE_END: { permission: null, ownerRatificationStatus: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.5" },
+  DOWNGRADE: { permission: null, ownerRatificationStatus: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.5" },
+  REACTIVATE: { permission: null, ownerRatificationStatus: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.5" },
 };
 
 /** Extension lifecycle — aksi atas instance (LICENSE_MATRIX §5). */
@@ -180,20 +192,20 @@ export const EXTENSION_ACTION_AUTHORIZATION: Record<
 > = {
   ASSIGN: {
     permission: Permission.EXTENSION_ASSIGN,
-    ownerFallback: "PROPOSED",
+    ownerRatificationStatus: "PROPOSED",
     source: "AUTHORIZATION_MODEL §4.6 extension.assign",
   },
-  ACTIVATE: { permission: null, ownerFallback: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.6" },
-  SUSPEND: { permission: null, ownerFallback: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.6" },
-  EXPIRE: { permission: null, ownerFallback: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.6" },
+  ACTIVATE: { permission: null, ownerRatificationStatus: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.6" },
+  SUSPEND: { permission: null, ownerRatificationStatus: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.6" },
+  EXPIRE: { permission: null, ownerRatificationStatus: "PROPOSED", source: "no canonical key — AUTHORIZATION_MODEL §4.6" },
   RENEW: {
     permission: Permission.EXTENSION_RENEW_INITIATE,
-    ownerFallback: "PROPOSED",
+    ownerRatificationStatus: "PROPOSED",
     source: "AUTHORIZATION_MODEL §4.6 extension.renew.initiate",
   },
   REMOVE: {
     permission: Permission.EXTENSION_REMOVE,
-    ownerFallback: "PROPOSED",
+    ownerRatificationStatus: "PROPOSED",
     source: "AUTHORIZATION_MODEL §4.6 extension.remove",
   },
 };
@@ -239,7 +251,11 @@ export async function resolveLifecycleActorFacts(
 
 export interface LifecycleAuthorizationDecision {
   allowed: boolean;
-  /** true bila keputusan berasal dari fallback owner (status PROPOSED). */
+  /**
+   * Selalu `false` sejak remediasi PR #4 — fallback owner ALLOW dihapus dan
+   * tidak dikembalikan dalam bentuk apa pun. Field dipertahankan untuk
+   * stabilitas skema audit/keputusan (tidak pernah `true`).
+   */
   viaOwnerFallback: boolean;
   reasonCode: string;
   /** Fakta membership/role yang dipakai keputusan (untuk audit). */
@@ -247,15 +263,23 @@ export interface LifecycleAuthorizationDecision {
 }
 
 /**
- * Otorisasi satu aksi lifecycle (deny-by-default).
+ * Otorisasi satu aksi lifecycle (deny-by-default; explicit permission only).
  *
  * 1. SYSTEM → diizinkan (pemanggil internal tepercaya; tidak dapat disuplai
  *    client — tidak ada surface HTTP 5-D; ADR-025 §7).
  * 2. USER → rantai policy Phase 4 penuh (sesi → tenant → membership →
- *    permission kanonik bila ada). Bila policy menolak KARENA permission dan
- *    aktor adalah pemegang role `owner` membership ACTIVE → fallback owner
- *    PROPOSED mengizinkan, dengan flag `viaOwnerFallback=true` yang ikut
- *    diaudit. Kegagalan sesi/membership TIDAK pernah difallback.
+ *    permission). Remediasi PR #4: TIDAK ada fallback owner — keputusan
+ *    murni dari permission eksplisit yang terdokumentasi:
+ *    - aksi DENGAN key kanonik: keputusan = policy (ALLOW hanya bila role/
+ *      preset aktor benar-benar memegang key tersebut — saat ini belum ada
+ *      preset yang memegangnya sampai owner meratifikasi katalog, OD-122);
+ *    - aksi TANPA key kanonik: rantai sesi→tenant→membership tetap
+ *      ditegakkan (reason code identik policy Phase 4), lalu
+ *      `DENY_PERMISSION_MISSING` untuk SIAPA PUN — termasuk role `owner` —
+ *      karena tidak ada dasar kebijakan yang mengizinkan.
+ *    Status `ownerRatificationStatus: "PROPOSED"` pada tabel aksi hanyalah
+ *    catatan kebutuhan keputusan owner (OPEN/PROPOSED), bukan kebijakan
+ *    aktif, dan tidak pernah dibaca oleh fungsi ini.
  */
 export async function authorizeLifecycleAction(
   db: PrismaClient,
@@ -281,19 +305,12 @@ export async function authorizeLifecycleAction(
   // mengizinkan (menggunakan placeholder permission sembarang akan membuka
   // celah eskalasi di masa depan). Rantai sesi→tenant→membership tetap
   // ditegakkan eksplisit dengan reason code yang sama dengan policy Phase 4;
-  // satu-satunya jalur allow = fallback owner PROPOSED.
+  // setelah rantai lolos → DEFAULT DENY `DENY_PERMISSION_MISSING` — TERMASUK
+  // untuk role `owner` (fallback owner dihapus; remediasi PR #4).
   if (params.authorization.permission === null) {
     const chainDenial = denyByLifecycleChain(params.actor.session, facts);
     if (chainDenial !== null) {
       return { allowed: false, viaOwnerFallback: false, reasonCode: chainDenial, facts };
-    }
-    if (facts.roleKeys.includes(RoleKey.OWNER)) {
-      return {
-        allowed: true,
-        viaOwnerFallback: true,
-        reasonCode: `OWNER_FALLBACK_PROPOSED:${params.action}`,
-        facts,
-      };
     }
     return {
       allowed: false,
@@ -303,7 +320,10 @@ export async function authorizeLifecycleAction(
     };
   }
 
-  // Aksi DENGAN key kanonik: rantai policy Phase 4 penuh.
+  // Aksi DENGAN key kanonik: keputusan = policy Phase 4 penuh, TANPA
+  // fallback. ALLOW hanya bila role/preset aktor memegang permission
+  // tersebut (grant eksplisit terdokumentasi); tanpa itu → DENY sesuai
+  // reason code policy (mis. DENY_PERMISSION_MISSING).
   const policy = evaluatePolicy({
     session: params.actor.session,
     actorUserId: params.actor.userId,
@@ -313,27 +333,12 @@ export async function authorizeLifecycleAction(
     permission: params.authorization.permission,
   });
 
-  if (policy.decision === "ALLOW") {
-    return { allowed: true, viaOwnerFallback: false, reasonCode: policy.reasonCode, facts };
-  }
-
-  // Fallback owner (PROPOSED): hanya untuk pemegang role `owner` dengan
-  // membership ACTIVE. Kegagalan sesi/membership/tenant tidak difallback.
-  const ownerFallbackEligible =
-    params.actor.session === "VALID" &&
-    facts.membershipStatus === MembershipStatus.ACTIVE &&
-    facts.roleKeys.includes(RoleKey.OWNER);
-
-  if (ownerFallbackEligible) {
-    return {
-      allowed: true,
-      viaOwnerFallback: true,
-      reasonCode: `OWNER_FALLBACK_PROPOSED:${params.action}`,
-      facts,
-    };
-  }
-
-  return { allowed: false, viaOwnerFallback: false, reasonCode: policy.reasonCode, facts };
+  return {
+    allowed: policy.decision === "ALLOW",
+    viaOwnerFallback: false,
+    reasonCode: policy.reasonCode,
+    facts,
+  };
 }
 
 /**

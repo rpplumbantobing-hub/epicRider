@@ -6,6 +6,11 @@
 Terhubung ke REQ-098/REQ-099 (sudah disitir requirement) dan ADR-017/023/024. Status dokumen
 mengikuti pola ADR-023/024: implementasi ada, keputusan owner atas policy parametrik menunggu.
 
+*Remediasi PR #4 (2026-10-31):* temuan review ditangani dalam satu commit di atas `cb4fc97` —
+§3 diperbarui (jalur ALLOW fallback owner DIHAPUS — explicit permission only, default deny);
+migration 5-D diperluas dengan backfill existing-data yang gagal eksplisit; status dokumen
+TETAP **PROPOSED** (tidak di-ACCEPTED-kan tanpa keputusan owner).
+
 ## Context
 
 - Phase 5-B membangun fondasi domain/database licensing (DMC §3.5/§3.6; ADR-023); Phase 5-C
@@ -16,8 +21,10 @@ mengikuti pola ADR-023/024: implementasi ada, keputusan owner atas policy parame
   pada downgrade/removal.
 - OD-05 (owner/seat counting), OD-06 (harga/billing/gateway), dan OD-108 (aturan & durasi
   expiry/grace/downgrade) tetap **OPEN** — parameter kebijakan TIDAK boleh dikarang.
-- Candidate Phase 5-D pertama (`b687ace`, branch lama) hilang bersih dari environment
-  (sandbox ephemeral; tidak pernah dipush/emas). Phase 5-D dieksekusi ulang terkendali
+- Candidate Phase 5-D pertama (`b687ace`, branch lama) PERNAH dibuat dan dipaketkan pada
+  sesinya (Git bundle + ZIP dengan ukuran/SHA-256 tercatat historis), namun saat recovery
+  dilakukan branch/artifact tersebut tidak lagi tersedia pada environment dan tidak
+  ditemukan pada GitHub (tidak ada bukti push). Phase 5-D dieksekusi ulang terkendali
   (recovery) di atas baseline `165b3ba` tanpa menyentuh 5-B/5-C.
 
 ## Decision
@@ -63,33 +70,51 @@ DISUPLAI pemanggil (alur issuance/renewal 5-E), bukan hasil perhitungan.
   SUSPENDED, RENEWED}. Ditegakkan di level DB via partial unique index pada kolom
   denormalisasi `typeId` (migration `20261031090000_phase5d_lifecycle_invariants`,
   aditif-only; pola preseden 5-B) DAN di service (defense-in-depth).
+- **Remediasi PR #4 — backfill existing data:** migration men-backfill `typeId` baris
+  legacy dari `definitionId → ExtensionDefinition.typeId` SEBELUM index dibuat, dengan
+  preflight/postflight yang GAGAL EKSPLISIT (`PHASE5D_BACKFILL_FAILED: …`) pada data
+  yang tidak dapat di-backfill (instance tanpa definisi; definition.typeId NULL/tidak
+  resolve ke ExtensionType) atau yang melanggar invariant satu-LIVE setelah backfill —
+  tanpa delete, tanpa auto-pick, tanpa perubahan status diam-diam.
 - Kompatibilitas katalog/type: ASSIGN/ACTIVATE/RENEW butuh definisi `isActive` + status
   CATALOG; type code di luar closed list owner (MC §2/§3) ditolak fail-closed.
 - `quantity` dibawa apa adanya sesuai model 5-B — TIDAK ada perhitungan kuota (OD-05/06).
 
-### 3. Otorisasi — vocabulary kanonik dulu, fallback owner PROPOSED (jujur ber-status)
+### 3. Otorisasi — explicit permission only, default deny (remediasi PR #4)
 
 - Permission keys yang dipakai dipetakan PERSIS dari AUTHORIZATION_MODEL §4.5/§4.6:
   `license.renew.initiate` (RENEW, RENEW_IN_GRACE), `extension.assign` (ASSIGN),
   `extension.remove` (REMOVE), `extension.renew.initiate` (RENEW). Key ditambahkan ke
   `permissions.ts` tanpa mengubah key lama dan TIDAK diikat ke preset role Phase 4
   (binding final menunggu ratifikasi owner; OD-122 tetap OPEN).
+- **Remediasi PR #4: jalur `OWNER_FALLBACK_PROPOSED` → ALLOW DIHAPUS** dan tidak
+  dikembalikan dalam bentuk/function lain. Tidak ada USER actor yang diizinkan hanya
+  karena role `owner`, kepemilikan workspace, permission tidak ditemukan, transition
+  tanpa mapping, atau otoritas aktor tak dapat ditentukan; policy ber-status PROPOSED
+  TIDAK PERNAH menghasilkan ALLOW.
 - Aksi transisi tanpa key kanonik pada model (ACTIVATE, TERM_END, GRACE_ENTER, GRACE_END,
   DOWNGRADE, REACTIVATE, extension ACTIVATE/SUSPEND/EXPIRE) **tidak dikarang permission-
-  nya**. Satu-satunya jalur allow = **fallback owner** (membership ACTIVE + role `owner`)
-  yang ber-status **PROPOSED** — flag `viaOwnerFallback` selalu teraudit. Status PROPOSED
-  BUKAN kebijakan final dan tidak boleh disalahartikan sebagai keputusan owner yang sudah
-  diterima.
+  nya** dan berakhir **DEFAULT DENY `DENY_PERMISSION_MISSING`** — rantai
+  sesi→tenant→membership tetap ditegakkan eksplisit dengan reason code identik policy
+  Phase 4, lalu ditolak untuk SIAPA PUN termasuk role `owner` (deny-by-default; MC §2/§4;
+  REQ-024). Kebutuhan keputusan owner dicatat sebagai `ownerRatificationStatus:
+  "PROPOSED"` pada tabel aksi — label OPEN/PROPOSED, bukan kebijakan aktif; field ini
+  tidak pernah dibaca oleh fungsi otorisasi.
+- Aksi berkunci kanonik dievaluasi policy Phase 4 penuh TANPA fallback: ALLOW hanya bila
+  role/preset aktor benar-benar memegang key (grant eksplisit terdokumentasi). Sampai
+  owner meratifikasi katalog (OD-122), tidak ada preset yang memegang key lifecycle →
+  seluruh aksi lifecycle USER = default deny teraudit; operasi internal tepercaya
+  memakai aktor SYSTEM.
 - Aksi tanpa key kanonik tidak pernah dievaluasi lewat permission placeholder (mencegah
-  celah eskalasi jika suatu permission read diberikan ke member di masa depan); rantai
-  sesi→tenant→membership ditegakkan eksplisit dengan reason code identik policy Phase 4.
+  celah eskalasi jika suatu permission read diberikan ke member di masa depan).
 - **Aktor SYSTEM** hanya dapat dibentuk pemanggil internal tepercaya. Phase 5-D tidak
   menambahkan route/API HTTP apa pun (sesuai batas scope 5-B/5-C); aktor USER dibentuk
   server-side dari sesi; client tidak dapat menyuplai `actorType=SYSTEM` untuk eskalasi
   hak. Identitas USER kosong/undefined tidak pernah ter-resolve ke membership mana pun
   (fail-closed; teruji).
-- Deny tetap deny: non-member, INVITED, SUSPENDED, REMOVED, LEFT, role tak dikenal, dan
-  sesi tidak sah DITOLAK tanpa fallback (teruji per kasus).
+- Deny tetap deny: non-member, INVITED, SUSPENDED, REMOVED, LEFT, role tak dikenal,
+  sesi tidak sah, dan owner tanpa permission eksplisit DITOLAK (teruji per kasus;
+  SYSTEM-allow vs USER-deny pada request identik membuktikan aktor bukan claim client).
 
 ### 4. Konkurensi & idempotensi (ADR-017)
 
@@ -125,23 +150,30 @@ DISUPLAI pemanggil (alur issuance/renewal 5-E), bukan hasil perhitungan.
 ## Consequences
 
 **Positif:** mesin status deterministik fail-closed yang dapat diuji penuh; entitlement
-5-C kini memiliki mekanisme transisi resmi; invariant per-slot ditegakkan DB; audit
-lengkap dua arah (sukses+denial); tidak ada keputusan owner yang dicuri.
+5-C kini memiliki mekanisme transisi resmi; invariant per-slot ditegakkan DB dengan
+backfill existing-data yang aman dan gagal-eksplisit; otorisasi explicit-permission-only
+(tanpa jalur ALLOW dari policy PROPOSED); audit lengkap dua arah (sukses+denial); tidak
+ada keputusan owner yang dicuri.
 
 **Risiko/keterbatasan (jujur):** jaminan konkurensi hanya teruji pada SQLite lokal
-(OD-01); idempotensi state-convergence bukan replay-cache penuh; permission lifecycle
-menunggu ratifikasi (fallback PROPOSED aktif); tidak ada surface API/UI — integrasi
-endpoint adalah pekerjaan fase berikutnya (5-E).
+(OD-01); idempotensi state-convergence bukan replay-cache penuh; **sampai owner
+meratifikasi katalog permission lifecycle (OD-122), seluruh aksi lifecycle USER =
+default deny `DENY_PERMISSION_MISSING` — operasional hanya via aktor SYSTEM internal**;
+migration backfill teruji pada SQLite disposable legacy (DB produksi NOT TESTED —
+OD-01); tidak ada surface API/UI — integrasi endpoint adalah pekerjaan fase berikutnya
+(5-E).
 
 ## Evidence
 
 - `src/lib/licensing/license-lifecycle.ts`, `src/lib/licensing/extension-lifecycle.ts`,
   `src/lib/licensing/lifecycle-shared.ts`; `src/lib/authz/permissions.ts` (4 key §4.5/§4.6);
-  `prisma/migrations/20261031090000_phase5d_lifecycle_invariants/`.
-- Test: unit (license matrix 48 pasangan; extension 49 slot; tabel otorisasi) +
-  integration (transisi end-to-end, otorisasi/denial teraudit, idempotensi, tepat-satu-
-  ACTIVE, satu-live-instance P2002, isolasi tenant, REQ-099 data preservation, integrasi
-  engine 5-C). Full suite **275/275 PASS**; lint/typecheck/build exit 0; `prisma migrate
-  diff` = "No difference detected".
+  `prisma/migrations/20261031090000_phase5d_lifecycle_invariants/` (backfill +
+  preflight/postflight — remediasi PR #4).
+- Test: unit (license matrix 48 pasangan; extension 49 slot; tabel otorisasi tanpa jalur
+  allow lain) + integration (transisi end-to-end, otorisasi/denial teraudit termasuk
+  owner-tanpa-permission, idempotensi, tepat-satu-ACTIVE, satu-live-instance P2002,
+  isolasi tenant, REQ-099 data preservation, integrasi engine 5-C, backfill legacy
+  POSITIVE + 3 NEGATIVE). Full suite **291/291 PASS** (2×); lint/typecheck/build exit 0;
+  `prisma migrate diff` = "No difference detected"; deploy disposable (kosong + legacy) PASS.
 - Ketergantungan: ADR-010 (policy), ADR-017 (konkurensi/idempotensi), ADR-023/024 (5-B/5-C);
   OPEN: OD-05, OD-06, OD-108, OD-01, OD-122.

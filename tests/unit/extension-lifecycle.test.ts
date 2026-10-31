@@ -107,14 +107,14 @@ describe("otorisasi aksi extension — kanonik vs fallback PROPOSED (ADR-025 §6
     expect(EXTENSION_ACTION_AUTHORIZATION.REMOVE.permission).toBe("extension.remove");
   });
 
-  it("ACTIVATE/SUSPEND/EXPIRE tanpa key kanonik — fallback owner PROPOSED, bukan kebijakan final", () => {
+  it("ACTIVATE/SUSPEND/EXPIRE tanpa key kanonik — ratifikasi owner PROPOSED (label keputusan menunggu, bukan jalur otorisasi — remediasi PR #4)", () => {
     for (const action of [
       ExtensionLifecycleAction.ACTIVATE,
       ExtensionLifecycleAction.SUSPEND,
       ExtensionLifecycleAction.EXPIRE,
     ] as const) {
       expect(EXTENSION_ACTION_AUTHORIZATION[action].permission).toBeNull();
-      expect(EXTENSION_ACTION_AUTHORIZATION[action].ownerFallback).toBe("PROPOSED");
+      expect(EXTENSION_ACTION_AUTHORIZATION[action].ownerRatificationStatus).toBe("PROPOSED");
     }
   });
 });

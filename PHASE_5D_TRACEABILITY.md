@@ -16,7 +16,8 @@ Setiap klaim → sumber kontrak → implementasi → bukti test. (Pola PHASE_5_T
 | REQ-026 | Permission memeriksa aktor/objek/status | rantai policy Phase 4 + prasyarat status di matriks | unit+integration otorisasi |
 | LICENSE_MATRIX §5 | Lifecycle extension kanonik | `extension-lifecycle.ts` 6 aksi; satu-live per (workspace,type) | unit 49-slot; integration P2002 + index |
 | ENTITLEMENT_MODEL §4 | Hanya ACTIVE lisensi/instance yang meng-grant | efek transisi deterministik; engine 5-C tak berubah | unit efek; integration SUSPEND/RENEW/EXPIRE/REMOVE |
-| AUTHORIZATION_MODEL §4.5/§4.6 | Vocabulary permission kanonik | 4 key dipetakan persis; tanpa key = fallback owner PROPOSED | unit tabel otorisasi; integration member/non-member |
+| AUTHORIZATION_MODEL §4.5/§4.6 | Vocabulary permission kanonik | 4 key dipetakan persis; TANPA key = default deny `DENY_PERMISSION_MISSING` (remediasi PR #4 — fallback owner ALLOW dihapus; ratifikasi katalog = keputusan owner) | unit tabel otorisasi; integration owner/member/non-member/sesi ditolak + SYSTEM-allow vs USER-deny |
+| Remediasi PR #4 — Temuan A | Migration mempertahankan & memigrasikan data existing yang valid; gagal eksplisit pada data invalid | backfill `typeId` dari `definitionId → ExtensionDefinition.typeId` SEBELUM unique index; preflight/postflight RAISE eksplisit; tanpa delete/auto-pick | `licensing-migration.test.ts`: POSITIVE legacy nyata + 3 NEGATIVE |
 | ADR-017 | Optimistic concurrency + idempotency keys | guard kondisional; state-convergence idempotency; keterbatasan OD-01 jujur | race test license; replay tests |
 | ADR-023/024 | Fondasi 5-B/5-C tidak diubah | tidak ada perubahan implementasi/migration lama (aditif-only) | test migration; `git diff` laporan §D |
 | MC §2/§3 (REQ-018) | Extension type closed list owner | type di luar list ditolak fail-closed | rogue-type test |
@@ -29,7 +30,7 @@ Setiap klaim → sumber kontrak → implementasi → bukti test. (Pola PHASE_5_T
 | OD-06 | **OPEN** | tidak ada harga/issuance/checkout; sourceType/sourceRef netral |
 | OD-108 | **OPEN** | verify-only; tanpa scheduler; DOWNGRADE tanpa target tier |
 | (terkait) OD-01 | **OPEN** | jaminan konkurensi teruji SQLite lokal saja — dinyatakan jujur |
-| (terkait) OD-122 | **OPEN** | preset role Phase 4 tidak berubah; binding permission lifecycle menunggu ratifikasi |
+| (terkait) OD-122 | **OPEN** | preset role Phase 4 tidak berubah; TIDAK ada grant permission lifecycle ke role manapun — tanpa ratifikasi owner, aksi lifecycle USER = default deny (remediasi PR #4) |
 
 ## 3. Artefak Phase 5-D (recovery)
 
@@ -44,19 +45,37 @@ New:
   tests/unit/license-lifecycle.test.ts · tests/unit/extension-lifecycle.test.ts
   tests/unit/lifecycle-authorization.test.ts
   tests/integration/license-lifecycle.test.ts · tests/integration/extension-lifecycle.test.ts
-Modified (aditif):
+Modified (aditif / remediasi PR #4):
   src/lib/authz/permissions.ts (+4 key §4.5/§4.6)
   prisma/schema.prisma (ExtensionInstance +typeId denormalisasi, terdokumentasi)
+  prisma/migrations/20261031090000_phase5d_lifecycle_invariants/migration.sql
+    (backfill existing-data + preflight/postflight — remediasi PR #4; 4/5-B tidak disentuh)
+  src/lib/licensing/lifecycle-shared.ts · license-lifecycle.ts · extension-lifecycle.ts
+    (fallback owner ALLOW dihapus — remediasi PR #4)
   tests/integration/licensing-migration.test.ts (daftar migration untracked: 5-B atau 5-D;
-    preseden penyesuaian 5-C)
-  ROADMAP.md · PHASE_STATUS.md · worklog.md
+    preseden penyesuaian 5-C + suite backfill remediasi)
+  tests/integration/license-lifecycle.test.ts · extension-lifecycle.test.ts (aktor SYSTEM
+    untuk success-path; matriks otorisasi remediasi)
+  tests/unit/license-lifecycle.test.ts · extension-lifecycle.test.ts ·
+    lifecycle-authorization.test.ts (label ratifikasi, bukan jalur otorisasi)
+  ROADMAP.md · PHASE_STATUS.md · worklog.md (koreksi historis + status remediasi)
 Tidak disentuh:
   implementation/migration Phase 4/5-B/5-C · OPEN_DECISIONS.md · REQUIREMENTS.md ·
   LICENSE_MATRIX.md · ENTITLEMENT_MODEL.md · AUTHORIZATION_MODEL.md · MASTER_CONTROL.md
 ```
 
-## 4. Catatan recovery
+## 4. Catatan recovery & remediasi
 
-Candidate lama `b687ace` hilang (sandbox ephemeral; tidak pernah dipush/dipack). Recovery
-dibangun ulang dari baseline `165b3ba` dengan kontrak yang sama; hash baru adalah NORMAL.
+Candidate historis `b687ace` PERNAH dibuat dan dipaketkan pada sesinya (Git bundle + ZIP
+transfer package dihasilkan; ukuran dan SHA-256 tercatat pada laporan historis). Namun
+branch/artifact tersebut TIDAK lagi tersedia pada environment saat recovery dilakukan dan
+TIDAK ditemukan pada GitHub (tidak ada bukti pernah dipush). Karena itu recovery
+menghasilkan candidate baru `cb4fc97` yang diverifikasi terhadap baseline `165b3ba`.
 Tidak ada file/dokumen lama yang dipalsukan; laporan ini dibuat dari bukti aktual recovery.
+
+Remediasi PR #4 (satu commit di atas `cb4fc97`): Temuan A — backfill existing-data pada
+migration `typeId` + preflight/postflight gagal-eksplisit; Temuan B — jalur ALLOW
+`OWNER_FALLBACK_PROPOSED` dihapus (explicit permission only; default deny termasuk owner;
+ratifikasi katalog = keputusan owner); Temuan C — koreksi formulasi historis pada
+dokumen (termasuk paragraf ini). Full gate: 291/291 test (2×), lint/typecheck/build exit 0,
+prisma validate/generate/migrate diff/deploy (kosong + legacy) PASS.

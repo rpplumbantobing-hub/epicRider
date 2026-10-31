@@ -217,7 +217,8 @@ export async function applyExtensionLifecycleTransition(
     return deny(ExtensionLifecycleReasonCode.DENY_INVALID_EXTENSION_TYPE);
   }
 
-  // 3) Otorisasi aktor (deny-by-default; fallback owner PROPOSED).
+  // 3) Otorisasi aktor (deny-by-default; explicit permission only — fallback
+  //    owner DIHAPUS remediasi PR #4; tanpa permission terdokumentasi → DENY).
   const authz = await authorizeLifecycleAction(db, {
     workspaceId: instance.workspaceId,
     action,

@@ -22,21 +22,30 @@
 
 *Pembaruan Phase 5-C (2026-10-30):* owner mengotorisasi **Phase 5-C saja** (entitlement engine & enforcement; tanpa 5-D/E). Implementasi pada branch yang sama **di atas commit 5-B `20a0169`** (tanpa reset/rebase): evaluator murni deterministic fail-closed (`src/lib/licensing/entitlement.ts`) + resolusi DB/audit/integrasi authorization (`src/lib/licensing/entitlement-service.ts`) + wiring aditif policy Phase 4 (input entitlement kini dievaluasi; input absen = perilaku Phase 4 utuh) + kategori audit `LICENSE` + 76 test baru. Seluruh gate lokal lulus (test 76/76; full regression **221/221** = 145 + 76; lint/typecheck/build/validate/migrate-diff exit 0; schema/migration tidak berubah — `PHASE_5_REPORT.md` §5C-G). OD-05 (kuota/seat counting tidak dikonsumsi engine), OD-06 (tanpa kode komersial), OD-108 (engine hanya membaca status data; tanpa transisi) tetap OPEN.
 
-*Pembaruan Phase 5-D (2026-10-31, RECOVERY):* Phase 5-D (license & extension lifecycle)
-dieksekusi ulang terkendali di atas baseline canonical `165b3ba` pada branch
-`integration/phase5-d-license-extension-lifecycle` — candidate pertama (`b687ace`) hilang
-bersih dari environment (sandbox ephemeral; tidak pernah dipush/dipack) dan tidak
-direkonstruksi dari ingatan. Hasil recovery: mesin transisi lisensi 8 aksi kanonik
-fail-closed (DMC §6.2; verify-only, tanpa scheduler — OD-108), lifecycle extension 6 aksi
-(LICENSE_MATRIX §5) dengan invariant satu-LIVE-instance per (workspace, type) ditegakkan
-DB (migration aditif `20261031090000_phase5d_lifecycle_invariants`; kolom denormalisasi
-`typeId`), otorisasi vocabulary kanonik AUTHORIZATION_MODEL §4.5/§4.6 + fallback owner
-ber-status PROPOSED, aktor SYSTEM internal-only (tanpa route HTTP), idempotensi
-state-convergence + optimistic guard (ADR-017; teruji SQLite lokal — OD-01 jujur),
-audit dua arah (sukses atomik; denial first-class), REQ-099 data preservation. Full
-regression **275/275** (= 221 + 54 baru); lint/typecheck/build/validate/migrate-diff exit
-0. Dokumen: `PHASE_5D_REPORT.md` + `PHASE_5D_ACCEPTANCE.md` (26/26 VERIFIED dengan
-limitations jujur) + `PHASE_5D_TRACEABILITY.md` + `adr/ADR-025-phase5d-license-extension-
+*Pembaruan Phase 5-D (2026-10-31, RECOVERY + REMEDIASI PR #4):* Phase 5-D (license &
+extension lifecycle) dieksekusi ulang terkendali di atas baseline canonical `165b3ba`
+pada branch `integration/phase5-d-license-extension-lifecycle` — candidate pertama
+(`b687ace`) PERNAH dibuat dan dipaketkan pada sesinya (Git bundle + ZIP dengan
+ukuran/SHA-256 tercatat historis), namun saat recovery dilakukan branch/artifact tersebut
+tidak lagi tersedia pada environment dan tidak ditemukan pada GitHub (tidak ada bukti
+push); candidate tidak direkonstruksi dari ingatan. Hasil recovery: mesin transisi
+lisensi 8 aksi kanonik fail-closed (DMC §6.2; verify-only, tanpa scheduler — OD-108),
+lifecycle extension 6 aksi (LICENSE_MATRIX §5) dengan invariant satu-LIVE-instance per
+(workspace, type) ditegakkan DB (migration aditif
+`20261031090000_phase5d_lifecycle_invariants`; kolom denormalisasi `typeId`), aktor
+SYSTEM internal-only (tanpa route HTTP), idempotensi state-convergence + optimistic
+guard (ADR-017; teruji SQLite lokal — OD-01 jujur), audit dua arah (sukses atomik;
+denial first-class), REQ-099 data preservation. *Remediasi PR #4 (satu commit di atas
+`cb4fc97`):* (A) migration mem-backfill existing data (`definitionId →
+ExtensionDefinition.typeId`, SEBELUM unique index) dengan preflight/postflight gagal
+eksplisit — tanpa delete/auto-pick/status change; (B) jalur ALLOW
+`OWNER_FALLBACK_PROPOSED` DIHAPUS — explicit permission only; tanpa ratifikasi katalog
+owner (OD-122 OPEN), seluruh aksi lifecycle USER = default deny `DENY_PERMISSION_MISSING`
+termasuk role `owner`; (C) koreksi formulasi historis pada dokumentasi. Full regression
+**291/291** (= 221 + 70 baru); lint/typecheck/build/validate/migrate-diff exit 0;
+migrate deploy disposable (kosong + legacy 5-B nyata) PASS. Dokumen:
+`PHASE_5D_REPORT.md` + `PHASE_5D_ACCEPTANCE.md` (27/27 VERIFIED dengan limitations
+jujur) + `PHASE_5D_TRACEABILITY.md` + `adr/ADR-025-phase5d-license-extension-
 lifecycle.md` (PROPOSED). OD-05/OD-06/OD-108 tetap OPEN; 5-E NOT STARTED; closure menunggu
 integrasi owner.
 

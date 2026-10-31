@@ -207,7 +207,8 @@ export async function applyLicenseLifecycleTransition(
     };
   };
 
-  // 2) Otorisasi aktor (deny-by-default; fallback owner PROPOSED).
+  // 2) Otorisasi aktor (deny-by-default; explicit permission only — fallback
+  //    owner DIHAPUS remediasi PR #4; tanpa permission terdokumentasi → DENY).
   const authz = await authorizeLifecycleAction(db, {
     workspaceId: license.workspaceId,
     action,
