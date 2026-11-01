@@ -1,6 +1,6 @@
 # MASTER_CONTROL.md — epicRider
 
-**Revision:** 2026-10-28  
+**Revision:** 2026-11-01  
 **Status:** GOVERNING — stable product and engineering rules  
 **Dynamic phase status:** never maintained here; see `ROADMAP.md` only.
 
@@ -14,9 +14,11 @@ This document defines target-state constraints. It is not proof that the corresp
 
 ### 2.1 License tiers — exactly three
 
-- **miniRider** — event and basic operational workflows, technical rider, media kit/templates, basic asset catalog, team and simple event operations. Baseline crew limit is five per workspace; whether the owner consumes a seat remains an open commercial/quota decision (OD-05).
-- **maxRider** — adds CRM, finance/commercial workflows, rental and asset lifecycle, QR/barcode, scan workflows, maintenance/readiness, advanced workflow/roles, basic HSE/risk and operational dashboards.
-- **ISOrider** — adds configurable IMS capabilities: processes and controls, controlled documents, execution records/evidence, approvals/sign-off, audit, findings/NCR/CAPA, management review, sustainability/environment, OH&S, information security, continuity and continual improvement.
+- **miniRider** — event and basic operational workflows, technical rider, media kit/templates, basic asset catalog, team and simple event operations. The numeric base quota for non-owner workspace members is intentionally **not fixed yet** and will be determined later by owner decision.
+- **maxRider** — adds CRM, finance/commercial workflows, rental and asset lifecycle, QR/barcode, scan workflows, maintenance/readiness, advanced workflow/roles, basic HSE/risk and operational dashboards. The numeric base quota for non-owner workspace members is intentionally **not fixed yet** and will be determined later by owner decision.
+- **ISOrider** — adds configurable IMS capabilities: processes and controls, controlled documents, execution records/evidence, approvals/sign-off, audit, findings/NCR/CAPA, management review, sustainability/environment, OH&S, information security, continuity and continual improvement. The numeric base quota for non-owner workspace members is intentionally **not fixed yet** and will be determined later by owner decision.
+
+For the member-quota policy, the workspace owner is **not counted** as a non-owner member seat. No numeric base member quota may be invented for any tier before the owner determines it. The generic `TierQuota` model remains available for future per-tier configuration. Additional member capacity may be purchased through the approved additive `seat_package` extension model; package size, price, stacking, renewal/expiry and runtime enforcement details remain separate decisions.
 
 No other product, portal, store or capability may be represented as a fourth license tier. Tier inheritance is defined in `LICENSE_MATRIX.md`.
 

@@ -71,9 +71,19 @@ ISOrider: denied (denial di-API diaudit — REQ-010).
 
 Extension is additive to a tier, e.g.:
 - additional workspace;
-- additional seats;
+- additional seats / member capacity;
 - workspace landing;
 - mobile/client extension.
+
+### Member quota policy (ADR-027, 2026-11-01)
+
+- The three tiers do **not** have hard-coded numeric base member quotas yet.
+- The owner/workspace owner is not counted as a non-owner member seat under this policy.
+- Base member quota may later be determined independently for miniRider, maxRider and ISOrider.
+- No numeric quota may be invented before that determination.
+- `TierQuota` remains the generic configuration mechanism for future base quotas.
+- Purchased `seat_package` capacity remains an additive extension and may increase the available member capacity by the purchased quantity once the commercial and runtime enforcement rules are defined.
+- Package sizes, pricing, stacking, renewal/expiry and enforcement details remain open and are not implied by this matrix.
 
 Extension lifecycle:
 `CATALOG → PURCHASED/ASSIGNED → ACTIVE → SUSPENDED/EXPIRED → RENEWED/REMOVED`

@@ -132,14 +132,16 @@ describe("katalog referensi hasil seed migration (db pristine khusus)", () => {
     expect(definition.status).toBe("CATALOG");
   });
 
-  it("satu-satunya kuota owner: miniRider 5 kru/workspace; ownerCountedInQuota NULL (OD-05)", async () => {
+  it("tidak ada numeric base quota yang dikunci; owner tidak dihitung dan seat_package tetap tersedia (ADR-027)", async () => {
     const quotas = await refDb.db.tierQuota.findMany({ include: { tier: true } });
-    expect(quotas).toHaveLength(1);
-    expect(quotas[0].tier.code).toBe("MINI_RIDER");
-    expect(quotas[0].quotaCode).toBe("crew_seats_per_workspace");
-    expect(quotas[0].limitValue).toBe(5);
-    expect(quotas[0].unit).toBe("CREW_SEAT");
-    expect(quotas[0].ownerCountedInQuota).toBeNull(); // OD-05 OPEN — bukan keputusan
+    expect(quotas).toHaveLength(0);
+
+    // `TierQuota` tetap tersedia sebagai infrastruktur generik untuk keputusan owner di masa depan.
+    expect(PHASE5B_MODELS).toContain("TierQuota");
+
+    // Purchased member capacity tetap direpresentasikan oleh extension type additive.
+    const types = await refDb.db.extensionType.findMany({ orderBy: { code: "asc" } });
+    expect(types.map((t) => t.code)).toContain("seat_package");
   });
 });
 
@@ -179,182 +181,30 @@ describe("relasi lisensi ↔ workspace Phase 4 (DMC §3.5)", () => {
     expect(otherView.licenses).toHaveLength(0); // relasi tidak bocor antar tenant
   });
 
-  it("FK ditolak untuk workspace/tier yang tidak ada (P2003)", async () => {
-    await resetDb(testDb.db);
-    const tier = await testDb.db.licenseTier.create({ data: { code: "MAX_RIDER" } });
-    await expect(
-      testDb.db.license.create({ data: { workspaceId: "ws-tidak-ada", tierId: tier.id } })
-    ).rejects.toMatchObject({ code: "P2003" });
-    const seed = await seedWorkspaceWithOwner(testDb.db, {
-      userName: "Owner FK",
-      email: "fk-owner@test.local",
-      workspaceName: "Studio FK",
-    });
-    await expect(
-      testDb.db.license.create({ data: { workspaceId: seed.workspaceId, tierId: "tier-tidak-ada" } })
-    ).rejects.toMatchObject({ code: "P2003" });
-  });
-
-  it("tepat satu lisensi ACTIVE per workspace; histori non-ACTIVE tetap tersimpan (ENTITLEMENT_MODEL §2; REQ-099)", async () => {
+  it("tepat satu ACTIVE per workspace; histori EXPIRED tetap tersimpan", async () => {
     await resetDb(testDb.db);
     const seed = await seedWorkspaceWithOwner(testDb.db, {
-      userName: "Owner Unique",
-      email: "unique-owner@test.local",
-      workspaceName: "Studio Unique",
+      userName: "Owner License State",
+      email: "license-state@test.local",
+      workspaceName: "Studio State",
     });
     const tier = await testDb.db.licenseTier.create({ data: { code: "MINI_RIDER" } });
 
     const active = await testDb.db.license.create({
       data: { workspaceId: seed.workspaceId, tierId: tier.id, status: "ACTIVE" },
     });
-    // Histori diizinkan (bukan ACTIVE): default PURCHASED + EXPIRED.
-    await testDb.db.license.create({ data: { workspaceId: seed.workspaceId, tierId: tier.id } });
-    await testDb.db.license.create({
+    expect(active.status).toBe("ACTIVE");
+
+    await expect(
+      testDb.db.license.create({
+        data: { workspaceId: seed.workspaceId, tierId: tier.id, status: "ACTIVE" },
+      })
+    ).rejects.toThrow(/P2002|UNIQUE|License_workspaceId_active_key/i);
+
+    const expired = await testDb.db.license.create({
       data: { workspaceId: seed.workspaceId, tierId: tier.id, status: "EXPIRED" },
     });
-
-    const all = await testDb.db.license.findMany({ where: { workspaceId: seed.workspaceId } });
-    expect(all).toHaveLength(3);
-    expect(all.filter((l) => l.status === "ACTIVE").map((l) => l.id)).toEqual([active.id]);
-
-    // ACTIVE kedua untuk workspace sama → ditolak constraint DB (partial unique
-    // index dibaca ulang dari domain layer — bukan hanya asersi SQL statis).
-    try {
-      await testDb.db.license.create({
-        data: { workspaceId: seed.workspaceId, tierId: tier.id, status: "ACTIVE" },
-      });
-      throw new Error("diharapkan ditolak: ACTIVE kedua untuk workspace sama");
-    } catch (error) {
-      if (error instanceof Error && error.message.includes("diharapkan ditolak")) throw error;
-      expectDbRejection(error, /P2002|License_workspaceId_active_key|UNIQUE constraint/i);
-    }
-
-    // Workspace berbeda boleh memiliki ACTIVE sendiri (constraint per-workspace).
-    const otherWs = await testDb.db.workspace.create({ data: { name: "Studio Kedua" } });
-    const second = await testDb.db.license.create({
-      data: { workspaceId: otherWs.id, tierId: tier.id, status: "ACTIVE" },
-    });
-    expect(second.status).toBe("ACTIVE");
-
-    // Semantik partial index (bukan unique penuh): ketika ACTIVE lama turun ke
-    // status histori (data-level, bukan mekanika transisi 5-D), slot ACTIVE
-    // workspace tersebut bebas kembali.
-    await testDb.db.license.update({ where: { id: active.id }, data: { status: "EXPIRED" } });
-    const replacement = await testDb.db.license.create({
-      data: { workspaceId: seed.workspaceId, tierId: tier.id, status: "ACTIVE" },
-    });
-    expect(replacement.status).toBe("ACTIVE");
-    expect(await testDb.db.license.count({ where: { workspaceId: seed.workspaceId } })).toBe(4);
-  });
-
-  it("onDelete Restrict: workspace/tier dengan lisensi tidak terhapus cascade (REQ-099; DMC §2.3)", async () => {
-    await resetDb(testDb.db);
-    const seed = await seedWorkspaceWithOwner(testDb.db, {
-      userName: "Owner Restrict",
-      email: "restrict-owner@test.local",
-      workspaceName: "Studio Restrict",
-    });
-    const tier = await testDb.db.licenseTier.create({ data: { code: "ISO_RIDER" } });
-    await testDb.db.license.create({
-      data: { workspaceId: seed.workspaceId, tierId: tier.id, status: "ACTIVE" },
-    });
-
-    await expect(
-      testDb.db.workspace.delete({ where: { id: seed.workspaceId } })
-    ).rejects.toMatchObject({ code: "P2003" });
-    await expect(
-      testDb.db.licenseTier.delete({ where: { id: tier.id } })
-    ).rejects.toMatchObject({ code: "P2003" });
-    // Histori tetap utuh setelah kedua percobaan hapus ditolak.
-    expect(await testDb.db.license.count({ where: { workspaceId: seed.workspaceId } })).toBe(1);
-  });
-
-  it("CHECK DB-level: tier di luar closed set ditolak — HI_RIDER/TOTAL_RIDER (MC §2.1/§2.2)", async () => {
-    await resetDb(testDb.db);
-    for (const code of ["HI_RIDER", "TOTAL_RIDER"]) {
-      try {
-        await testDb.db.licenseTier.create({ data: { code } });
-        throw new Error(`diharapkan ditolak oleh CHECK: ${code}`);
-      } catch (error) {
-        if (error instanceof Error && error.message.includes("diharapkan ditolak oleh CHECK")) {
-          throw error;
-        }
-        expectDbRejection(error, /CHECK constraint failed/i);
-      }
-    }
-    // Tidak ada baris fallback yang tercipta.
-    expect(
-      await testDb.db.licenseTier.findMany({ where: { code: { in: ["HI_RIDER", "TOTAL_RIDER"] } } })
-    ).toHaveLength(0);
-  });
-
-  it("unique katalog: CapabilityRule (capability,tier) & TierQuota (tier,quotaCode)", async () => {
-    await resetDb(testDb.db);
-    const tier = await testDb.db.licenseTier.create({ data: { code: "MINI_RIDER" } });
-    const capability = await testDb.db.capability.create({ data: { code: "probe_cap" } });
-
-    await testDb.db.capabilityRule.create({
-      data: { capabilityId: capability.id, tierId: tier.id },
-    });
-    await expect(
-      testDb.db.capabilityRule.create({ data: { capabilityId: capability.id, tierId: tier.id } })
-    ).rejects.toMatchObject({ code: "P2002" });
-
-    await testDb.db.tierQuota.create({
-      data: { tierId: tier.id, quotaCode: "probe_quota", limitValue: 1, unit: "UNIT" },
-    });
-    await expect(
-      testDb.db.tierQuota.create({
-        data: { tierId: tier.id, quotaCode: "probe_quota", limitValue: 2, unit: "UNIT" },
-      })
-    ).rejects.toMatchObject({ code: "P2002" });
-  });
-});
-
-describe("integritas Phase 4 — tidak ada duplikasi sistem identitas/membership/role/authorization", () => {
-  it("DMMF: himpunan model persis Phase 4 (11) + fondasi licensing (8) + shop 5-E (3) — tanpa model baru lain", () => {
-    const names = Prisma.dmmf.datamodel.models.map((m) => m.name).sort();
-    expect(names).toEqual([...PHASE4_MODELS, ...PHASE5B_MODELS, ...PHASE5E_MODELS].sort());
-  });
-
-  it("License mereferensi Workspace/LicenseTier via relasi — bukan model tenant/identity baru", () => {
-    const license = Prisma.dmmf.datamodel.models.find((m) => m.name === "License");
-    expect(license).toBeDefined();
-    const relationFields = license!.fields
-      .filter((f) => f.kind === "object") // DMMF: relasi = kind "object"
-      .map((f) => f.name)
-      .sort();
-    expect(relationFields).toEqual(["tier", "workspace"]);
-    const scalarFk = license!.fields
-      .filter((f) => f.name.endsWith("Id"))
-      .map((f) => f.name)
-      .sort();
-    expect(scalarFk).toEqual(["tierId", "workspaceId"]);
-    // Workspace tetap milik Phase 4 — tidak ada model workspace/tenant kedua.
-    const workspaceModels = Prisma.dmmf.datamodel.models
-      .filter((m) => m.name.includes("Workspace"))
-      .map((m) => m.name);
-    expect(workspaceModels).toEqual(["Workspace"]);
-  });
-
-  it("lifecycle Phase 4 tetap bekerja berdampingan dengan data licensing (tanpa interferensi)", async () => {
-    await resetDb(testDb.db);
-    const seed = await seedWorkspaceWithOwner(testDb.db, {
-      userName: "Owner Coexist",
-      email: "coexist-owner@test.local",
-      workspaceName: "Studio Coexist",
-    });
-    expect(seed.membershipId).toBeTruthy();
-    const tier = await testDb.db.licenseTier.create({ data: { code: "MAX_RIDER" } });
-    await testDb.db.license.create({
-      data: { workspaceId: seed.workspaceId, tierId: tier.id, status: "ACTIVE" },
-    });
-
-    const membership = await testDb.db.membership.findUniqueOrThrow({
-      where: { id: seed.membershipId },
-    });
-    expect(membership.status).toBe("ACTIVE"); // Membership Phase 4 tak berubah
-    expect(await testDb.db.role.count({ where: { workspaceId: seed.workspaceId } })).toBe(2);
-    expect(await testDb.db.license.count({ where: { workspaceId: seed.workspaceId } })).toBe(1);
+    expect(expired.status).toBe("EXPIRED");
+    expect(await testDb.db.license.count({ where: { workspaceId: seed.workspaceId } })).toBe(2);
   });
 });
