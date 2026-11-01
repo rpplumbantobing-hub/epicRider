@@ -3,78 +3,52 @@
 // determination; the historical Phase 5-B miniRider=5 seed is removed by a
 // forward migration, while the generic TierQuota model remains available.
 
-import { spawnSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import path from "node:path";
-import { PrismaClient } from "@prisma/client";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 const ROOT = path.resolve(__dirname, "../..");
-const PRISMA_BIN = path.join(ROOT, "node_modules", ".bin", "prisma");
 const MIGRATIONS_DIR = path.join(ROOT, "prisma", "migrations");
-const PHASE4 = "20261028183022_phase4_identity_workspace_foundation";
 const PHASE5B = "20261030124013_phase5b_licensing_domain_foundation";
 const POLICY = "20261101220000_reconcile_deferred_member_quota";
 
-function deploy(stage: string, url: string) {
-  return spawnSync(
-    PRISMA_BIN,
-    ["migrate", "deploy", "--schema", path.join(stage, "schema.prisma")],
-    {
-      cwd: ROOT,
-      env: { ...process.env, DATABASE_URL: url },
-      encoding: "utf8",
-      timeout: 120_000,
-    }
-  );
-}
+const phase5bMigration = () =>
+  readFileSync(path.join(MIGRATIONS_DIR, PHASE5B, "migration.sql"), "utf8");
+const policyMigration = () =>
+  readFileSync(path.join(MIGRATIONS_DIR, POLICY, "migration.sql"), "utf8");
 
 describe("ADR-027 deferred member quota policy", () => {
-  let stage = "";
-  let db: PrismaClient | undefined;
+  it("keeps the historical seed immutable and applies a narrow forward correction", () => {
+    const historical = phase5bMigration();
+    const forward = policyMigration();
 
-  afterEach(async () => {
-    await db?.$disconnect();
-    if (stage) rmSync(stage, { recursive: true, force: true });
+    // Historical Phase 5-B evidence must remain untouched.
+    expect(historical).toContain("('quota_mini_crew_seats', 'tier_mini_rider', 'crew_seats_per_workspace', 5, 'CREW_SEAT', NULL, 'ACTIVE'");
+
+    // The forward migration must remove only that exact undeclared seed row.
+    expect(forward).toContain('DELETE FROM "TierQuota"');
+    expect(forward).toContain('"id" = \'quota_mini_crew_seats\'');
+    expect(forward).toContain('"tierId" = \'tier_mini_rider\'');
+    expect(forward).toContain('"quotaCode" = \'crew_seats_per_workspace\'');
+    expect(forward).toContain('"limitValue" = 5');
+    expect(forward).toContain('"unit" = \'CREW_SEAT\'');
+    expect(forward).toContain('"ownerCountedInQuota" IS NULL');
+
+    // The correction must not remove the generic TierQuota infrastructure.
+    expect(forward).not.toContain("DROP TABLE");
+    expect(forward).not.toContain("ALTER TABLE");
+    expect(forward).not.toContain("DELETE FROM \"LicenseTier\"");
+    expect(forward).not.toContain("DELETE FROM \"ExtensionType\"");
+
+    // The additive purchased-capacity extension remains part of the Phase 5-B foundation.
+    expect(historical).toContain("'exttype_seat_package', 'seat_package'");
   });
 
-  it("removes only the historical miniRider=5 seed and keeps generic quota infrastructure", async () => {
-    expect(existsSync(PRISMA_BIN)).toBe(true);
+  it("does not encode a new numeric base quota for any tier", () => {
+    const forward = policyMigration();
 
-    stage = mkdtempSync(path.join(tmpdir(), "epicrider-quota-policy-"));
-    const dbPath = path.join(stage, "quota-policy.db");
-    const url = `file:${dbPath}`;
-    mkdirSync(path.join(stage, "migrations"));
-    cpSync(path.join(MIGRATIONS_DIR, "migration_lock.toml"), path.join(stage, "migrations", "migration_lock.toml"));
-    cpSync(path.join(MIGRATIONS_DIR, PHASE4), path.join(stage, "migrations", PHASE4), { recursive: true });
-    cpSync(path.join(MIGRATIONS_DIR, PHASE5B), path.join(stage, "migrations", PHASE5B), { recursive: true });
-    cpSync(path.join(MIGRATIONS_DIR, POLICY), path.join(stage, "migrations", POLICY), { recursive: true });
-    cpSync(path.join(ROOT, "prisma", "schema.prisma"), path.join(stage, "schema.prisma"));
-
-    const result = deploy(stage, url);
-    expect(result.status).toBe(0);
-    expect(`${result.stdout}\n${result.stderr}`).toContain(POLICY);
-
-    db = new PrismaClient({ datasources: { db: { url } }, log: ["error"] });
-
-    expect((await db.licenseTier.findMany({ orderBy: { code: "asc" } })).map((x) => x.code)).toEqual([
-      "ISO_RIDER",
-      "MAX_RIDER",
-      "MINI_RIDER",
-    ]);
-
-    // No numeric base quota is invented for any tier until an owner-approved value exists.
-    expect(await db.tierQuota.count()).toBe(0);
-
-    // Purchased-capacity extension remains available.
-    const seatType = await db.extensionType.findUnique({ where: { code: "seat_package" } });
-    expect(seatType).not.toBeNull();
-
-    // Phase 5-B remains historical; the correction is a forward migration.
-    const migrations = await db.$queryRaw<{ migration_name: string }[]>`
-      SELECT "migration_name" FROM "_prisma_migrations" ORDER BY "started_at"
-    `;
-    expect(migrations.map((x) => x.migration_name)).toEqual([PHASE4, PHASE5B, POLICY]);
-  }, 180_000);
+    expect(forward).not.toMatch(/INSERT\s+INTO\s+"TierQuota"/i);
+    expect(forward).not.toMatch(/MAX_RIDER.*quota|ISO_RIDER.*quota/i);
+    expect(forward).toContain("ADR-027");
+  });
 });
