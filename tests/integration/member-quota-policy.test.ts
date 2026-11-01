@@ -7,7 +7,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
-const ROOT = path.resolve(__dirname, "../..");
+const ROOT = process.cwd();
 const MIGRATIONS_DIR = path.join(ROOT, "prisma", "migrations");
 const PHASE5B = "20261030124013_phase5b_licensing_domain_foundation";
 const POLICY = "20261101220000_reconcile_deferred_member_quota";
