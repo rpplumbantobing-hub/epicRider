@@ -1,8 +1,9 @@
 // @vitest-environment node
 // ADR-027 regression: numeric base member quotas remain deferred until owner
 // determination; the historical Phase 5-B miniRider=5 seed is removed by a
-// forward migration, while the generic TierQuota table remains available.
+// forward migration, while the generic TierQuota model remains available.
 
+import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -17,11 +18,15 @@ const PHASE5B = "20261030124013_phase5b_licensing_domain_foundation";
 const POLICY = "20261101220000_reconcile_deferred_member_quota";
 
 function deploy(stage: string, url: string) {
-  const { spawnSync } = require("node:child_process") as typeof import("node:child_process");
   return spawnSync(
     PRISMA_BIN,
     ["migrate", "deploy", "--schema", path.join(stage, "schema.prisma")],
-    { cwd: ROOT, env: { ...process.env, DATABASE_URL: url }, encoding: "utf8", timeout: 120_000 }
+    {
+      cwd: ROOT,
+      env: { ...process.env, DATABASE_URL: url },
+      encoding: "utf8",
+      timeout: 120_000,
+    }
   );
 }
 
@@ -53,23 +58,20 @@ describe("ADR-027 deferred member quota policy", () => {
 
     db = new PrismaClient({ datasources: { db: { url } }, log: ["error"] });
 
-    // The three official tiers remain intact.
     expect((await db.licenseTier.findMany({ orderBy: { code: "asc" } })).map((x) => x.code)).toEqual([
       "ISO_RIDER",
       "MAX_RIDER",
       "MINI_RIDER",
     ]);
 
-    // The generic quota structure remains available, but no numeric base quota
-    // is invented for any tier until an owner-approved value exists.
+    // No numeric base quota is invented for any tier until an owner-approved value exists.
     expect(await db.tierQuota.count()).toBe(0);
 
-    // The purchased-capacity extension type remains available.
+    // Purchased-capacity extension remains available.
     const seatType = await db.extensionType.findUnique({ where: { code: "seat_package" } });
     expect(seatType).not.toBeNull();
 
-    // Historical seed migration remains recorded; the correction is a forward
-    // migration and does not rewrite Phase 5-B history.
+    // Phase 5-B remains historical; the correction is a forward migration.
     const migrations = await db.$queryRaw<{ migration_name: string }[]>`
       SELECT "migration_name" FROM "_prisma_migrations" ORDER BY "started_at"
     `;
