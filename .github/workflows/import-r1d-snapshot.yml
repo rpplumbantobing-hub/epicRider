@@ -22,13 +22,26 @@ jobs:
 
       - name: Download and verify R1D snapshot; copy only approved documents
         env:
-          SNAPSHOT_URL: https://preview-chat-bdf10873-7803-4338-b2cf-19eb3b2301a4.space-z.ai/api/download/snapshot
           EXPECTED_SHA256: 9d36098e159e96eda563c69b432882dc8379a66eff81c81b3c1c07d226e0665f
         shell: bash
         run: |
           set -euo pipefail
-          curl --fail --location --silent --show-error "$SNAPSHOT_URL" -o "$RUNNER_TEMP/r1d.zip"
-          echo "$EXPECTED_SHA256  $RUNNER_TEMP/r1d.zip" | sha256sum --check -
+          urls=(
+            "https://preview-chat-bdf10873-7803-4338-b2cf-19eb3b2301a4.space-z.ai/EPICRIDER_FINAL_TRANSFER_SNAPSHOT_20261115_R1D.zip"
+            "https://preview-chat-bdf10873-7803-4338-b2cf-19eb3b2301a4.space-z.ai/api/download/snapshot"
+          )
+          downloaded=0
+          for url in "${urls[@]}"; do
+            echo "Trying approved R1D mirror: $url"
+            if curl --fail --location --retry 2 --retry-all-errors --retry-delay 2 --silent --show-error "$url" -o "$RUNNER_TEMP/r1d.zip"; then
+              if echo "$EXPECTED_SHA256  $RUNNER_TEMP/r1d.zip" | sha256sum --check -; then
+                downloaded=1
+                break
+              fi
+              rm -f "$RUNNER_TEMP/r1d.zip"
+            fi
+          done
+          test "$downloaded" -eq 1 || { echo "No R1D mirror returned bytes matching the audited SHA-256."; exit 1; }
           python3 - "$RUNNER_TEMP/r1d.zip" <<'PY'
           import hashlib, pathlib, stat, sys, zipfile
 
@@ -64,13 +77,11 @@ jobs:
               if any(i.is_dir() or "/" in i.filename or "\\" in i.filename for i in infos):
                   raise SystemExit("Nested paths/directories are prohibited")
               for info in infos:
-                  mode = info.external_attr >> 16
-                  if stat.S_ISLNK(mode):
+                  if stat.S_ISLNK(info.external_attr >> 16):
                       raise SystemExit(f"Symlink entry prohibited: {info.filename}")
               bad = zf.testzip()
               if bad:
                   raise SystemExit(f"ZIP CRC failure: {bad}")
-
               sums = zf.read("SHA256SUMS.txt").decode("utf-8").splitlines()
               if len(sums) != 20:
                   raise SystemExit(f"Expected 20 checksum records, found {len(sums)}")
@@ -78,17 +89,13 @@ jobs:
               for row in sums:
                   digest, name = row.split(None, 1)
                   name = name.lstrip("*").strip()
-                  if name not in docs + ["SNAPSHOT_REPORT.md", "MANIFEST.txt"]:
-                      raise SystemExit(f"Unexpected checksum target: {name}")
-                  if name in checked:
-                      raise SystemExit(f"Duplicate checksum target: {name}")
-                  actual = hashlib.sha256(zf.read(name)).hexdigest()
-                  if digest != actual:
+                  if name not in docs + ["SNAPSHOT_REPORT.md", "MANIFEST.txt"] or name in checked:
+                      raise SystemExit(f"Unexpected or duplicate checksum target: {name}")
+                  if hashlib.sha256(zf.read(name)).hexdigest() != digest:
                       raise SystemExit(f"Checksum mismatch: {name}")
                   checked.add(name)
               if checked != set(docs + ["SNAPSHOT_REPORT.md", "MANIFEST.txt"]):
                   raise SystemExit("Checksum manifest coverage is incomplete")
-
               for name in docs:
                   pathlib.Path(name).write_bytes(zf.read(name))
           print("R1D archive verified: 21 entries; 20/20 checksums; 18 allowlisted documents extracted.")
