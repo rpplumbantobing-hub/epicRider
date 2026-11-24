@@ -16,6 +16,8 @@ Status is evidence-based and is the single dynamic phase-status source reference
 
 **2026-11-01 quota-policy reconciliation:** ADR-027 is accepted by explicit owner directive. It does not choose a numeric base member quota. The workspace owner is not counted as a non-owner member seat; base quota may later be set independently for miniRider, maxRider and ISOrider; `TierQuota` remains the generic configuration mechanism; purchased `seat_package` capacity remains additive. ADR-023 is superseded only for its fixed member-quota value/policy portion.
 
+**2026-11-24 R1E repository synchronization:** The verified R1E governance snapshot was imported through PR #8 and merged into canonical `main` at `f8395ed90484cd318f87aef2e0d13fd66c71a9df` (21 documentation/metadata files; no source/runtime changes). PR CI run #62 completed successfully (lint, typecheck, test and build). R1E clarifies the historical status text in `PHASE_5_REPORT.md`; it does not alter phase acceptance, ADR decisions or open-decision statuses. Phase 4 and Phase 5 remain DONE/CLOSED; Phase 6 remains NOT STARTED and still requires explicit owner authorization. PR #7 remains open and separate.
+
 ## Phase table
 
 | Phase | Nama | Status | Bukti / Blocker / Dependency |

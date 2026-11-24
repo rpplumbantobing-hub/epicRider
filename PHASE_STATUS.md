@@ -1,6 +1,8 @@
 # PHASE STATUS — epicRider
 
-**Sumber kebenaran:** `ROADMAP.md`. Dokumen ini adalah ringkasan status berbasis bukti dan tidak menggantikan roadmap. **Diperbarui:** 2026-11-01.
+**Sumber kebenaran:** `ROADMAP.md`. Dokumen ini adalah ringkasan status berbasis bukti dan tidak menggantikan roadmap. **Diperbarui:** 2026-11-24.
+
+**Sinkronisasi 2026-11-24:** Snapshot governance R1E telah diimpor melalui PR #8 ke `main` pada commit `f8395ed90484cd318f87aef2e0d13fd66c71a9df`. CI PR #8 (#62: lint, typecheck, test, build) berhasil. Perubahan ini hanya mengimpor/memperjelas dokumentasi; status fase pada tabel di bawah tetap sama dan Phase 6 tetap NOT STARTED sampai ada otorisasi eksplisit owner.
 
 ## Current phase status
 
