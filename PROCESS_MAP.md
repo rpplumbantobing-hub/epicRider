@@ -84,7 +84,7 @@ PROC-01 Inquiry/brief
 | PROC-02 Technical rider | ✓ | ✓ | ✓ | draft boleh, wajib terhubung event |
 | PROC-03 Quotation/contract | **✗ mini** | ✓ | ✓ | komersial = maxRider |
 | PROC-04 Planning/rundown | ✓ | ✓ | ✓ | +risk/HSE planning di Phase 15 (max) |
-| PROC-05 Crew assignment | ✓ (dasar) | ✓ | ✓ (+gate kompetensi) | kuota 5 kru mini (OD-05) |
+| PROC-05 Crew assignment | ✓ (dasar) | ✓ | ✓ (+gate kompetensi) | kuota kru = generic configured quota (base quota per tier = TBD — ADR-027; owner tidak dihitung — DIPUTUSKAN; historis: "5 kru" = nilai seed 5-B, superseded; sisa semantik = OD-05 OPEN) **[R1 2026-11-15]** |
 | PROC-06 Media kit | ✓ | ✓ | ✓ | dari template, wajib terkait event |
 | PROC-07 Reservation/inspection/readiness | **✗ mini** | ✓ | ✓ | mini hanya register aset dasar + set template |
 | PROC-08 Dispatch | **✗ mini** | ✓ | ✓ | QR/barcode, check-out berbukti |
@@ -140,7 +140,7 @@ Semua proses berstatus **PROPOSED/TARGET**. Phase merujuk `ROADMAP.md`.
 - **Input:** rundown (PROC-04), daftar kru & status membership, (max/ISO) record kompetensi.
 - **Output:** event assignment per kru (terpisah dari workspace membership); (ISO) verifikasi kompetensi sebelum penugasan kritis.
 - **Aktor:** Event manager (P-04); kru (P-03) menerima penugasan.
-- **Tier:** mini ✓ (dasar; konteks event aktif jelas, pindah konteks aman — MC §2; kuota maks 5 kru/workspace, definisi kuota = OD-05). Gate kompetensi = ISO (PROC-209).
+- **Tier:** mini ✓ (dasar; konteks event aktif jelas, pindah konteks aman — MC §2; kuota kru = generic configured quota — base quota per tier TBD per ADR-027, historis "5" superseded; sisa semantik kuota = OD-05). Gate kompetensi = ISO (PROC-209). **[R1 2026-11-15]**
 - **Requirement:** REQ-007, REQ-050, REQ-009, REQ-074.
 - **Phase:** 4, 6, 10; kompetensi: 19.
 - **Transisi:** → PROC-07/PROC-08 (kru siap eksekusi); penugasan batal → catat & bebankan ulang.
@@ -396,7 +396,7 @@ Rantai lengkap, tiap mata-rantai dijelaskan:
 | Target/baseline KPI | TBD owner (OD-106) |
 | Metodologi GHG | Menunggu OD-105 |
 | Konflik reservasi aset | Menunggu OD-107 |
-| Kuota kru mini (ikut dihitung atau tidak) | Menunggu OD-05 |
+| Kuota kru mini (angka base per tier + detail counting sisanya) | Angka = TBD per ADR-027 (owner tidak dihitung — DIPUTUSKAN; TBD ≠ unlimited); sisa semantik menunggu OD-05 (sisa OPEN) **[R1 2026-11-15 — sebelumnya "ikut dihitung atau tidak / Menunggu OD-05"; owner-counting sudah diputuskan]** |
 | Offline workflow lapangan | Menunggu OD-07 |
 | Keputusan baru dari dokumen ini | Tidak ada di file ini; kandidat milik `DOCUMENT_EVIDENCE_MODEL.md` (OD-140..OD-144) |
 | Konflik dengan dokumen kontrol | Tidak ditemukan; MC §11 & ISO_IMS_BLUEPRINT §3 dipetakan apa adanya sebagai target |

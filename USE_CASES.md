@@ -50,7 +50,7 @@
 
 **UC-1005 "Kelola membership: invite → accept → suspend → remove → leave"**
 - Aktor: P-02 Workspace Owner (invite/suspend/remove), P-03 Crew (accept/leave).
-- Preconditions: Workspace aktif; kuota kru mengikuti OD-05 (batas MC: maks 5 kru/workspace).
+- Preconditions: Workspace aktif; kuota kru = generic configured quota (base non-owner member quota per tier = TBD per ADR-027 — belum ditetapkan, tidak dikarang, TBD ≠ unlimited; owner TIDAK dihitung — DIPUTUSKAN; sisa semantik OD-05 OPEN; historis: "maks 5 kru/workspace" = nilai seed 5-B yang superseded) **[R1 2026-11-15]**.
 - Main flow: 1) Owner mengundang email/nomor + role yang ditawarkan. 2) Sistem membuat token undangan signed, sekali pakai, kedaluwarsa, terikat workspace+role. 3) Invitee membuka link dan accept. 4) Membership aktif; akses mengikuti role. 5) Kapan pun: owner suspend/remove; member leave.
 - Alternate flows: a1) Kuota penuh → undangan ditolak dengan pesan jelas (tautan upgrade/extension bila ada). a2) Re-invite member suspended.
 - Failure flows: F1) Link undangan bekas/kedaluwarsa → ditolak. F2) Manipulasi link untuk mengubah role → ditolak (token binding). F3) Penambahan kru melebihi kuota → ditolak server-side (REQ-009). F4) Entitlement tier tidak mencukupi seat → denial teraudit. F5) Data undangan tidak valid (format email/nomor) → validasi gagal jelas.
@@ -82,7 +82,7 @@
 - Preconditions: Akun terautentikasi (UC-1001/1002).
 - Main flow: 1) Pilih "Buat workspace". 2) Isi nama + jenis usaha. 3) Sistem provisioning workspace + membership owner + navigasi 5 halaman (Home, Event, Asset, Team, Profile). 4) Owner masuk workspace. 5) Upgrade tier berikutnya memperkaya domain yang sama tanpa migrasi data (REQ-002).
 - Alternate flows: a1) User punya banyak workspace → pemilih workspace.
-- Failure flows: F1) Data tidak valid → validasi field. F2) Batas jumlah workspace per lisensi tercapai (aturan menunggu OD-06) → denial teraudit. F3) Provisioning gagal di tengah → rollback bersih; tidak ada workspace setengah jadi. F4) Pembuatan workspace massal (abuse) → rate limit per user.
+- Failure flows: F1) Data tidak valid → validasi field. F2) Batas jumlah workspace per lisensi tercapai (angka/aturan batas jumlah workspace = OD-123 OPEN — bukan OD-06; pricing/pembayaran extension workspace tambahan = OD-06) → denial teraudit. **[R1C 2026-11-15 — atribusi OD dikoreksi: batas jumlah workspace → OD-123]** F3) Provisioning gagal di tengah → rollback bersih; tidak ada workspace setengah jadi. F4) Pembuatan workspace massal (abuse) → rate limit per user.
 - Postconditions: Workspace terisolasi terbentuk; role owner aktif.
 - REQ: REQ-023, REQ-025, REQ-002, REQ-024. **Phase: 4, 6**.
 

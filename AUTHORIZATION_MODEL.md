@@ -72,7 +72,7 @@ Input definitions (each is a required, typed input to every authorization decisi
 | `DENY_LICENSE_STATE` | License expired / in grace / downgraded restricts the action (REQ-098; scope = OD-108 OPEN). |
 | `DENY_EXTENSION_MISSING` | Required extension not active on the workspace (MC §2). |
 | `DENY_OBJECT_STATE` | Object state forbids the action (locked evidence, superseded document, closed opening — REQ-080, REQ-083, REQ-063). |
-| `DENY_QUOTA_EXCEEDED` | Seat/workspace quota exhausted (REQ-009; counting rule = OD-05 OPEN). |
+| `DENY_QUOTA_EXCEEDED` | Seat/workspace quota exhausted (REQ-009; owner NOT counted toward quota — DECIDED via ADR-027; numeric base quota per tier TBD; remaining counting/enforcement semantics = OD-05 OPEN). **[R1 2026-11-15]** |
 | `DENY_STORE_TIER` | Store access rule violated (Equipment Store is miniRider-only — REQ-010). |
 | `DENY_SCOPE` | Access outside granted scope (auditor scope — REQ-053; profile/application visibility — REQ-062, OD-109). |
 | `DENY_CROSS_CONTEXT_ROLE` | Platform role used outside its context (developer role touching billing/license — REQ-031, REQ-052). |
@@ -148,7 +148,7 @@ Conceptual verb–noun vocabulary organized by the 17 bounded contexts of `ARCHI
 | Permission | Grants | Ref |
 |---|---|---|
 | `license.read` | View workspace license status/history | REQ-098 |
-| `license.renew.initiate` | Initiate a license renewal | REQ-098, OD-06 |
+| `license.renew.initiate` | Initiate a license renewal | REQ-098, OD-108 (renewal/lifecycle rules); OD-06 (payment aspect of renewal) **[R1C 2026-11-15 — pemetaan diperjelas: renewal/lifecycle = OD-108; OD-06 hanya aspek pembayaran]** |
 | `entitlement.read` | View effective entitlements of the workspace | REQ-024 |
 | `entitlement.snapshot.read` | Read effective-access snapshots (audit use) | REQ-024, OD-138 |
 
@@ -469,7 +469,7 @@ Only existing OD IDs are cited (never invented here); items without an ID are ex
 | Developer role model (sub-permissions vs separate roles) | OD-101 | OPEN |
 | Broadcast authority, mandatory/optional notification types | OD-102 | OPEN |
 | Legal strength of sign-off (affects `evidence.sign` semantics) | OD-103 | OPEN |
-| Seat counting rule (owner counted?) — quota denial semantics | OD-05 | OPEN |
+| Seat counting rule — quota denial semantics | OD-05 | **Owner exclusion DECIDED — remaining semantics OPEN** *(ADR-027, 2026-11-01: owner NOT counted as member-seat — DECIDED, no longer an open question; remaining OPEN: numeric base quota per tier TBD + denial/enforcement semantics)* **[R1 2026-11-15 — lead statement corrected: owner-counting is no longer framed as an open question]** |
 | Offline strategy & sync-time permission re-check | OD-07 | OPEN |
 | License expiry/grace/downgrade restriction scope | OD-108 | OPEN |
 | Default profile/application visibility | OD-109 | OPEN |

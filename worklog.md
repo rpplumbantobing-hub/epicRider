@@ -614,3 +614,401 @@ Stage Summary:
   control tidak diubah; Phase 5-D = IMPLEMENTATION PASS — LOCAL CANDIDATE (RECOVERY +
   REMEDIASI) — NOT INTEGRATED; Phase 5-E NOT STARTED. Satu commit remediasi di atas
   `cb4fc97`; tanpa push/PR/merge — integrasi = OWNER ONLY.
+
+---
+
+Task ID: SYNC-2026-11-01
+Agent: Z.ai Code (main orchestrator)
+Task: Owner-directed ARCHITECTURE / CONTROL SYNCHRONIZATION (prompt owner 2026-11-01) — workspace audit + apply + verify. Tanpa feature development; Phase 6 TIDAK dimulai.
+
+Work Log:
+- AUDIT (read-only): totalRider hanya muncul sebagai negative-guard (public/phase5-governance-reconciliation/
+  OUT_OF_SCOPE_FINDINGS.md); src/tests/prisma/db sandbox bebas konsep tier/quota; prisma schema sandbox =
+  scaffold (User/Post) tanpa model domain; tidak ada migrations/seed quota di workspace; quota angka lama
+  "miniRider = 5 kru / five per workspace" ditemukan di MC §2.1 + 9 dokumen lain.
+- State canonical diverifikasi langsung (git ls-remote + bare blobless clone read-only di /tmp; TIDAK ada
+  push/fetch ke repo mana pun): GitHub main @ d45e73e "feat(governance): defer tier member quotas and
+  preserve additive seats" — sinkronisasi owner (ADR-027 + register + roadmap + phase status + handoff +
+  forward migration + test quota) SUDAH tereksekusi di canonical; workspace masih state 2026-10-28
+  pra-Phase-4 (Phase 4 READY / Phase 5 NOT STARTED).
+- APPLY — workspace disinkronkan byte-identik ke canonical main @ d45e73e (diverifikasi cmp per file):
+  ADR_REGISTER.md, ROADMAP.md, PHASE_STATUS.md, HANDOFF.md, MASTER_CONTROL.md (revisi 2026-11-01 —
+  "Baseline crew limit is five per workspace" diganti owner menjadi "not fixed yet" per tier),
+  LICENSE_MATRIX.md, DATA_MODEL_CONCEPT.md, README.md, SECURITY.md, ARCHITECTURE.md, TESTING.md,
+  worklog.md; + file BARU: adr/ADR-022..ADR-027 (6 file), AGENTS.md, PHASE_5_CLOSURE_REPORT.md,
+  PHASE_4_{ACCEPTANCE,GOVERNANCE_CLOSURE,IMPLEMENTATION_PLAN,REPORT,ROUTE_DEFECT_FIX_REPORT,
+  ROUTE_DEFECT_REPORT,SECURITY_REVIEW,TRACEABILITY}.md, PHASE_5{,D,E}_{ACCEPTANCE,REPORT,TRACEABILITY}.md.
+- ADR-027 (ACCEPTED, owner directive 2026-11-01) kini ada di workspace: adr/ADR-027-member-quota-policy-
+  and-seat-extension.md — 3 tier tetap; owner TIDAK dihitung member-seat; base quota TIDAK ditetapkan
+  (TBD independen per tier; jangan mengarang angka; TBD ≠ unlimited); TierQuota generik dipertahankan;
+  seat_package aditif dipertahankan (ukuran/harga/stacking/renewal/expiry/billing/payment/enforcement =
+  keputusan terpisah); migration historis 5-B immutable + forward migration di canonical. Next free
+  ADR = ADR-028 (register). OD-05 = sebagian diputuskan (owner-counting), sisa OPEN.
+- ANOTASI superseded bertanggal pada sisa teks quota angka lama yang BELUM disentuh sinkronisasi canonical:
+  REQUIREMENTS.md (REQ-009), OPEN_DECISIONS.md (OD-05 + catatan Phase 5), ENTITLEMENT_MODEL.md (3 titik),
+  PRODUCT_SCOPE.md (5 titik), TRACEABILITY_MATRIX.md, PHASE_2_TRACEABILITY.md, AUTHORIZATION_MODEL.md,
+  DATA_MODEL_CONCEPT.md (3 titik); + 4 entri baru di OBSOLETE_AND_SUPERSEDED_REGISTER.md (revision
+  2026-11-01: quota-5 superseded; totalRider RETIRED; hiRider/taskRider/siteRider bukan license; Phase 6
+  tanpa otorisasi dilarang); README diberi banner koreksi status bertanggal.
+- TEMUAN untuk owner (TIDAK dieksekusi — menunggu otorisasi): canonical main @ d45e73e masih memuat teks
+  "5 kru" usang yang sama di 7 dokumen (REQ-009, OD-05, ENTITLEMENT_MODEL, PRODUCT_SCOPE, TRACEABILITY_
+  MATRIX, PHASE_2_TRACEABILITY, AUTHORIZATION_MODEL — sinkronisasi canonical hanya menyentuh MC/ADR-023/
+  register/roadmap/status/handoff); pembersihan setara di canonical = pekerjaan terpisah atas otorisasi
+  owner (sandbox TIDAK melakukan push apa pun).
+- VERIFY: bun run lint / typecheck / test (vitest) + bunx prisma validate + scan ulang totalRider & angka
+  quota & konsistensi status fase — hasil aktual tercatat di laporan sinkronisasi. GIT_WRITE = NONE:
+  tanpa commit/push/merge; perubahan berupa working tree workspace sandbox saja.
+
+---
+
+Task ID: PARITY-RECONCILIATION-2026-11-02
+Agent: Z.ai Code (main orchestrator)
+Task: Owner-directed FINAL CANONICAL PARITY RECONCILIATION + DOWNLOADABLE ARTIFACTS (prompt owner 2026-11-02) — audit kondisi aktual + rekonsiliasi + validasi + paket bukti. Bukan Phase 6, bukan feature development; tanpa commit/push/merge ke mana pun.
+
+Work Log:
+- BASELINE: git ls-remote canonical main = d45e73ec86313b9671050f032155a6249dd4ed38 (tidak berubah sejak
+  SYNC-2026-11-01). Fresh clone read-only di /tmp/epicrider-canonical-d45e73e (TIDAK ada fetch/push ke repo
+  mana pun). Workspace HEAD sandbox = 2feb9f8 (checkpoint sandbox; bukan namespace canonical — paritas
+  diverifikasi per-konten, bukan per-commit).
+- PARITY: 17 dokumen kontrol inti diverifikasi cmp byte-identik vs canonical d45e73e (ADR_REGISTER,
+  ROADMAP, PHASE_STATUS, HANDOFF, MASTER_CONTROL, LICENSE_MATRIX, SECURITY, ARCHITECTURE, TESTING,
+  AGENTS, PHASE_5_CLOSURE_REPORT, adr/ADR-022..027). 13 dokumen lain = anotasi ADR-027 workspace-ahead
+  (2026-11-01, menunggu rekonsiliasi owner ke GitHub — dibaca ulang dan dikonfirmasi konsisten).
+  Perbedaan struktural yang disengaja (sandbox Live Preview host): src showcase + i18n + db.ts +
+  vitest.config + prisma/schema.prisma scaffold (TANPA model domain — bebas tier/quota), tanpa
+  prisma/migrations (migration = milik canonical), tanpa src/lib/auth|licensing|shop (implementasi penuh
+  = canonical). Artefak publik/audit z.ai = delivery evidence (legitim, workspace-only).
+- SCAN menyeluruh (rg tree-wide, konteks dianalisis — bukan sekadar hitung): totalRider 18 kemunculan =
+  SEMUA negative-guard/historical (AGENTS, PHASE_STATUS, ADR_REGISTER, HANDOFF, ADR-023, PHASE_5_*,
+  OBSOLETE register, OUT_OF_SCOPE_FINDINGS, worklog) — 0 aktif; TQM = 0. Taxonomy: hiRider/taskRider/
+  siteRider tidak pernah license tier (OBSOLETE register:33 melarang; LICENSE_MATRIX §3 "portal/
+  capability"; AGENTS:10; HANDOFF:20); src/prisma/db sandbox bersih dari konsep tier/quota. Phase:
+  Phase 4 DONE/CLOSED, Phase 5 DONE/CLOSED, Phase 6 NOT STARTED (ROADMAP:57, HANDOFF:31, README banner).
+  ADR register: ADR-027 ACCEPTED (owner directive 2026-11-01); ADR-023 PROPOSED + superseded HANYA
+  portion quota; next free = ADR-028; tidak ada collision.
+- APPLY (rekonsiliasi — anotasi aditif bertanggal 2026-11-02, pola sama dengan SYNC-2026-11-01, tidak
+  ada yang dihapus): 8 pernyataan kuota-5 lama yang TIDAK berlabel di 6 dokumen diberi catatan historis/
+  superseded — PHASE_5_TRACEABILITY.md:22; PHASE_5_REPORT.md:38+40 (termasuk klaim "satu-satunya nilai
+  owner: miniRider 5 kru/workspace" yang bertentangan langsung dengan ADR-027); TESTING.md:50 (plus
+  catatan test fee15bb di canonical menghapus regresi kuota-5); PROCESS_MAP.md:87; PERSONAS_AND_JOURNEYS.
+  md:37+39; CONTROL_REFERENCE_CROSSWALK.md:43. Klasifikasi TANPA perubahan: THREAT_MODEL:280/365 (false
+  positive — "kru" = aktor, bukan angka kuota); PHASE_0_OPEN_DECISIONS.md:11 (artefak Phase 0 historis —
+  pertanyaan OD-05, register hidup OPEN_DECISIONS.md sudah beranotasi); PHASE_2_CONSISTENCY_REMEDIATION_
+  REPORT.md:17 (laporan fase historis); upload/* + audit/superseded/* + public/* (input owner & bukti
+  historis — tidak disentuh).
+- VERIFY scan ulang: 0 pernyataan kuota-5 aktif tanpa label tersisa di dokumen aktif; totalRider tetap
+  0 aktif; lint/typecheck/test/prisma validate dijalankan (hasil aktual di laporan rekonsiliasi).
+  GIT_WRITE = NONE: tanpa commit/push/merge; perubahan = working tree workspace sandbox saja.
+
+- R1 CORRECTIONS (2026-11-15, Task PARITY-RECONCILIATION-R1-2026-11-15 — koreksi DOKUMEN NYATA atas hasil
+  rekonsiliasi 2026-11-02 yang ditolak owner karena hanya anotasi aditif tanpa memperbaiki pernyataan aktif):
+  tujuan = menghilangkan kontradiksi aktif terhadap ADR-027 di 18 dokumen transfer. Pola koreksi: pernyataan
+  AKTIF ditulis ulang ke konsep ADR-027 (base non-owner member quota = TBD per tier, dapat diputuskan
+  independen per tier; owner TIDAK dihitung — DIPUTUSKAN, bukan pertanyaan terbuka; TierQuota generik
+  dipertahankan; seat_package aditif; enforcement kuota = desain/PROPOSED, tidak diklaim implemented;
+  tidak ada angka dikarang; TBD ≠ unlimited); bukti historis dipertahankan dengan label historis eksplisit.
+  Marker perubahan: **[R1 2026-11-15...]** inline.
+- APPLY R1 (15 file berubah, sebelum vs sesudah SHA-256 tercatat di SNAPSHOT_REPORT R1):
+  (1) REQUIREMENTS.md REQ-009 — pernyataan "Batas maksimal 5 kru per workspace; owner dihitung? = keputusan
+  bisnis" ditulis ulang ke generic configured quota + owner TIDAK dihitung (DIPUTUSKAN) + kriteria penerimaan
+  generik (tolak server-side di atas kuota terkonfigurasi saat angka + mekanisme sudah ada); (2) ENTITLEMENT_
+  MODEL.md — §5 miniRider "max 5 kru" → generic configured quota; §6 heading OD-05 OPEN → owner exclusion
+  DECIDED + sisa OPEN; baseline "maximum of 5 kru" → generic configured quota (TBD per tier); enforcement
+  point "6th kru ditolak" → contoh angka dihapus dari aturan aktif + DENY_QUOTA_EXCEEDED dinyatakan bukan
+  bukti enforcement runtime; baris "kuota tier di atas miniRider" → tidak ada angka untuk SEMUA tier termasuk
+  miniRider; tabel open questions OD-05 → owner DECIDED, sisa OPEN; (3) DATA_MODEL_CONCEPT.md — §3 Seat
+  invariant → configured quota + owner DECIDED; §3.5 TierQuota invariant → TBD per tier (angka 5 = historis
+  saja); §3.5 rekonsiliasi 5-E → owner exclusion DIPUTUSKAN, sisa OD-05 OPEN; §6.1 quota guard → idem;
+  §8 heading + formula → "TierQuota (miniRider/maxRider/ISOrider → base non-owner member quota TBD per tier,
+  REQ-009 + ADR-027)" menggantikan "miniRider → base crew limit 5"; bullet "OPEN — OD-05 owner counted?" →
+  bullet DECIDED (owner exclusion) + bullet OPEN sisa semantik; tabel §11 baris 2 → owner DECIDED + sisa OPEN;
+  (4) PERSONAS_AND_JOURNEYS.md — P-01 tujuan "≤5 kru" → batas kuota terkonfigurasi; P-01 pain point 5
+  "OD-05 belum memutuskan owner dihitung" → owner DIPUTUSKAN + angka TBD; P-01 REQ-009 → generic; J-01
+  langkah 7 "≤5" → dalam batas kuota terkonfigurasi; J-01 risiko "kru ke-6 ditolak" → penambahan di atas
+  kuota terkonfigurasi (aturan generik); J-02 langkah 2 "OD-05 menentukan owner dihitung" → owner DIPUTUSKAN;
+  (5) PHASE_2_TRACEABILITY.md — REQ-009 acceptance "6th invite on full 5-kru" → kriteria generik + contoh
+  6th = historis saja; tabel "not yet fully specified" REQ-009 → sisa semantik (owner exclusion sudah
+  DECIDED); (6) PHASE_5_REPORT.md — §B TierQuota → seed historis 5-B diframing ulang + makna NULL diperjelas
+  (NULL = kondisi data historis; bukan bukti keputusan masih OPEN; penerapan teknis tidak diklaim); §J OD-05
+  + §5C-J OD-05 → konteks historis ditambahkan (fakta implementasi 5-B/5-C ≠ status keputusan); (7) PRODUCT_
+  SCOPE.md — §2.1 miniRider "batas awal maks 5 kru" → generic configured quota; §5 matriks "Maks kru 5
+  (OD-05: owner dihitung?)" → "Kuota kru per workspace (base, non-owner): TBD per tier — ADR-027" untuk
+  keempat kolom; A-04 → asumsi historis/ilustratif eksplisit, segmentasi terpisah dari aturan kuota, risiko
+  tidak lagi menyebut owner-counting OPEN; (8) PROCESS_MAP.md — PROC-05 baris matriks + detail → generic
+  configured quota; tabel penutup "Kuota kru mini (ikut dihitung atau tidak) → Menunggu OD-05" → angka TBD
+  per ADR-027 + owner DIPUTUSKAN + sisa OD-05; (9) AUTHORIZATION_MODEL.md — DENY_QUOTA_EXCEEDED → owner NOT
+  counted (DECIDED) + angka TBD; tabel open questions OD-05 → owner exclusion DECIDED — sisa OPEN; (10)
+  PHASE_5_TRACEABILITY.md — invarian "kuota miniRider 5 kru" → "tepat satu baris TierQuota generik (TBD per
+  tier)"; (11) TESTING.md — deskripsi suite 5-B diberi bingkai historis eksplisit (OD-05 saat itu tidak
+  dijawab — kini DECIDED); (12) TRACEABILITY_MATRIX.md REQ-009 → kriteria generik; (13) USE_CASES.md UC-1005
+  preconditions → generic configured quota; (14) OPEN_DECISIONS.md — judul OD-05 diperjelas (angka 5 =
+  historis; owner-counting sudah diputuskan; sisa bukan pertanyaan owner-counting).
+- TIDAK DIUBAH R1 (3 file — bukti konsistensi, bukan perubahan kosmetik): CONTROL_REFERENCE_CROSSWALK.md
+  (baris crosswalk = pemetaan historis MC §2 lama → REQ-009, sudah berlabel catatan 2026-11-02 historis);
+  OBSOLETE_AND_SUPERSEDED_REGISTER.md (baris 31 = register supersesi otoritatif "miniRider = 5 kru" — konten
+  file ITU ADALAH labelnya); README.md (0 pernyataan kuota/owner/ADR-027 pada scan).
+- VERIFY R1: scan ulang seluruh pola (5 kru/5 crew/≤5/maximum of 5/6th/ke-6/owner dihitung/owner counted/
+  owner_counted_in_quota/base crew limit) pada 18 dokumen → 0 pernyataan CURRENT POLICY dengan kuota base = 5;
+  0 CURRENT POLICY owner-counting OPEN; 0 contoh kru ke-6 sebagai aturan aktif; sisa temuan = HISTORICAL/
+  SUPERSEDED berlabel (worklog = log historis bertanggal, PROCESS_MAP:67 = label diagram tanpa angka,
+  PHASE_5_REPORT:63 = laporan test historis 5-B) + PROPOSED/NOT IMPLEMENTED (enforcement point). Fakta
+  historis 5-B/5-C tidak diubah isinya — hanya diberi konteks interpretasi. Dokumen pengendali (MASTER_
+  CONTROL, ROADMAP, PHASE_STATUS, ADR_REGISTER, LICENSE_MATRIX, ADR-027) tidak disentuh. Source/schema/
+  migration/seed/test/config tidak berubah (git status diverifikasi). Artefak: EPICRIDER_FINAL_TRANSFER_
+  SNAPSHOT_20261115_R1.zip (21 file; hash aktual di SNAPSHOT_REPORT.md R1 + sidecar .sha256 publik — ZIP
+  memuat entri worklog ini apa adanya, hash ZIP dihitung setelah entri). GIT_WRITE = NONE.
+
+- R1 REDELIVERY (2026-11-15, Task PARITY-RECONCILIATION-R1-2026-11-15 — lanjutan setelah penolakan owner atas
+  hasil pengiriman pertama): PENYEBAB PENOLAKAN yang ditangani — owner menerima `EPICRIDER_FINAL_TRANSFER_
+  SNAPSHOT_20261102(1).zip` (byte = ZIP lama 20261102, SHA-256 7507658d...) yang SNAPSHOT_REPORT-nya masih
+  mengklaim "18/18 IDENTICAL_TO_REVIEWED", karena halaman Live Preview + alur unduhan masih menunjuk artefak
+  dan evidence dir LAMA (page.tsx ZIP_NAME/EV_DIR belum dialihkan ke R1), sehingga koreksi R1 yang sudah ada
+  di source docs tidak pernah sampai ke owner dalam bingkai yang benar. TINDAKAN REDELIVERY ini: (1) audit
+  ulang penuh 18 dokumen dari nol (bukan dari laporan lama) — pola 5 kru/5 crew/≤5/maximum of 5/6th/ke-6/
+  owner dihitung/owner counted/owner_counted_in_quota/base crew limit/totalRider/TBD≠unlimited discan ulang;
+  hasil: 0 pernyataan CURRENT POLICY kuota-5; 0 owner-counting OPEN; 0 kru ke-6 sebagai aturan aktif; semua
+  temuan tersisa = HISTORICAL/SUPERSEDED berlabel atau PROPOSED/NOT IMPLEMENTED; (2) satu perbaikan tambahan
+  hasil audit: PERSONAS_AND_JOURNEYS.md langkah journey "+10 seat" diberi label ilustratif eksplisit (contoh
+  katalog REQ-018, bukan ukuran paket final); (3) worklog entry ini ditambahkan (append-only); (4) evidence
+  R1 diregenerasi penuh (audit_status.json after-hashes, diffs_r1, scans_r1); (5) SNAPSHOT_REPORT.md R1
+  ditulis ulang menyatakan status KOREKSI (bukan "identical") + sebab penolakan + bukti before/after;
+  (6) ZIP dibangun ulang dari byte workspace aktual (21 entri, hash baru dipublikasi di sidecar .sha256 +
+  API route + banner); (7) page.tsx dialihkan penuh ke ZIP_NAME R1 + evidence dir R1 (kartu "Drift vs
+  reviewed" dan "Zero-Drift" diganti framing koreksi R1 yang jujur); API route tetap fail-closed (exists/
+  size/ZIP-magic/SHA-256) dengan konstanta baru. Dokumen kontrol tidak disentuh; source/schema/migration/
+  seed/test/config tidak berubah. GIT_WRITE = NONE.
+
+- R1B SEAT-PACKAGE-QUANTITY CLARIFICATION (2026-11-15, Task PARITY-R1B-SEAT-PACKAGE-CLARIFICATION-2026-11-15 — lanjutan
+  R1; audit independen menemukan angka "+10 seat/workspace" masih muncul di beberapa dokumen tanpa label eksplisit
+  bahwa angka itu hanya contoh ilustratif katalog REQ-018, bukan ukuran paket final yang diputuskan owner):
+  (1) REQUIREMENTS.md — REQ-018 baris requirement: "+10 seat/workspace" dipetakan ke seat_package sebagai jenis
+  extension yang VALID dengan label "CONTOH ILUSTRATIF" eksplisit (bukan ukuran paket final; actual package quantity
+  = TBD; TBD ≠ unlimited); acceptance diperluas: quantity/capacity semantics + stacking = OD-05 OPEN, komersial =
+  OD-06 OPEN, renewal/expiry/grace = OD-108 bila relevan; dependency column +OD-05 +OD-108; ID/priority (Could)/
+  status (PROPOSED) dipertahankan; requirement lain tidak disentuh; (2) PHASE_2_TRACEABILITY.md — row REQ-018
+  acceptance "+10-seat extension activation raises quota atomically" diganti kriteria generik (aktivasi seat_package
+  yang disetujui menambahkan purchased quantity yang telah ditentukan secara atomic; +10 = contoh ilustratif;
+  quantity TBD; stacking/capacity = OD-05 OPEN; komersial = OD-06 OPEN; renewal/expiry = OD-108 OPEN; runtime tidak
+  diklaim ada) — status tetap PROPOSED, NOT TESTED sesuai bukti; (3) PHASE_5_TRACEABILITY.md — row REQ-018: fakta
+  historis 5-B dipertahankan penuh (ExtensionType closed list; ExtensionDefinition katalog non-aktif;
+  ExtensionInstance tenant-scoped dengan field quantity generik), "(unit +10 = data, bukan schema)" diperjelas =
+  nilai quantity tersimpan sebagai DATA pada instance yang disetujui, BUKAN berarti paket 10 seat telah ditetapkan;
+  seed 5-B TIDAK memuat quantity paket; ukuran paket final = TBD; (4) TRACEABILITY_MATRIX.md — row REQ-018
+  acceptance "Extension seat +10 di-apply → kuota naik" diganti kriteria generik (purchased quantity yang
+  benar-benar disetujui; +10 hanya contoh ilustratif; quantity TBD; status acceptance tidak dinaikkan tanpa bukti);
+  (5) PRODUCT_SCOPE.md — §2.1 row Extensions: "paket +10 seat kru per workspace" → seat_package sebagai calon
+  extension dengan contoh +10 berlabel CONTOH ILUSTRATIF (bukan package size final; actual quantity & komersial
+  terbuka — OD-05/OD-06/OD-108); bagian A-04 hasil koreksi R1 dipertahankan apa adanya; (6) PERSONAS_AND_JOURNEYS.md
+  — P-02 kebutuhan fitur (REQ-009) + J-02 langkah 5: semua referensi "+10 seat" berlabel ilustratif; atribusi OD
+  dikoreksi (sebelumnya semua dilempar ke OD-06): package quantity & seat/capacity semantics + stacking = OD-05;
+  harga/pajak/payment/refund/gateway = OD-06; renewal/expiry/grace = OD-108; alur persona lain tidak disentuh;
+  (7) DATA_MODEL_CONCEPT.md — §6.7 ExtensionInstance.quantity: field generik DIPERTAHANKAN, contoh "+10 seats"
+  berlabel ILLUSTRATIVE (bukan defined package size; actual quantity TBD); §8 formula kapasitas: kontribusi
+  ExtensionInstance diperjelas (quantity = nilai DATA per instance paket yang disetujui; "+10" = contoh ilustratif
+  REQ-018; no final package size; TBD per OD-05); seluruh koreksi R1 (owner exclusion DECIDED; numeric base quota
+  TBD per tier) dipertahankan apa adanya; (8) ENTITLEMENT_MODEL.md — §6 bullet "Additional seat packages as
+  Extension": "+10 seat/workspace" berlabel ILLUSTRATIVE (bukan final package quantity); penambahan kapasitas saat
+  aktivasi seat_package disetujui diframing sebagai target-state model PROPOSED; kalimat enforcement PROPOSED pada
+  bullet sebelumnya dipertahankan; runtime quota enforcement TIDAK implemented (engine 5-C tidak mengonsumsi
+  TierQuota; DENY_QUOTA_EXCEEDED = declared reason code saja) — tidak ada klaim enforcement runtime;
+  (9) worklog.md — entri ini ditambahkan (append-only); catatan historis lama tidak ditulis ulang.
+  PEMBAGIAN KEPUTUSAN dipertahankan: OD-05 = base quota + seat-counting + quantity/capacity semantics + stacking +
+  enforcement terkait quota; OD-06 = harga/pajak/payment gateway/refund/komersial; OD-108 = renewal/expiry/grace +
+  lifecycle — TIDAK ada OD baru dibuat, TIDAK ada ketidakpastian digabung ke satu OD. Verify R1B: scan global 18
+  dokumen untuk +10 seat / +10-seat / 10 seat / seat package / seat_package / package quantity / package size /
+  ukuran paket / stacking / OD-05 / OD-06 / OD-108 — setiap angka +10 yang tersisa diklasifikasikan HISTORICAL /
+  ILLUSTRATIVE / PROPOSED (bukan final package decision); tidak ada dokumen aktif yang menyatakan paket seat final
+  berisi 10 seat, harga paket sudah ditentukan, stacking sudah ditentukan, renewal/expiry sudah ditentukan tanpa
+  keputusan, atau runtime enforcement sudah implemented. Before/after SHA-256 kedelapan file dicatat di evidence
+  R1B (before = byte dalam EPICRIDER_FINAL_TRANSFER_SNAPSHOT_20261115_R1.zip). Fakta historis 5-B dan keputusan
+  ADR-027 tidak diubah. Dokumen pengendali (MASTER_CONTROL, ROADMAP, PHASE_STATUS, ADR_REGISTER, LICENSE_MATRIX,
+  ADR-027) tidak disentuh. Source/schema/migration/seed/test/config tidak berubah. GIT_WRITE = NONE.
+
+## 2026-11-15 — R1C FINAL RECONCILIATION (Task ID: PARITY-R1C-FINAL-RECONCILIATION-2026-11-15)
+
+- INPUT VERIFICATION (sebelum mengedit): EPICRIDER_FINAL_TRANSFER_SNAPSHOT_20261115_R1B.zip dihitung ulang SHA-256 =
+  c32c48ba698cba00e048f0da9f137fb1384b6ffc968385e6198bf31306177ba3 (cocok dengan nilai yang diharapkan; sidecar .sha256
+  identik); ZIP terbuka; 21 entry flat (18 dokumen + SNAPSHOT_REPORT.md + MANIFEST.txt + SHA256SUMS.txt); SHA256SUMS.txt
+  berisi tepat 20 record tanpa self-hash; 20/20 checksum internal cocok; 18/18 dokumen workspace identik byte-for-byte
+  dengan isi ZIP R1B — workspace diverifikasi berada pada kondisi R1B sebelum koreksi R1C dilakukan.
+- OD-05 (OPEN_DECISIONS.md): judul & uraian terverifikasi TIDAK lagi menanyakan owner inclusion sebagai pertanyaan
+  terbuka (koreksi R1 tetap utuh; owner TIDAK dihitung — DIPUTUSKAN via ADR-027; numeric base quota per tier TBD;
+  base quota dapat ditetapkan independen per tier; sisa seat-counting/enforcement semantics tetap OPEN; tidak ada
+  aturan aktif miniRider = 5 kru; status tetap SEBAGIAN DIPUTUSKAN — sisa OPEN; history tidak dihapus; ADR-027 tidak
+  disentuh; status OD lain tidak diubah). Ditambahkan bracket [R1C 2026-11-15] yang mencatat pemetaan scope canonical.
+- KOREKSI R1C — Open Decision mapping (13 titik pada 8 dokumen; semua append/label, tanpa menghapus history):
+  (1) OPEN_DECISIONS.md — OD-05: bracket R1C pemetaan scope (member quota = OD-05; komersial = OD-06; expiry/grace/
+  renewal = OD-108; multi-workspace = OD-123; storage = OD-137); (2) ENTITLEMENT_MODEL.md §6 seat concept — split
+  dependensi dibuat eksplisit (counting input = OD-05; billing decision = OD-06); (3) ENTITLEMENT_MODEL.md §6 numeric
+  quotas — "OD-05/OD-06 remaining OPEN" dikoreksi: numeric base member quota per tier = OD-05 SAJA (OD-06 hanya
+  pricing/billing/payment/tax/refund/gateway); (4) ENTITLEMENT_MODEL.md §6 multi-workspace — "final numbers = OD-06"
+  dikoreksi: angka batas/eligibility workspace = OD-123; OD-06 hanya pricing/billing/payment extension workspace;
+  (5) ENTITLEMENT_MODEL.md §11 tabel — row multi-workspace diperjelas (limit numbers = OD-123; pricing = OD-06);
+  (6) DATA_MODEL_CONCEPT.md §6.x TierQuota — "commercial quotas = OD-06" diganti pemetaan per kategori (member/crew
+  quota = OD-05; media/storage quota = OD-137; multi-workspace limit = OD-123; komersial = OD-06 — OD-06 tidak
+  menetapkan angka kuota); TierQuota tetap konfigurasi generik; (7) DATA_MODEL_CONCEPT.md §3.12a ShopOrderIntentLine —
+  referensi gabungan "OD-05/OD-06" dipisah per scope (quantity/capacity semantics = OD-05; pricing = OD-06); makna
+  schema tidak diubah; (8) USE_CASES.md UC-1001 F2 — batas jumlah workspace per lisensi dikoreksi dari OD-06 → OD-123
+  (pricing extension workspace tetap OD-06); ID use case & status acceptance tidak diubah; (9) PERSONAS_AND_JOURNEYS.md
+  tabel OD-123 — opsi (c) & rekomendasi dikoreksi (angka final tunggu OD-123; harga/pembayaran tunggu OD-06);
+  (10) PERSONAS_AND_JOURNEYS.md catatan historis #4 — bracket R1C menegaskan pemetaan scope untuk referensi gabungan
+  "OD-05/OD-06/OD-123"; catatan historis dipertahankan; (11) AUTHORIZATION_MODEL.md §4.5 license.renew.initiate —
+  pemetaan diperjelas: renewal/lifecycle = OD-108; OD-06 hanya aspek pembayaran; (12) TRACEABILITY_MATRIX.md ringkasan
+  Could — REQ-018 PARTIAL kini menyebut OD-05 quantity/stacking + OD-06 komersial (sebelumnya hanya OD-06);
+  (13) PRODUCT_SCOPE.md §2.1 Extensions — referensi "OD-05/OD-06/OD-108" diberi label per scope. File lain tidak
+  disentuh tanpa alasan.
+- AUDIT KONTROL PENUH 18 DOKUMEN: taksonomi lisensi = persis 3 tier (miniRider/maxRider/ISOrider); totalRider hanya
+  di OBSOLETE_AND_SUPERSEDED_REGISTER.md (negative guard) + worklog (historis); hiRider/taskRider/siteRider tidak
+  pernah jadi license tier; ADR-027 compliance dipertahankan di semua dokumen (owner exclusion DECIDED; base quota
+  TBD per tier; TBD ≠ unlimited; TierQuota dipertahankan; seat_package aditif; package quantity belum ditetapkan;
+  stacking belum ditetapkan; tanpa unlimited assumption; runtime enforcement tidak diklaim implemented — engine 5-C
+  tidak mengonsumsi TierQuota); koreksi R1 (owner exclusion + numeric quota TBD) dan R1B (ilustratif +10) terverifikasi
+  tetap utuh byte-for-byte pada 10 dokumen yang tidak disentuh R1C; +10 seat/workspace = contoh ilustratif REQ-018 di
+  seluruh dokumen aktif (bukan package size final / seed quantity / keputusan komersial / aturan enforcement); Phase 4
+  DONE (2026-10-30), Phase 5 DONE (2026-10-31), Phase 6 NOT STARTED — tidak ada klaim implementasi Phase 6.
+- VERIFY R1C — global scan ulang seluruh pola (miniRider/maxRider/ISOrider/totalRider/hiRider/taskRider/siteRider;
+  5 kru/5 crew/five per workspace/≤5/maximum of 5/6th invite/kru ke-6/owner counted/owner_counted_in_quota/
+  ownerCountedInQuota/owner dihitung atau tidak; +10 seat/+10-seat/10 seat/package quantity/package size/ukuran paket/
+  stacking/seat_package; OD-05/OD-06/OD-108/OD-123/OD-137) pada 18 dokumen — setiap temuan diklasifikasikan
+  CURRENT POLICY / HISTORICAL-SUPERSEDED / ILLUSTRATIVE / PROPOSED-NOT IMPLEMENTED / CONTRADICTION; hasil: 0
+  CONTRADICTION tersisa setelah 13 koreksi di atas; tidak ada CURRENT POLICY yang menjadikan +10 sebagai package
+  quantity final; tidak ada aturan aktif miniRider = 5; tidak ada referensi OD yang mencampur scope (numeric quota =
+  OD-05; komersial = OD-06; lifecycle = OD-108; multi-workspace = OD-123; storage = OD-137); bukti scan disimpan di
+  public/EPICRIDER_R1C_20261115_review_evidence/scans_r1c/. Temuan out-of-scope: tidak ada dokumen di luar daftar 18
+  yang perlu masuk paket transfer; dokumen pengendali (MASTER_CONTROL, ROADMAP, PHASE_STATUS, ADR_REGISTER,
+  LICENSE_MATRIX, ADR-027) tidak disentuh. Before/after SHA-256 per file (R1B vs R1C) dihitung dari byte aktual —
+  daftar CHANGED/UNCHANGED dihitung dari hash, bukan dikarang. GIT_WRITE = NONE; GITHUB_WRITE = NONE.
+
+## 2026-11-15 — R1D FINAL OD SCOPE CORRECTION (Task ID: PARITY-R1D-FINAL-OD-SCOPE-CORRECTION-2026-11-15)
+
+- INPUT VERIFICATION (sebelum mengedit): EPICRIDER_FINAL_TRANSFER_SNAPSHOT_20261115_R1C.zip dihitung ulang SHA-256 =
+  832c0617e8edd4d8b461d610d2dea34762243ac699308b79fcafa55ca3b1d191 (cocok dengan nilai yang diharapkan; sidecar .sha256
+  identik); ZIP terbuka; tepat 21 entry flat (18 dokumen + SNAPSHOT_REPORT.md + MANIFEST.txt + SHA256SUMS.txt);
+  SHA256SUMS.txt berisi tepat 20 record tanpa self-hash; 20/20 checksum internal cocok; 18/18 dokumen workspace
+  identik byte-for-byte dengan isi ZIP R1C — workspace diverifikasi berada pada kondisi R1C sebelum koreksi R1D.
+  Koreksi R1/R1B/R1C tidak diulang dan tidak diganti dengan versi sebelum R1C.
+- CANONICAL DECISION SCOPE (ditegakkan di seluruh 18 dokumen): OD-05 = numeric base member quota, member-seat
+  counting, seat capacity/quantity semantics, stacking, quota enforcement semantics; OD-06 = harga, billing, pajak,
+  refund, payment gateway, nilai komersial; OD-108 = expiry, grace period, renewal, perilaku data saat downgrade;
+  OD-123 = batas jumlah workspace/multi-workspace untuk non-kru; OD-137 = kuota storage media per tier. Tester/demo
+  access scope (REQ-100) = OWNER DECISION REQUIRED — tidak ada dedicated OD ID terdaftar (tidak dibuat OD baru);
+  availability rules concrete parameters = OWNER DECISION REQUIRED — tidak ada dedicated OD ID terdaftar. ADR-027
+  tidak diubah; status OD tidak diubah (OD-06 tetap OPEN; OD-05 tetap SEBAGIAN DIPUTUSKAN — sisa OPEN).
+- KOREKSI R1D — 17 titik koreksi kontradiksi pada 7 file (semua append/label R1D, tanpa menghapus history;
+  ID/priority/phase/acceptance status tidak diubah pada requirement yang tersentuh):
+  (1) ENTITLEMENT_MODEL.md §1 — "durations" dikeluarkan dari kelompok OD-06: pricing/tax/payment gateway/refund =
+  OD-06; lifecycle durations (renewal/expiry/grace) = OD-108; (2) ENTITLEMENT_MODEL.md §8 Availability —
+  "concrete availability rules = OD-06 sub-scope" dikoreksi: availability eligibility BUKAN sub-scope OD-06
+  (OD-06 hanya aspek komersial pricing/payment); tidak ada dedicated OD ID — unresolved owner decision
+  (unregistered decision candidate); (3) ENTITLEMENT_MODEL.md §12 row stacking — "candidate — no existing OD ID"
+  dikoreksi ke OD-05 (konsisten §6 dan scope canonical; menghilangkan kontradiksi internal); (4) ENTITLEMENT_MODEL.md
+  §12 row availability — "(sub-scope of OD-06)" dihapus, diganti OWNER DECISION REQUIRED — no dedicated OD ID
+  registered; (5) DATA_MODEL_CONCEPT.md §11 row 35 — "Tester/demo access scope (REQ-100) → OD-06 (scope)" dikoreksi:
+  OWNER DECISION REQUIRED — no dedicated OD ID registered; OD-06 tidak mengatur eligibility/akses tester;
+  pemisahan data tester/demo dari data pelanggan nyata dipertahankan; TierQuota dan schema tidak diubah;
+  (6) REQUIREMENTS.md REQ-100 — dependensi "OD-06, REQ-015" dikoreksi: REQ-015 (konteks public landing) +
+  OWNER DECISION REQUIRED — tidak ada dedicated OD ID terdaftar; OD-06 hanya harga/pembayaran komersial;
+  (7) TRACEABILITY_MATRIX.md baris REQ-100 (trace) — "terkait OD-06/REQ-015" dikoreksi: keputusan owner +
+  REQ-015 konteks landing + tidak ada dedicated OD ID; OD-06 tidak mengatur akses/eligibility tester; status
+  NOT TRACED dan Could DIPERTAHANKAN (tidak dinaikkan); (8) TRACEABILITY_MATRIX.md gap list REQ-100 — koreksi sama;
+  (9) OPEN_DECISIONS.md OD-06 — REQ-100 dihapus dari cakupan keputusan OD-06; REQ-056 (pricing/commercial values)
+  dan REQ-101 (aspek harga/komersial penawaran jasa) dipertahankan; REQ-098 hanya untuk aspek harga/pembayaran
+  komersial renewal (lifecycle durations = OD-108); ID/status tidak diubah; (10) OPEN_DECISIONS.md OD-05 —
+  bracket R1D append-only: verifikasi status tetap partially decided; owner exclusion DECIDED via ADR-027;
+  base member quota TBD per tier; sisa technical quota semantics OPEN; catatan historis dan penanda R1/R1B/R1C
+  dipertahankan; (11) PHASE_2_TRACEABILITY.md Section A REQ-100 — "(OD-06 scope)" / "ENT §8/OD-06 scope" /
+  "scope pending owner decision, OD-06" dikoreksi: owner decision tanpa dedicated OD ID; ENT §8 sebagai anchor
+  konseptual; (12) PHASE_2_TRACEABILITY.md coverage summary — "scope pending OD-06" dikoreksi; (13)
+  PHASE_2_TRACEABILITY.md Section C.1 row REQ-100 — "OD-06 OPEN (scope sub-scope)" dikoreksi: OWNER DECISION
+  REQUIRED — no dedicated OD ID registered (REQ-015 = konteks public-landing); (14) PHASE_2_TRACEABILITY.md
+  Section C.2 — "deferred pending OD-07 / OD-06" dikoreksi: OD-07 (REQ-038) / keputusan owner atas scope tester
+  (REQ-100 — tanpa dedicated OD ID); (15) PHASE_2_TRACEABILITY.md integrity note — "OD-governed scope" diperjelas
+  untuk REQ-100 (owner-decision scope); (16) PRODUCT_SCOPE.md X-1 — REQ-100 dihapus dari baris blocker komersial
+  OD-06; (17) PRODUCT_SCOPE.md dependency row "Payment gateway + kebijakan harga/pajak/refund" — permukaan
+  "akses tester" dan REQ-100 dihapus dari baris OD-06. PHASE_2_TRACEABILITY.md dan PRODUCT_SCOPE.md dikoreksi
+  sebagai hasil global scan (bukan 5 dokumen target mandats), sesuai aturan "setiap contradiction wajib dikoreksi".
+- GLOBAL SCAN 18 DOKUMEN: seluruh pola (OD-05/OD-06/OD-108/OD-123/OD-137; REQ-100; tester/demo access; availability
+  rules; pricing/payment; lifecycle duration; workspace count; member quota; storage quota; taksonomi lisensi;
+  +10 seat/package quantity/stacking; ADR-027; Phase state) dipindai pada 18 dokumen transfer, setiap temuan
+  diklasifikasikan CURRENT POLICY / HISTORICAL-SUPERSEDED / ILLUSTRATIVE / PROPOSED-NOT IMPLEMENTED /
+  OWNER DECISION REQUIRED — NO REGISTERED OD / CONTRADICTION. Hasil setelah koreksi: 0 CONTRADICTION tersisa
+  di dalam scope; tidak dinyatakan "unresolved mapping issues = 0" — dua area keputusan tetap berlabel eksplisit
+  OWNER DECISION REQUIRED — no dedicated OD ID registered (tester/demo scope REQ-100; availability rules concrete
+  parameters); tidak ada OD baru dibuat; tidak ada OD ditutup/direnumber. ~70 referensi OD-06 terverifikasi
+  semuanya ber-scoping komersial (pricing/billing/tax/refund/gateway) — tidak ada lagi yang memetakan eligibility/
+  akses tester, availability, kuota, workspace count, atau lifecycle duration ke OD-06. OD-123/OD-137/OD-108/OD-05
+  terverifikasi konsisten pada seluruh dokumen. Bukti scan: public/EPICRIDER_R1D_20261115_review_evidence/
+  R1D_GLOBAL_SCAN.md. Temuan out-of-scope (dilaporkan, TIDAK diedit, TIDAK masuk ZIP): LEGAL_REGULATORY_REGISTER.md
+  LR-006 (agregasi domain-level, bukan mapping scope tester→OD-06); PHASE_2_REPORT.md line 165 ("REQ-100 → OD-06",
+  laporan historis Phase 2, superseded oleh koreksi PHASE_2_TRACEABILITY.md R1D).
+- PRESERVASI: taksonomi lisensi = persis 3 tier (miniRider/maxRider/ISOrider); hiRider/taskRider/siteRider bukan
+  tier; totalRider retired (register saja); ADR-027 compliance utuh (owner TIDAK dihitung non-owner member-seat;
+  base quota TBD per tier independen; TBD ≠ unlimited; TierQuota dipertahankan; seat_package aditif; package
+  quantity/stacking belum diputuskan; harga/payment = OD-06; lifecycle = OD-108; runtime quota enforcement tidak
+  diklaim implemented); R1B "+10 seat/workspace" tetap contoh ilustratif REQ-018; Phase 4 DONE/CLOSED, Phase 5
+  DONE/CLOSED, Phase 6 NOT STARTED; tidak ada klaim implementasi tanpa bukti. Dokumen pengendali (MASTER_CONTROL,
+  ROADMAP, PHASE_STATUS, ADR_REGISTER, LICENSE_MATRIX, ADR-027) tidak disentuh; source/schema/migration/seed/
+  tests/dependencies/konfigurasi produk tidak berubah.
+- CHANGE CONTROL: CHANGED/UNCHANGED dihitung dari SHA-256 aktual per file (R1C vs R1D), bukan dikarang; 7 file
+  CHANGED (DATA_MODEL_CONCEPT, ENTITLEMENT_MODEL, OPEN_DECISIONS, PHASE_2_TRACEABILITY, PRODUCT_SCOPE, REQUIREMENTS,
+  TRACEABILITY_MATRIX), 11 file UNCHANGED (AUTHORIZATION_MODEL, CONTROL_REFERENCE_CROSSWALK,
+  OBSOLETE_AND_SUPERSEDED_REGISTER, PERSONAS_AND_JOURNEYS, PHASE_5_REPORT, PHASE_5_TRACEABILITY, PROCESS_MAP,
+  README, TESTING, USE_CASES, worklog — worklog berubah hanya karena entri append-only ini). ZIP R1D
+  (EPICRIDER_FINAL_TRANSFER_SNAPSHOT_20261115_R1D.zip) dibangun setelah entri ini; hash final tercatat di
+  SNAPSHOT_REPORT.md dan sidecar .sha256. GIT_WRITE = NONE; GITHUB_WRITE = NONE.
+
+## 2026-11-17 — R1E FINAL PHASE-STATUS CONSISTENCY CORRECTION (Task ID: R1E-FINAL-PHASE-STATUS-CONSISTENCY-CORRECTION-2026-11-17)
+
+- INPUT VERIFICATION (sebelum mengedit): EPICRIDER_FINAL_TRANSFER_SNAPSHOT_20261115_R1D.zip dihitung ulang SHA-256 =
+  9d36098e159e96eda563c69b432882dc8379a66eff81c81b3c1c07d226e0665f (cocok dengan nilai yang diharapkan); ZIP terbuka,
+  CRC test "No errors detected"; tepat 21 entry flat (18 dokumen + SNAPSHOT_REPORT.md + MANIFEST.txt + SHA256SUMS.txt);
+  SHA256SUMS.txt berisi tepat 20 record tanpa self-hash; 20/20 checksum internal cocok (sha256sum -c: 20 OK, 0 gagal).
+  Semua koreksi R1E dilakukan terhadap salinan isi ZIP R1D (input tunggal).
+- KOREKSI R1E — PHASE_5_REPORT.md (append-only, 1 file, tanpa mengubah/menghapus/menulis ulang bukti historis 5-B/5-C):
+  ditambahkan bagian "Klarifikasi Status (append-only — R1E, 2026-11-17)" (§R1E-A..§R1E-D) yang menyatakan eksplisit
+  bahwa pernyataan status pada §M dan §5C-M — `PHASE_5C_STATUS = IMPLEMENTATION PASS — LOCAL CANDIDATE — NOT INTEGRATED`,
+  "Phase 5 keseluruhan tetap IN PROGRESS", "5-D/5-E NOT STARTED" / "5-C/D/E NOT STARTED" — adalah snapshot historis
+  pada saat laporan 5-B/5-C disusun (2026-10-30) dan telah SUPERSEDED oleh penyelesaian serta penutupan Phase 5;
+  laporan mendokumentasikan bukti subfase 5-B/5-C, bukan status keseluruhan Phase 5 saat ini. Sumber status kanonik
+  dirujuk dan diverifikasi ada + konsisten di workspace: ROADMAP.md (Phase 4 DONE closed 2026-10-30; Phase 5 DONE
+  closed 2026-10-31; Phase 6 NOT STARTED), PHASE_STATUS.md, HANDOFF.md §1, PHASE_5_CLOSURE_REPORT.md (closure
+  2026-10-31; 5-B/5-C PR #3 `165b3ba`; 5-D PR #4 `aafcbe3`; 5-E `897c7a9`; CI owner-verified `#41193444454` Success;
+  re-run 361/361). Tidak ada commit SHA/CI/tanggal/bukti baru dikarang — semua nilai dirujuk apa adanya dari sumber;
+  tidak ada status fase diubah oleh entri ini; tidak ada keputusan dibuka kembali; ADR-023/024/025/026 tetap PROPOSED;
+  ADR-027 tetap ACCEPTED. Verifikasi append-only: 336 baris asli byte-identical (diff prefix vs salinan pristine dari
+  ZIP R1D), 36 baris ditambahkan di akhir file.
+- AUDIT ULANG 18 DOKUMEN (pasca-koreksi, klasifikasi CURRENT POLICY / HISTORICAL-SUPERSEDED / ILLUSTRATIVE /
+  PROPOSED-NOT IMPLEMENTED / OWNER DECISION REQUIRED — NO REGISTERED OD / CONTRADICTION): (a) Phase state —
+  pernyataan status 5-B/5-C di PHASE_5_REPORT.md §M/§5C-M diklasifikasi ulang HISTORICAL/SUPERSEDED (dengan penunjuk
+  klarifikasi R1E); tidak ada dokumen transfer lain yang menyatakan Phase 5 IN PROGRESS atau 5-D/5-E NOT STARTED
+  sebagai status aktif; Phase 4 DONE/CLOSED (2026-10-30), Phase 5 DONE/CLOSED (2026-10-31), Phase 6 NOT STARTED
+  konsisten; tidak ada klaim implementasi/pengujian melebihi bukti; (b) taksonomi lisensi = persis 3 tier
+  (miniRider/maxRider/ISOrider); totalRider hanya produk retired/historical guard (OBSOLETE_AND_SUPERSEDED_REGISTER +
+  referensi negatif/historis); hiRider/taskRider/siteRider tidak pernah license tier; (c) ADR-027 compliance utuh —
+  owner TIDAK dihitung sebagai non-owner member-seat (DECIDED), angka kuota dasar per tier tetap TBD dan independen,
+  TBD ≠ unlimited, TierQuota dipertahankan, seat_package aditif; (d) "+10 seat/workspace" tetap ILLUSTRATIVE
+  (contoh katalog REQ-018), bukan ukuran paket final; (e) OD-05/OD-06/OD-108/OD-123/OD-137 sesuai ruang lingkup
+  canonical di seluruh dokumen (member quota/seat counting/stacking = OD-05; harga/billing/pajak/refund/gateway =
+  OD-06; expiry/grace/renewal/downgrade = OD-108; multi-workspace non-kru = OD-123; storage media per tier = OD-137);
+  (f) REQ-100/tester-demo dan availability rules tidak dipetakan ke OD-06 di mana pun — tetap OWNER DECISION REQUIRED
+  — no dedicated OD ID registered (koreksi R1D dipertahankan); REQ-015 hanya konteks public landing. Hasil: 0
+  CONTRADICTION baru ditemukan di dalam 18 dokumen pasca-koreksi R1E; tidak dinyatakan "unresolved mapping issues = 0"
+  (dua area keputusan tetap berlabel eksplisit tanpa OD ID).
+- OBSERVASI OUT-OF-SCOPE (dilaporkan, TIDAK diedit, TIDAK masuk ZIP): (1) LEGAL_REGULATORY_REGISTER.md LR-006 —
+  referensi OD-06 bersifat agregasi domain-level (domain hukum/regulasi memayungi aspek komersial), bukan pemetaan
+  scope tester→OD-06; jelas HISTORIS/deskriptif domain, tidak berpotensi disalahartikan sebagai kebijakan aktif
+  pemetaan REQ-100→OD-06; (2) PHASE_2_REPORT.md line 165 — masih memuat "REQ-100 → OD-06"; ini laporan historis
+  Phase 2 (snapshot saat laporan dibuat) dan telah superseded oleh koreksi R1D pada PHASE_2_TRACEABILITY.md (sumber
+  traceability aktif); tetap HISTORICAL/SUPERSEDED namun karena berbunyi persis sebagai pemetaan langsung tanpa
+  penanda superseded inline, dicatat sebagai berpotensi disalahartikan bila dibaca terpisah tanpa konteks — dokumen
+  di luar 18 transfer tidak diubah sesuai batas mandat.
+- PRESERVASI: 16 dokumen lain tidak diubah (byte-identical vs R1D, diverifikasi hash); koreksi R1/R1B/R1C/R1D tidak
+  diulang, tidak diganti versi lama; dokumen pengendali (MASTER_CONTROL, ROADMAP, PHASE_STATUS, ADR_REGISTER,
+  LICENSE_MATRIX, HANDOFF, ADR-027) tidak disentuh; source/schema/migration/seed/tests/dependencies/konfigurasi
+  produk tidak berubah; tidak ada operasi Git/GitHub.
+- CHANGE CONTROL: CHANGED/UNCHANGED dihitung dari SHA-256 aktual per file (R1D vs R1E), bukan dikarang; dari 18
+  dokumen transfer, 2 CHANGED (PHASE_5_REPORT — klarifikasi append-only; worklog — entri append-only ini) dan 16
+  UNCHANGED byte-for-byte; file pengemasan SNAPSHOT_REPORT.md dan MANIFEST.txt diperbarui untuk merepresentasikan
+  R1E (keduanya bagian paket, di luar 18 dokumen). ZIP R1E (EPICRIDER_FINAL_TRANSFER_SNAPSHOT_20261117_R1E.zip)
+  dibangun setelah entri ini; hash final dihitung dari byte final ZIP dan tercatat di SNAPSHOT_REPORT.md serta
+  sidecar .sha256. GIT_WRITE = NONE; GITHUB_WRITE = NONE.

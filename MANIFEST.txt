@@ -1,0 +1,48 @@
+EPICRIDER FINAL TRANSFER SNAPSHOT — R1E
+Task ID: R1E-FINAL-PHASE-STATUS-CONSISTENCY-CORRECTION-2026-11-17
+Snapshot date: 2026-11-17
+Canonical baseline: d45e73ec86313b9671050f032155a6249dd4ed38
+R1D input ZIP SHA-256 (verified): 9d36098e159e96eda563c69b432882dc8379a66eff81c81b3c1c07d226e0665f
+GITHUB_WRITE = NONE
+
+Contents: exactly 21 files = 18 documents + SNAPSHOT_REPORT.md + MANIFEST.txt + SHA256SUMS.txt
+SHA256SUMS.txt contains exactly 20 checksum records (18 documents + SNAPSHOT_REPORT.md + MANIFEST.txt); it does not hash itself.
+
+File list (18 documents):
+   1. AUTHORIZATION_MODEL.md
+   2. CONTROL_REFERENCE_CROSSWALK.md
+   3. DATA_MODEL_CONCEPT.md
+   4. ENTITLEMENT_MODEL.md
+   5. OBSOLETE_AND_SUPERSEDED_REGISTER.md
+   6. OPEN_DECISIONS.md
+   7. PERSONAS_AND_JOURNEYS.md
+   8. PHASE_2_TRACEABILITY.md
+   9. PHASE_5_REPORT.md
+  10. PHASE_5_TRACEABILITY.md
+  11. PROCESS_MAP.md
+  12. PRODUCT_SCOPE.md
+  13. README.md
+  14. REQUIREMENTS.md
+  15. TESTING.md
+  16. TRACEABILITY_MATRIX.md
+  17. USE_CASES.md
+  18. worklog.md
+  19. SNAPSHOT_REPORT.md
+  20. MANIFEST.txt
+  21. SHA256SUMS.txt
+
+R1E scope: phase-status consistency correction — §5C-M/§M status statements in PHASE_5_REPORT.md explicitly
+reclassified as historical snapshots superseded by Phase 5 completion/closure (append-only clarification dated
+2026-11-17; canonical status sources verified: ROADMAP.md, PHASE_STATUS.md, HANDOFF.md, PHASE_5_CLOSURE_REPORT.md
+— Phase 4 DONE/CLOSED 2026-10-30; Phase 5 DONE/CLOSED 2026-10-31; Phase 6 NOT STARTED). Full 18-document re-audit
+performed: license taxonomy (3 tiers only; totalRider retired), ADR-027 compliance, +10 seat ILLUSTRATIVE,
+OD-05/OD-06/OD-108/OD-123/OD-137 canonical scopes, REQ-100/tester-demo and availability = OWNER DECISION REQUIRED
+(no dedicated OD ID), no implementation claims beyond evidence. 0 active contradictions remain in scope.
+
+CHANGED vs R1D: 2 of 18 — PHASE_5_REPORT.md (append-only §R1E-A..§R1E-D status clarification; original 336 lines
+byte-identical), worklog.md (append-only R1E entry; original 958 lines byte-identical)
+UNCHANGED vs R1D: 16 — AUTHORIZATION_MODEL.md, CONTROL_REFERENCE_CROSSWALK.md, DATA_MODEL_CONCEPT.md,
+ENTITLEMENT_MODEL.md, OBSOLETE_AND_SUPERSEDED_REGISTER.md, OPEN_DECISIONS.md, PERSONAS_AND_JOURNEYS.md,
+PHASE_2_TRACEABILITY.md, PHASE_5_TRACEABILITY.md, PROCESS_MAP.md, PRODUCT_SCOPE.md, README.md, REQUIREMENTS.md,
+TESTING.md, TRACEABILITY_MATRIX.md, USE_CASES.md
+Packaging files updated for R1E (outside the 18): SNAPSHOT_REPORT.md, MANIFEST.txt

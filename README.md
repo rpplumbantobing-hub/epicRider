@@ -2,6 +2,8 @@
 
 epicRider adalah platform untuk kru produksi multimedia/event. **Status fase: Phase 4 `IN PROGRESS`** — implementasi identity/authentication/session/workspace/membership/invitation/roles selesai pada worktree terisolasi dari canonical `b5defc22` (baseline gate PASS 2026-10-28); menunggu integrasi owner + remote CI — lihat `ROADMAP.md`, `PHASE_4_REPORT.md`, `HANDOFF.md`. **Ini BUKAN fitur produksi**; login Google aktif hanya dengan kredensial env (tanpa kredensial: status aman "belum dikonfigurasi"); kanal WhatsApp menunggu vendor (OD-03). Route demo: showcase fondasi `/` + halaman Phase 4 (`/login`, `/workspaces`, `/invitations`, `/account` — konten demo/dev, tanpa data nyata).
 
+> **Pembaruan status 2026-11-01 (owner-directed synchronization):** banner "Phase 4 IN PROGRESS" di atas = snapshot historis saat implementasi Phase 4 di canonical. Status otoritatif kini: **Phase 4 = DONE/CLOSED (2026-10-30), Phase 5 = DONE/CLOSED (2026-10-31), Phase 6 = NOT STARTED** — Phase 6 hanya dimulai dengan instruksi eksplisit owner (lihat `ROADMAP.md`, `PHASE_STATUS.md`, `HANDOFF.md`, `PHASE_5_CLOSURE_REPORT.md`). Workspace sandbox ini = mirror dokumen kontrol + showcase fondasi; implementasi Phase 4/5 berada di repository canonical GitHub (`main` @ `d45e73e`).
+
 Dokumen kontrol proyek (status fase, baseline, keputusan): lihat `CONTROL_BASELINE_REGISTER.md` dan `HANDOFF.md`.
 
 ## Prasyarat

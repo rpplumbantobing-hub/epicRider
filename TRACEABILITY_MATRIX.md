@@ -20,7 +20,7 @@
 | REQ-006 | P-05, P-07 | UC-2005 | CRUD aset + buat set template berisi ≥2 aset; relasi set↔aset tampil konsisten | 8 | TRACED |
 | REQ-007 | P-03 | UC-1006 | Kru dengan ≥2 penugasan melihat indikator konteks; setelah switch, akses data event lain ditolak (test isolasi) | 6, 10 | TRACED |
 | REQ-008 | P-03, P-04 | UC-2006 | Non-anggota event ditolak 403 pada chat/rundown/media kit/laporan; anggota menjalankan 4 fungsi | 10 | TRACED |
-| REQ-009 | P-02 | UC-1005, UC-2007 | Tambah kru melebihi kuota (per OD-05, batas MC 5 kru) ditolak server-side dengan pesan jelas | 5 | TRACED |
+| REQ-009 | P-02 | UC-1005, UC-2007 | Tambah member melebihi kuota terkonfigurasi ditolak server-side dengan pesan jelas (kriteria generik — angka base quota per tier TBD per ADR-027; owner tidak dihitung — DIPUTUSKAN; sisa semantik OD-05 OPEN; historis: "batas MC 5 kru" = nilai seed 5-B yang superseded) *(catatan 2026-11-01: angka "5 kru" = historis — SUPERSEDED oleh ADR-027; base member quota belum ditetapkan; owner tidak dihitung member-seat)* **[R1 2026-11-15]** | 5 | TRACED |
 | REQ-010 | P-07, P-08 | UC-5001 | Call API Equipment Store dengan sesi maxRider/ISOrider/hiRider → denial teraudit (bukan menu tersembunyi) | 11 | TRACED |
 | REQ-011 | P-02 (maxRider) | UC-3001..3008, UC-4001..4005 | Suite regresi miniRider lulus pada build maxRider; Equipment Store absent & API blocked | 12–15 | TRACED — diwakili kumpulan UC maxRider |
 | REQ-012 | P-10 | UC-7005, UC-7008, UC-7009 | 1 siklus Process→Control→Workflow→Transaction→Evidence→Report dijalankan end-to-end di ISOrider | 17–21 | TRACED |
@@ -29,7 +29,7 @@
 | REQ-015 | P-12 (pengunjung) | UC-5003 (parsial) | Semua CTA landing mengarah ke aksi nyata; review anti-tombol-palsu = 0 temuan | 22 | PARTIAL — hanya sisi login Developer Portal tercakup; flow konten/download landing belum ada UC |
 | REQ-016 | P-07 | UC-5003 | Non-developer login portal ditolak; setiap perubahan katalog menghasilkan entri audit (aktor+timestamp) | 22 | TRACED |
 | REQ-017 | P-08 | UC-5004 | Kirim tanpa pratinjau penerima mustahil; kirim ganda id sama → 1 pesan; audit lengkap | 22 | TRACED |
-| REQ-018 | P-02 | UC-5006 | Extension seat +10 di-apply → kuota naik sesuai lisensi (setelah OD-06 diputuskan) | 5, 23 | PARTIAL — katalog extension ada di UC, detail komersial menunggu OD-06 |
+| REQ-018 | P-02 | UC-5006 | seat_package yang disetujui di-apply → kapasitas naik sesuai purchased quantity yang benar-benar disetujui (kriteria generik; "+10" = contoh ilustratif katalog REQ-018 — package quantity tetap TBD; OD-05 quantity/stacking OPEN; OD-06 komersial OPEN; OD-108 renewal/expiry OPEN; status acceptance TIDAK dinaikkan tanpa bukti) | 5, 23 | PARTIAL — katalog extension ada di UC; quantity/stacking menunggu OD-05; detail komersial menunggu OD-06 **[R1B 2026-11-15 — acceptance digeneralisasi; +10 tidak lagi dipresentasikan sebagai ukuran paket]** |
 | REQ-019 | P-01..P-12 | UC-2007, UC-3003 | 3 layar kunci lulus responsive check pada ≥1280 / 768–1024 / 360–430 tanpa kerusakan layout | 6+ | PARTIAL — quality gate lintas layar; UC hanya sampel |
 | REQ-020 | P-07 (eng) | UC-3003 | Klien mobile memanggil API sama tanpa logika otorisasi lokal (code review + contract test lulus) | 2, 6 | PARTIAL — constraint arsitektur; tereksekusi lewat UC-3003 & contract test |
 | REQ-021 | P-01..P-12 | UC-1001 | OTP replay ditolak; token expired ditolak; rate limit aktif; audit event per percobaan tercatat | 4 | TRACED |
@@ -111,7 +111,7 @@
 | REQ-097 | P-07 (eng) | UC-3003 | Perubahan breaking API → versi baru; klien lama lulus contract test masa transisi | 2 | PARTIAL — constraint arsitektur; diverifikasi via contract test |
 | REQ-098 | P-01, P-02 | UC-5006 | Setiap transisi lisensi (purchase→active→renewal→expiry→grace→downgrade) teruji; akses mengikuti OD-108 | 5 | TRACED |
 | REQ-099 | P-02, P-08 | UC-5006 | Downgrade tidak menghapus data; fitur non-tier terkunci server-side; data utuh untuk upgrade kembali | 5 | TRACED |
-| REQ-100 | P-12 | — | Tester environment terpisah/berlabel; tanpa data pelanggan nyata | 22 | NOT TRACED — scope tester menunggu keputusan owner (terkait OD-06/REQ-015); Could |
+| REQ-100 | P-12 | — | Tester environment terpisah/berlabel; tanpa data pelanggan nyata | 22 | NOT TRACED — scope tester menunggu keputusan owner (REQ-015 = konteks landing/public-access; tidak ada dedicated OD ID terdaftar untuk keputusan scope tester/demo; OD-06 tidak dianggap mengatur akses/eligibility tester) **[R1D 2026-11-15 — referensi OD-06 dihapus]**; Could |
 | REQ-101 | P-03 (kru/provider) | — (baru 2026-10-28; UC flow inquiry/penawaran jasa belum ada di USE_CASES — kandidat UC baru range 60xx saat Phase 16) | `ServiceOffer != RecruitmentOpening` ditegakkan server-side (objek/permission/lifecycle/API/audit terpisah); inquiry/minat tidak menciptakan membership/event assignment; tidak ada harga/pembayaran dikarang (OD-06) | 16 | PARTIAL — requirement baru (persetujuan owner via Obsolete Register 2026-10-28); test idea terukur ada, UC penuh menunggu desain Phase 16 (OD-109 visibilitas) |
 
 ---
@@ -129,7 +129,7 @@
 
 - **Must traced (TRACED + PARTIAL): 69/70.** TRACED penuh 57/70; PARTIAL 12/70 (REQ-001, REQ-019, REQ-020, REQ-028, REQ-032, REQ-033, REQ-034, REQ-035, REQ-088, REQ-089, REQ-092, REQ-097 — semuanya requirement cross-cutting/quality gate yang tidak diwakili satu flow pengguna tunggal, tetapi tersentuh UC dan punya test idea terukur).
 - **Should traced: 26/26 tercapak dalam matriks (22 TRACED + 4 PARTIAL).** PARTIAL: REQ-015 (flow landing page belum ada UC), REQ-037 (menunggu OD-07), REQ-091 (proses evaluasi), REQ-093 (target menunggu OD-112).
-- **Could:** REQ-018 PARTIAL (menunggu OD-06), REQ-096 TRACED; REQ-038 & REQ-100 NOT TRACED.
+- **Could:** REQ-018 PARTIAL (menunggu OD-05 quantity/stacking + OD-06 komersial **[R1C 2026-11-15 — sebelumnya hanya "menunggu OD-06"; OD-05 juga blocker untuk quantity/stacking]**), REQ-096 TRACED; REQ-038 & REQ-100 NOT TRACED.
 
 ### Gap list — REQ NOT TRACED + alasan
 
@@ -137,7 +137,7 @@
 |---|---|---|
 | REQ-029 | Must | Constraint rekayasa (migration terkontrol, reversible, data lama) — bukan flow pengguna; kontrol via gate ADR/review migration pada Phase 2+ (OD-01). Saran: petakan ke kriteria exit fase, bukan use case. |
 | REQ-038 | Could | Strategi offline-first belum diputuskan (OD-07); UC-3003/UC-2006 hanya menampung perilaku kondisional bila nanti diaktifkan. |
-| REQ-100 | Could | Scope akses tester dari landing page menunggu keputusan owner (terkait OD-06 & REQ-015); belum ada flow yang didefinisikan. |
+| REQ-100 | Could | Scope akses tester dari landing page menunggu keputusan owner (REQ-015 = konteks landing/public-access; tidak ada dedicated OD ID terdaftar untuk keputusan scope tester/demo — OD-06 tidak dianggap mengatur akses/eligibility tester); belum ada flow yang didefinisikan. **[R1D 2026-11-15 — referensi OD-06 dihapus]** |
 
 ### Catatan gap non-REQ (dari USE_CASES §11)
 
