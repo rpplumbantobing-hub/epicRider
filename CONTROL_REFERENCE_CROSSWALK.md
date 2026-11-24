@@ -40,7 +40,7 @@ Konten BARU MC-V4 yang belum ada di MC-V3 dan kini mengikat: §1 (Product vision
 | MC lama | Isi | Anchor kanonik sekarang |
 |---|---|---|
 | §1 Misi dan visi | Misi produk | `PRODUCT_SCOPE.md` (Phase 1) + MC-V4 §1 (Product vision and scope) |
-| §2 Produk dan batas lisensi | miniRider/maxRider/ISOrider/hiRider, aturan store era lama | MC-V4 §2 (Product taxonomy — incl. tiga commerce surface §2.3, ADR-018; hiRider §2.2 incl. service offerings + invariant `ServiceOffer != RecruitmentOpening`); batas 5 kru → REQ-009 |
+| §2 Produk dan batas lisensi | miniRider/maxRider/ISOrider/hiRider, aturan store era lama | MC-V4 §2 (Product taxonomy — incl. tiga commerce surface §2.3, ADR-018; hiRider §2.2 incl. service offerings + invariant `ServiceOffer != RecruitmentOpening`); batas 5 kru → REQ-009 *(catatan 2026-11-02 — FINAL PARITY RECONCILIATION: angka "5 kru" = historis — SUPERSEDED oleh ADR-027 (ACCEPTED, owner directive 2026-11-01); base member quota belum ditetapkan untuk tier mana pun; REQ-009 tetap berlaku untuk penolakan server-side di atas kuota, bukan angka)* |
 | §3 Extensions dan kanal akses | Extension, web-first, API reusable | MC-V4 §3 (Extension, effective access); §4 ("Web is a first-class channel"); `API_ARCHITECTURE.md` |
 | §4 Autentikasi | Auth/OTP/session | `ARCHITECTURE.md` (identity/auth), `SECURITY.md`, `adr/ADR-008`, `adr/ADR-009`; MC-V4 §5 (Identity, workspace and authorization) |
 | §5 Prinsip arsitektur yang tidak boleh dilanggar | Server-side authz/entitlement, tenant isolation, controlled migrations, auditability, i18n sejak awal | MC-V4 §5 + §6 (Architecture and data invariants — semua prinsip ini ada di sini) |

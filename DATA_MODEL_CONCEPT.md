@@ -174,7 +174,7 @@ Conventions for this section:
 | `Permission` | Permission vocabulary entry (e.g. event.edit, asset.dispatch) | id, code, description i18n key | N—M `Role` | ACTIVE, DEPRECATED | Deny-by-default; server-side enforcement (MC §4, REQ-024, REQ-026); full policy model = AUTHORIZATION_MODEL (Task 2-b) |
 | `MembershipRoleAssignment` | Which member holds which role | id, membership_id, role_id, granted_by/at | N—1 `Membership`; N—1 `Role` | ACTIVE, REVOKED | One user can hold different roles in different workspaces without conflict (REQ-025) |
 | `Invitation` | Secure workspace invite: signed, single-use, expiring token bound to workspace + offered role (REQ-051) | id, workspace_id, role_id, contact target, token hash, expires_at, used_at | N—1 `Workspace`; produces `Membership` on accept | PENDING, ACCEPTED, EXPIRED, REVOKED | Reused/expired links rejected; token cannot alter role (REQ-051); quota check at invite AND accept (REQ-009) |
-| `Seat` | Quota accounting unit linking memberships to entitlement (REQ-009; OD-05) | id, workspace_id, membership_id (nullable), state, allocated_at/released_at | N—1 `Workspace`; 0..1—1 `Membership` | AVAILABLE, ALLOCATED, RELEASED (`PROPOSED`) | Seat count ≤ tier quota + extension seats; enforcement server-side (§8; OD-05 owner-counting OPEN) |
+| `Seat` | Quota accounting unit linking memberships to entitlement (REQ-009; OD-05) | id, workspace_id, membership_id (nullable), state, allocated_at/released_at | N—1 `Workspace`; 0..1—1 `Membership` | AVAILABLE, ALLOCATED, RELEASED (`PROPOSED`) | Seat count ≤ configured tier quota (base non-owner member quota TBD per tier — ADR-027; owner NOT counted — DECIDED) + extension seats; enforcement server-side once quota rules and mechanism are decided/implemented (§8; remaining seat-counting semantics = OD-05 OPEN) **[R1 2026-11-15]** |
 
 - **Tenant boundary:** all entities tenant-scoped.
 - **Auditability:** all membership/role/invitation/seat transitions → `AuditEvent` (REQ-049, REQ-051, REQ-009 denials audited).
@@ -207,12 +207,12 @@ Conventions for this section:
 | `Capability` | Domain capability definition (recruitment, candidate discovery, CRM, asset scanning, audit mode, notification broadcast — MC §2) | id, code, description i18n key | 1—N `CapabilityRule` | ACTIVE, DEPRECATED | Capability is not a license (MC §2) |
 | `CapabilityRule` | Rule binding capability availability to tier/extension/role/context/object-state inputs | id, capability_id, condition set (tier set, extension set, role set, context, object states) | N—1 `Capability` | ACTIVE, SUPERSEDED | Evaluated server-side as part of effective access (MC §2 effective access formula; REQ-024) |
 | `EntitlementGrant` | Issued, versioned effective-right record (from a license and/or extension purchase; issued by commerce orders, §3.12) | id, workspace_id, source (license/extension/order), rights payload, valid_from/until, version | N—1 `Workspace`; refs `License`, `ExtensionInstance` | ACTIVE, SUSPENDED, EXPIRED, REVOKED | Issuance auditable (store issuance architecture: `ARCHITECTURE.md` §7 + ADR-018; auditability invariant MC §4); grants drive `Seat`/quota (§8) |
-| `TierQuota` | Numeric limits per tier (crew count, storage, workspaces…) with parameter values | id, tier, quota code, limit value, unit | N—1 `LicenseTier` | ACTIVE | 5-crew base for miniRider (REQ-009); owner-counting = OD-05; commercial quotas = OD-06; values never invented (anti-hallucination) |
+| `TierQuota` | Numeric limits per tier (crew count, storage, workspaces…) with parameter values | id, tier, quota code, limit value, unit | N—1 `LicenseTier` | ACTIVE | Base non-owner member quota = **TBD per tier** (miniRider/maxRider/ISOrider — each tier may be decided independently; ADR-027; no numbers invented; TBD ≠ unlimited). Historical note only: "5-crew base for miniRider" = historical Phase 5-B seed value, SUPERSEDED by ADR-027 — never an active rule. Owner NOT counted as a non-owner member-seat (DECIDED — ADR-027). Remaining seat-counting semantics = OD-05 OPEN. Quota-category scope mapping **[R1C 2026-11-15]**: member/crew quota = OD-05; media/storage quota = OD-137; multi-workspace limit = OD-123; commercial values (prices/billing/payment/refund) = OD-06 — OD-06 does not set quota numbers. **[R1 2026-11-15 — lead invariant rewritten to the ADR-027 concept]** |
 
 - **Tenant boundary:** `License`, `EntitlementGrant`, `TierQuota` effects are tenant-scoped; `LicenseTier`, `Capability`, `CapabilityRule` are global reference data.
 - **Auditability:** every license transition and entitlement issuance/suspension → `AuditEvent` (REQ-098; store issuance auditable per SECURITY.md).
 - **Access patterns & logical indexes:** `License` by (workspace_id, status) — effective tier resolution; `EntitlementGrant` by (workspace_id, valid window); `CapabilityRule` by (capability_id) loaded into policy evaluation cache (`PROPOSED`).
-- **Rekonsiliasi implementasi (Phase 5-E, 2026-10-31 — ADR-026):** `EntitlementGrant` (baris konseptual di atas) **TIDAK dimodelkan sebagai tabel** dan TIDAK dibuat sebagai source of truth kedua. Arsitektur yang terimplementasi (Phase 5-B/5-C/5-D, ADR-023/024/025; ditegakkan kembali pada 5-E) menetapkan `License` (status `ACTIVE`) dan `ExtensionInstance` (status `ACTIVE`) sebagai SATU-SATUNYA sumber entitlement — dibaca langsung oleh evaluator deterministik 5-C (`src/lib/licensing/entitlement.ts`); lifecycle 5-D mengelola statusnya. Rantai yang berlaku: `Commerce → License / ExtensionInstance → lifecycle 5-D → engine 5-C`. Baris `EntitlementGrant` di atas dipertahankan sebagai **konseptual/obsolete** (riwayat desain Phase 2 — tidak dihapus); relasi konseptual `License 1—N EntitlementGrant` dan `StoreOrder 0..N—1 EntitlementGrant` (§3.12) TIDAK lagi menggambarkan implementasi. Seat/quota counting (§8) tetap OD-05 OPEN — tidak ada mekanika enforcement yang dikarang. Perubahan arah ini hanya dapat dilakukan lewat keputusan owner (ADR baru).
+- **Rekonsiliasi implementasi (Phase 5-E, 2026-10-31 — ADR-026):** `EntitlementGrant` (baris konseptual di atas) **TIDAK dimodelkan sebagai tabel** dan TIDAK dibuat sebagai source of truth kedua. Arsitektur yang terimplementasi (Phase 5-B/5-C/5-D, ADR-023/024/025; ditegakkan kembali pada 5-E) menetapkan `License` (status `ACTIVE`) dan `ExtensionInstance` (status `ACTIVE`) sebagai SATU-SATUNYA sumber entitlement — dibaca langsung oleh evaluator deterministik 5-C (`src/lib/licensing/entitlement.ts`); lifecycle 5-D mengelola statusnya. Rantai yang berlaku: `Commerce → License / ExtensionInstance → lifecycle 5-D → engine 5-C`. Baris `EntitlementGrant` di atas dipertahankan sebagai **konseptual/obsolete** (riwayat desain Phase 2 — tidak dihapus); relasi konseptual `License 1—N EntitlementGrant` dan `StoreOrder 0..N—1 EntitlementGrant` (§3.12) TIDAK lagi menggambarkan implementasi. Seat/quota counting (§8) — owner exclusion DIPUTUSKAN via ADR-027 (owner tidak dihitung); sisa semantik counting/enforcement tetap OD-05 OPEN — tidak ada mekanika enforcement yang dikarang. **[R1 2026-11-15]** Perubahan arah ini hanya dapat dilakukan lewat keputusan owner (ADR baru).
 
 ### 3.6 Extension
 
@@ -222,7 +222,7 @@ Conventions for this section:
 |---|---|---|---|---|---|
 | `ExtensionDefinition` | Catalog definition of an extension type/product | id, code, type, description, active | 1—N `ExtensionInstance` | CATALOG (published), WITHDRAWN (`PROPOSED`) | Definition lives in catalog; commercial values = OD-06 |
 | `ExtensionType` | Reference list of extension kinds (additional_workspace, seat_package, workspace_landing, mobile_client, future approved) | code | N—1 used by `ExtensionDefinition` | — | Closed-by-owner list (MC §2/§3; REQ-018) |
-| `ExtensionInstance` | A provisioned extension on a workspace, following the canonical lifecycle | id, workspace_id, definition ref, status, term, quantity (e.g. +10 seats), provisioned_at | N—1 `Workspace`; contributes to `TierQuota`/`Seat` (§8) | CATALOG → PURCHASED/ASSIGNED → ACTIVE → SUSPENDED/EXPIRED → RENEWED/REMOVED (`LICENSE_MATRIX.md` §5 — canonical) | Extension lifecycle states are canonical; renewal/removal audited; seat-package instances adjust quota atomically |
+| `ExtensionInstance` | A provisioned extension on a workspace, following the canonical lifecycle | id, workspace_id, definition ref, status, term, quantity (generic data value set on each approved package instance — "e.g. +10 seats" = **ILLUSTRATIVE REQ-018 catalog example only, NOT a defined package size**; no final package size is set anywhere; actual quantity per package = TBD, undecided), provisioned_at | N—1 `Workspace`; contributes to `TierQuota`/`Seat` (§8) | CATALOG → PURCHASED/ASSIGNED → ACTIVE → SUSPENDED/EXPIRED → RENEWED/REMOVED (`LICENSE_MATRIX.md` §5 — canonical) | Extension lifecycle states are canonical; renewal/removal audited; seat-package instances adjust quota atomically (conceptual target-state; package quantity/stacking semantics = OD-05 OPEN) **[R1B 2026-11-15 — quantity example explicitly labeled illustrative; generic quantity field retained]** |
 
 - **Tenant boundary:** `ExtensionInstance` tenant-scoped; definitions global.
 - **Auditability:** all extension transitions → `AuditEvent`.
@@ -354,7 +354,7 @@ Developer Equipment Store objects (in-app, miniRider-only):
 |---|---|---|---|---|---|
 | `ShopProduct` | Katalog produk shop — information architecture: apa yang dapat dibeli + target issuance + surface ownership | id, code (unique), kind (`LICENSE`/`EXTENSION` — closed set, CHECK DB), displayName, status (`ACTIVE`/`INACTIVE`/`WITHDRAWN`; default `INACTIVE`), tierId?, definitionId? | N—1 `LicenseTier` (kind=LICENSE; TIDAK duplikasi tier); N—1 `ExtensionDefinition` (kind=EXTENSION; TIDAK duplikasi definisi); 1—N `ShopOrderIntentLine` | ACTIVE, INACTIVE, WITHDRAWN (WITHDRAWN terminal) | Tanpa harga/pajak/currency/diskon/gateway (OD-06/OD-133); default INACTIVE = tidak dapat dibeli sampai diaktifkan eksplisit; integritas kind↔target fail-closed di service |
 | `ShopOrderIntent` | Commercial INTENT — BUKAN paid order (prompt 5-E §12: INTENT ≠ PAID ≠ COMPLETED PAYMENT ≠ ACTIVE ENTITLEMENT) | id, workspaceId, buyerUserId? (atribusi server-side), status, idempotencyKey (unique — anti-duplication), completionSource?, completedAt?, issuedAt?, cancelledAt? | N—1 `Workspace` (target issuance SELALU workspace — ENTITLEMENT_MODEL §8); N—1 `User` (buyer, SetNull); 1—N `ShopOrderIntentLine` | OPEN → COMPLETED → ISSUED; CANCELLED dari OPEN (**PROVISIONAL — OD-135 OPEN**; tanpa state payment/refund) | completionSource HANYA diisi verified completion boundary dari sumber internal tepercaya (union tertutup; satu-satunya anggota Phase 5-E = `NON_PRODUCTION_TEST_SIMULATION`); `client says paid` tidak pernah dipercaya; idempotencyKey unik (state-convergence; ADR-017) |
-| `ShopOrderIntentLine` | Line item intent | id, orderIntentId, productId, quantity (≥1, CHECK DB) | N—1 `ShopOrderIntent` (Restrict); N—1 `ShopProduct` (Restrict) | — (tanpa lifecycle) | quantity dibawa apa adanya ke issuance (caller-supplied; tanpa perhitungan kuota — OD-05/OD-06); tanpa snapshot duplikat produk (re-validasi fail-closed saat issuance) |
+| `ShopOrderIntentLine` | Line item intent | id, orderIntentId, productId, quantity (≥1, CHECK DB) | N—1 `ShopOrderIntent` (Restrict); N—1 `ShopProduct` (Restrict) | — (tanpa lifecycle) | quantity dibawa apa adanya ke issuance (caller-supplied; tanpa perhitungan kuota; seat-package quantity/capacity semantics = OD-05 OPEN; pricing/komersial = OD-06 OPEN — OD-06 tidak menetapkan angka quantity/kuota) **[R1C 2026-11-15 — referensi gabungan "OD-05/OD-06" dipisah per scope]**; tanpa snapshot duplikat produk (re-validasi fail-closed saat issuance) |
 
 **Order-intent boundary:** intent dibuat server-side dengan otorisasi deny-by-default (key kanonik satu-satunya: `store.order.create`, AUTHORIZATION_MODEL §4.12; TIDAK diikat preset — OD-122 OPEN; tanpa fallback owner). Eligibility server-side per line (first-license / renewal / extension; denial teraudit) SEBELUM intent dibuat. Intent TIDAK membuat License/ExtensionInstance dan TIDAK menyentuh entitlement engine.
 
@@ -565,7 +565,7 @@ INVITED ──accept──> ACTIVE ──suspend──> SUSPENDED ──reinstat
 EXPIRED/REVOKED        └─ re-invite of removed/left member = NEW Membership row (history preserved)
 ```
 - Guard: every transition is audited and **changes effective access immediately**; removed member loses access on next request (REQ-049 acceptance).
-- Quota: seat allocated at INVITED/ACTIVE, released at REMOVED/LEFT (OD-05 owner-counting OPEN — see §8).
+- Quota: seat allocated at INVITED/ACTIVE, released at REMOVED/LEFT (owner NOT counted toward quota — DECIDED via ADR-027; numeric base quota TBD per tier; remaining seat-counting semantics = OD-05 OPEN — see §8) **[R1 2026-11-15]**.
 
 ### 6.2 License (REQ-098 — requirement-cited; durations/gates = OD-108 OPEN)
 
@@ -719,13 +719,15 @@ Relation-ownership summary (who enforces integrity of the link):
 
 ---
 
-## 8. Seat / quota concept (REQ-009; OD-05 OPEN)
+## 8. Seat / quota concept (REQ-009; owner exclusion DECIDED via ADR-027; numeric base quota TBD per tier; remaining semantics = OD-05 OPEN) **[R1 2026-11-15]**
 
 **Conceptual model (`PROPOSED` except where REQ-cited):**
 
 ```
-TierQuota (tier: miniRider → base crew limit 5, REQ-009)
-        + Σ ExtensionInstance contributions (e.g. "+10 seat package", REQ-018)
+TierQuota (tier: miniRider / maxRider / ISOrider → base non-owner member quota TBD per tier, REQ-009 + ADR-027)
+        + Σ ExtensionInstance contributions (seat_package: quantity = a DATA value set per approved
+          package instance; "e.g. +10 seat package" = ILLUSTRATIVE REQ-018 catalog example only —
+          NO final package size defined; actual quantity TBD per OD-05; REQ-018)
         = EffectiveSeatCapacity(workspace)
                 │
                 ▼
@@ -738,7 +740,9 @@ EntitlementGrant (license + extensions active) ──gates──> capacity is us
 - **Member ↔ Seat:** a Seat is allocated when a Membership enters INVITED/ACTIVE and released at REMOVED/LEFT. One active Membership occupies at most one Seat in its workspace (`PROPOSED`).
 - **Quota ↔ Entitlement relationship:** capacity is the sum of the tier base quota (TierQuota) plus active extension seat contributions; if the underlying License is EXPIRED/DOWNGRADED beyond grace, capacity enforcement follows the license state machine (§6.2, OD-108) — e.g. features restricted, but no data loss (REQ-099).
 - **Enforcement point (`PROPOSED`, server-side only):** (1) `Invitation` creation and acceptance — invite beyond capacity rejected with a clear message and an upgrade/extension path if available (REQ-009 acceptance; UC-1005 F3/F4); (2) membership re-activation; (3) any entitlement check that depends on seat count. All denials audited (REQ-024). UI hiding is never the enforcement (MC §2).
-- **OPEN — OD-05:** whether the workspace owner counts toward the 5-crew quota is **OPEN (owner decision)**. The model keeps `owner_counted_in_quota` as an explicit parameter of `TierQuota`/enforcement so either decision is a data change, not a schema change. No seat/billing semantics beyond this are finalized (OD-05 also gates final quota/billing enforcement).
+- **DECIDED — owner exclusion (ADR-027, ACCEPTED 2026-11-01):** the workspace owner is **NOT counted** as a non-owner member-seat. This is settled policy — it is no longer an open question, and the existence of the `owner_counted_in_quota` parameter (retained as an explicit TierQuota/enforcement parameter so any future change remains a data change, not a schema change) must NOT be read as freedom to revert to owner-counting. **[R1 2026-11-15 — this bullet previously led with "OPEN — owner counted?"; the lead is now the decided policy]**
+- **OPEN — OD-05 (remaining scope only):** numeric base member quota per tier (TBD — each tier may be decided independently), final seat-counting details (e.g. suspended-member counting), and quota/billing enforcement semantics remain **OPEN**. No seat/billing semantics beyond this are finalized. Historical note: the original OD-05 framing ("does the owner count toward the 5-crew quota?") referenced the historical Phase 5-B "5-crew" seed value — that number is superseded by ADR-027 and retained only as historical evidence.
+  - **Pembaruan 2026-11-01 — ADR-027 ACCEPTED (owner directive):** owner-counting jawaban dari ADR-027 = **owner TIDAK dihitung sebagai non-owner member-seat**; angka "5-crew" = nilai historis seed Phase 5-B (superseded — dikoreksi forward migration di canonical, migration historis tetap immutable); base member quota belum ditetapkan dan dapat ditetapkan independen per tier; `seat_package` tetap mekanisme kapasitas aditif (ukuran/harga/stacking/renewal/expiry/billing/enforcement = keputusan terpisah, belum ditetapkan); parameter `owner_counted_in_quota` tetap dipertahankan untuk sisa semantics OD-05. Sumber: `adr/ADR-027-member-quota-policy-and-seat-extension.md`.
 
 ---
 
@@ -795,7 +799,7 @@ Only OD IDs registered in `OPEN_DECISIONS.md` are used below. New needs are list
 | # | Open question | Data-model impact | OD ID (existing) | Status |
 |---|---|---|---|---|
 | 1 | Production database (physical types, physical migration tooling, physical index types) | Physical encoding of §2.1 identifiers, §9 index strategy, audit WORM mechanics | OD-01 | OPEN — does not block this logical model |
-| 2 | Owner seat semantics (owner counted in 5-crew quota?) | `owner_counted_in_quota` parameter of TierQuota/Seat enforcement (§8) | OD-05 | OPEN |
+| 2 | Seat-counting semantics — owner exclusion DECIDED (ADR-027); remaining: numeric base quota per tier (TBD) + counting/enforcement details | `owner_counted_in_quota` parameter of TierQuota/Seat enforcement (§8) — parameter retained as configuration; the policy itself is already fixed | OD-05 | **Owner NOT counted — DECIDED via ADR-027 (not an open question)**; remaining OPEN: numeric base quota per tier (TBD) + counting/enforcement semantics **[R1 2026-11-15]** |
 | 3 | Billing/commercial values, payment gateway, refund policy | StoreOrder/Invoice/Payment states finalized; commercial fields typed but valueless | OD-06 | OPEN |
 | 4 | Offline-first strategy (local queue, sync, conflict) | SyncQueueItem/ConflictResolutionRecord activation; §3.17 | OD-07 | OPEN |
 | 5 | Mobile/client delivery strategy | Client-neutral contracts only; no client-specific fields | OD-02 | OPEN — does not block Phase 2 |
@@ -828,7 +832,7 @@ Only OD IDs registered in `OPEN_DECISIONS.md` are used below. New needs are list
 | 32 | GHG methodology & KPI targets | SustainabilityMetric validation rules (§3.16) | OD-105 / OD-106 | OPEN |
 | 33 | Product content language default | i18n handling defaults (§2.9) | OD-12 | OPEN (assumption: ID default) |
 | 34 | Export security classification | DataExportJob security controls | OD-166 | OPEN |
-| 35 | Tester/demo access scope (REQ-100) | Demo/tester data separation (labeled, no real customer data) | OD-06 (scope) | OPEN |
+| 35 | Tester/demo access scope (REQ-100) | Demo/tester data separation (labeled, no real customer data) — retained as conceptual model note | — | OWNER DECISION REQUIRED — no dedicated OD ID registered (access scope & limits tied to REQ-100, with REQ-015 as public-landing context); OD-06 does NOT govern tester eligibility/access **[R1D 2026-11-15 — "OD-06 (scope)" corrected: no dedicated OD ID exists for tester/demo scope]** |
 
 **Candidates — require registration (NO OD ID assigned yet; do not cite an ID until registered):**
 

@@ -30,20 +30,20 @@ Implikasi arsitektur yang mengikat scope ini (MC §5): satu domain model inti, m
 
 | Komponen | Isi ringkas | Rujukan |
 |---|---|---|
-| **miniRider** | Workspace berbasis event (Home, Event, Asset, Team, Profile); technical rider draft terhubung event; media kit dari template terkait event; aset dasar + asset/set template; konteks event aktif kru + safe switch; halaman event (Chat, Rundown, Media Kit, update info/laporan); batas awal maks 5 kru/workspace (kuota = OD-05); Developer Equipment Store **in-app** hanya di tier ini | MC §2; REQ-003..REQ-010 |
+| **miniRider** | Workspace berbasis event (Home, Event, Asset, Team, Profile); technical rider draft terhubung event; media kit dari template terkait event; aset dasar + asset/set template; konteks event aktif kru + safe switch; halaman event (Chat, Rundown, Media Kit, update info/laporan); kuota kru/workspace = generic configured quota (base non-owner member quota TBD per tier — ADR-027; owner tidak dihitung — DIPUTUSKAN; historis: "maks 5 kru" = nilai seed 5-B yang sudah superseded) **[R1 2026-11-15]**; Developer Equipment Store **in-app** hanya di tier ini | MC §2; REQ-003..REQ-010 |
 | **maxRider** | Mewarisi core miniRider (kecuali visibilitas Equipment Store in-app) + CRM/pelanggan, keuangan/komersial, operasi rental & siklus hidup aset penuh (QR/barcode, print, scan), maintenance, pemeriksaan, readiness, role/permission dinamis, workflow, dashboard, risk/HSE, kontrol operasi | MC §2, §11; REQ-011, REQ-036, REQ-045, REQ-046 |
 | **ISOrider** | Mewarisi core maxRider + IMS digital: mutu, sustainability, K3/HSE, lingkungan, keamanan informasi, business continuity, risiko, audit, controlled documented information, bukti, kompetensi, vendor/kontraktor, keluhan, NCR/CAPA, management review, continual improvement | MC §2, §9, §10; REQ-012, REQ-039..REQ-044, REQ-070..REQ-087 |
 | **hiRider** | Marketplace layanan kru: profil, skill, portofolio, **penawaran jasa (service offer — in-scope per baseline Master Control; ADR-021; lifecycle PROPOSED)**, rekrutmen (buka/tutup), application lifecycle (apply→shortlist→accept/reject→withdraw); status lamaran ≠ akses workspace/event; kru kelola beberapa workspace mandiri sesuai lisensi | MC §2; REQ-013 (amended), REQ-014, REQ-062..REQ-064 |
 | **Website publik** | Landing page: promosi produk, lisensi, extensions, akses tester, tautan download Android/iOS/Windows, login; **License & Extension Shop** (surface publik: jalur pembelian lisensi pertama + perpanjangan + extension — melayani calon pelanggan tanpa lisensi) terpisah dari **Public Store** (produk developer, akses basic miniRider) dan dari Equipment Store in-app *(amendemen ADR-018, 2026-10-28)* | MC §2, §6; REQ-015, REQ-030 (revised), REQ-100; ADR-018 |
 | **Developer Portal** | Konsol login berhak khusus: kelola katalog/listing toko, stok, harga, diskon, media produk, status publikasi; notifikasi terarah (seluruh workspace / terpilih / user tertentu) dengan pratinjau wajib, dedup/idempotency, status kirim, anti-abuse, audit log; **tidak** otomatis memberi hak lisensi/billing/broadcast | MC §2, §6; REQ-016, REQ-017, REQ-031, REQ-052, REQ-055..REQ-061 |
-| **Extensions** | Kandidat: workspace tambahan, paket +10 seat kru per workspace, aplikasi mobile/tablet, landing page workspace, lainnya yang disetujui | MC §3; REQ-018 |
+| **Extensions** | Kandidat: workspace tambahan, seat_package (calon extension kapasitas seat — contoh katalog "+10 seat kru per workspace" = **CONTOH ILUSTRATIF** dari REQ-018, BUKAN ukuran paket yang telah diputuskan; actual quantity & detail komersial tetap terbuka — OD-05 = quantity/stacking, OD-06 = komersial, OD-108 = renewal/expiry **[R1C 2026-11-15 — pemetaan OD diberi label per scope]**), aplikasi mobile/tablet, landing page workspace, lainnya yang disetujui **[R1B 2026-11-15 — contoh +10 diberi label ilustratif; bukan package size final]** | MC §3; REQ-018 |
 | **Lintas komponen** | Auth WhatsApp + Google OAuth/OIDC (MC §4; REQ-021/022); multi-tenancy & permission (REQ-023..026); i18n ID default + siap EN (REQ-028); UX/UI quality gate & state lengkap (REQ-032..035; `UX_UI_STANDARD.md`); responsive web 3 breakpoint (REQ-019); API reusable web+mobile (REQ-020); migrasi schema terkontrol (REQ-029) | MC §3–§8 |
 
 ### 2.2 Yang EKSKLUSIF di luar scope rilis awal (eksplisit)
 
 | # | Item di luar scope rilis awal | Alasan & rujukan |
 |---|---|---|
-| X-1 | **Detail harga, billing, pajak, refund, payment gateway** — struktur store/lisensi ada, nilai komersial tidak ditetapkan/didokumentasikan | Keputusan bisnis terbuka; MC §3 melarang mengarang nilai; OD-06; REQ-056, REQ-098, REQ-100 |
+| X-1 | **Detail harga, billing, pajak, refund, payment gateway** — struktur store/lisensi ada, nilai komersial tidak ditetapkan/didokumentasikan | Keputusan bisnis terbuka; MC §3 melarang mengarang nilai; OD-06; REQ-056, REQ-098 **[R1D 2026-11-15 — REQ-100 dihapus dari baris ini: REQ-100 = scope akses tester/demo (keputusan owner, tanpa dedicated OD ID terdaftar), bukan penanti nilai komersial OD-06]** |
 | X-2 | **Integrasi vendor spesifik** (vendor WhatsApp OTP, payment provider, vendor e-signature, dsb.) — desain wajib agnostik-vendor sampai keputusan | MC §4, §3; OD-03, OD-06, OD-103 |
 | X-3 | **Kalkulasi karbon/GHG tanpa metodologi terverifikasi** — data sustainability dapat dicatat dengan sumber/satuan/metode + flag measured/estimated; input emisi tanpa metodologi ditolak atau berlabel estimated & pending review | MC §9; REQ-086; OD-105, OD-106 |
 | X-4 | **Klaim sertifikasi/komplian ISO** — ISOrider adalah platform pendukung IMS, bukan jaminan sertifikasi; status edisi standar `NOT VERIFIED` (katalog ISO `BLOCKED` dari sandbox) | MC §9; ADR-002; REQ-039; ISO_IMS_BLUEPRINT §2 |
@@ -78,7 +78,7 @@ Segmentasi mengikuti MC §1; detail persona di `PERSONAS_AND_JOURNEYS.md`.
 | Segmen | Karakteristik operasi (desk) | Tier yang relevan | Persona contoh |
 |---|---|---|---|
 | **Rumahan/perorangan** | Satu orang kerja serbaguna; event skala kecil; butuh kesederhanaan | miniRider | P-01 Solo Owner-Operator |
-| **Startup** | Tim kecil (≤5 kru awal); kelola beberapa event; mulai butuh CRM/aset | miniRider → maxRider | P-02 Workspace Owner UKM, P-04 Event Manager |
+| **Startup** | Tim kecil (≤5 kru awal — angka historis; base quota per ADR-027 belum ditetapkan); kelola beberapa event; mulai butuh CRM/aset | miniRider → maxRider | P-02 Workspace Owner UKM, P-04 Event Manager |
 | **Usaha bertumbuh** | Operasi rental/asset serius, keuangan, tim lebih besar, role dinamis | maxRider (+ extension seat/workspace) | P-05 Rental/Asset Manager, P-06 Finance/CRM Officer |
 | **Organisasi IMS** | Butuh dokumen terkendali, bukti, audit, NCR/CAPA, sustainability, review | ISOrider | P-09 Auditor, P-10 IMS/Sustainability Manager, P-11 Supplier (bila relevan) |
 | **Lintas segmen** | Kru multi-workspace mobile-first | hiRider (+ membership di workspace tier lain) | P-03 Crew Member |
@@ -103,7 +103,7 @@ Segmentasi mengikuti MC §1; detail persona di `PERSONAS_AND_JOURNEYS.md`.
 | Marketplace kru/rekrutmen (termasuk penawaran jasa — ADR-021) | ❌ | ❌ | ❌ | ✅ |
 | License & Extension Shop (publik — first-license/renewal/extension) | ✅ (dan calon pelanggan tanpa lisensi) | ✅ | ✅ | ✅ |
 | Public Store (produk developer — gate basic miniRider) | ✅ (dengan basic miniRider) | ✅ | ✅ | ✅ *(dengan basic miniRider — hiRider bukan tier)* |
-| Maks kru per workspace | 5 (OD-05: owner dihitung?) | sesuai lisensi/extension | sesuai lisensi/extension | sesuai lisensi |
+| Kuota kru per workspace (base, non-owner) | TBD per tier — ADR-027 (owner TIDAK dihitung — DIPUTUSKAN; angka belum ditetapkan, tidak dikarang; TBD ≠ unlimited; historis: "5" = nilai seed 5-B yang superseded) **[R1 2026-11-15]** | TBD per tier — ADR-027 (belum ditetapkan; dapat diputuskan independen per tier) | TBD per tier — ADR-027 (belum ditetapkan; dapat diputuskan independen per tier) | TBD per tier — ADR-027 (belum ditetapkan; dapat diputuskan independen per tier) |
 
 Batas kuantitatif, harga, extension, dan perilaku downgrade: lihat `LICENSE_MATRIX.md` §2–§4 (semua nilai komersial `UNKNOWN / NEEDS DECISION` — OD-06, OD-108).
 
@@ -115,7 +115,7 @@ Batas kuantitatif, harga, extension, dan perilaku downgrade: lihat `LICENSE_MATR
 |---|---|---|---|
 | Vendor/mekanisme verifikasi WhatsApp login | Auth alur nomor WhatsApp (bukti kontrol nomor, OTP sekali pakai, anti-replay, rate limit) | OD-03; REQ-021, REQ-047, REQ-054 | `OPEN` — Phase 4 tertahan |
 | Google OAuth/OIDC (provisioning project, client credential, redirect URI) | Login Google Sign-In/SSO dengan validasi state/nonce/issuer/audience/signature/expiry | MC §4; REQ-022 | `OPEN` — provisioning eksternal belum dilakukan (NOT DONE); desain agnostik sampai konsol tersedia |
-| Payment gateway + kebijakan harga/pajak/refund | License & Extension Shop, Public Store, siklus lisensi, akses tester | OD-06; REQ-056, REQ-098, REQ-100; ADR-018 | `OPEN` — Phase 5/14/22 tertahan |
+| Payment gateway + kebijakan harga/pajak/refund | License & Extension Shop, Public Store, siklus lisensi | OD-06; REQ-056, REQ-098; ADR-018 **[R1D 2026-11-15 — "akses tester" dan REQ-100 dihapus dari baris OD-06 ini: scope tester/demo = keputusan owner tanpa dedicated OD ID terdaftar, bukan bagian dari blokade komersial OD-06]** | `OPEN` — Phase 5/14/22 tertahan |
 | Target hosting/deployment & strategi rilis | Operasi, backup/DR, RPO/RTO | OD-10, OD-114; REQ-094, OPERATIONS.md | `OPEN` — wajib sebelum Phase 25/26 |
 | Katalog resmi ISO (www.iso.org / catalog.iso.org) | Verifikasi edisi/amendment standar sebelum mapping klausul ISOrider | ADR-002; REQ-039, REQ-071; ISO_IMS_BLUEPRINT §2 | `BLOCKED` dari sandbox (HTTP 403/000) — wajib dijalankan dari lingkungan berakses |
 | Ahli hukum/privasi lokal | Kewajiban hukum & privasi (evidence, metadata sensitif, sign-off legal) | OD-09, OD-103 | `OPEN` |
@@ -135,7 +135,7 @@ Semua baris berstatus **`ASSUMPTION`** — tidak satupun divalidasi dengan data 
 | A-01 | Bahasa konten produk: Indonesia default + siap EN; tidak ada bahasa ketiga pada rilis awal | MC §5; OD-12 (`OPEN`, asumsi berlaku bila tidak dijawab) | Refactor i18n bila bahasa lain jadi wajib awal |
 | A-02 | Web browser (desktop/tablet/mobile) adalah kanal utama rilis awal; app pendamping menyusul sesuai OD-02 | MC §3 ("web adalah kanal kelas utama") | Ekspektasi pengguna mobile bila app ditunggu lebih cepat |
 | A-03 | Satu workspace = satu unit bisnis/tenant; multi-workspace untuk pemilik usaha adalah extension ("workspace tambahan", MC §3), bukan default | MC §2–§3 | Desain tenancy Phase 2 salah arah bila owner berbeda pandangan |
-| A-04 | Kuota 5 kru/workspace cukup untuk segmen rumahan/startup awal; kelebihan via extension +10 seat | MC §2, §3 | Frustrasi onboarding bila kuota terasa sempit; OD-05 juga belum memutuskan owner dihitung |
+| A-04 | **(Asumsi historis/ilustratif — angka superseded):** asumsi lama "kuota 5 kru/workspace cukup untuk segmen rumahan/startup awal; kelebihan via extension +10 seat" — angka 5 = nilai historis seed 5-B, SUPERSEDED oleh ADR-027 (base member quota per tier belum ditetapkan); "+10 seat" = ilustrasi katalog REQ-018, bukan keputusan ukuran paket. Asumsi SEGMENTASI (rumahan/startup = tim kecil) tetap berlaku dan TERPISAH dari aturan kuota produk — angka kuota aktif = TBD per tier; owner TIDAK dihitung (DIPUTUSKAN ADR-027) **[R1 2026-11-15 — risiko-dulu menyebut "OD-05 juga belum memutuskan owner dihitung"; keputusan itu sudah ditetapkan]** | MC §2, §3 | Frustrasi onboarding bila kuota terasa sempit saat angka base quota nanti ditetapkan terlalu rendah |
 | A-05 | Kru memiliki smartphone dengan browser modern (dan kamera untuk alur scan) | MC §7–§8 (mobile, scanner) | Alur hiRider/scan terhambat di perangkat lama |
 | A-06 | Owner akan menyediakan akses/akun untuk vendor WhatsApp & konsol Google ketika OD-03 diputuskan | MC §4 (provisioning eksternal) | Phase 4 tertahan lebih lama |
 | A-07 | Pengguna organisasi IMS memahami bahwa platform mendukung — bukan menjamin — sertifikasi | MC §9 | Ekspektasi keliru / klaim berlebih oleh penjualan |
@@ -153,7 +153,7 @@ Artefak wajib Phase 1 (per prompt Phase 1 §"Artefak yang wajib dihasilkan"). Fi
 |---|---|---|---|
 | 1 | `REQUIREMENTS.md` | Revisi requirement REQ-001..REQ-100: ID stabil, priority, rationale, acceptance criteria terukur, source, planned phase | Sudah ada & dibaca (100 REQ, semua `PROPOSED`) — `VERIFIED` |
 | 2 | `USE_CASES.md` | Main flows & failure/alternate flows (UC-xx) | Belum ada saat penulisan — dihasilkan workstream lain |
-| 3 | `LICENSE_MATRIX.md` | Matrix tier/extension, batas 5 kru, siklus beli/renewal/expiry/grace/downgrade, perilaku data saat tier turun; pemisahan store publik vs Equipment Store in-app | Sudah ada (draft TARGET, tanpa harga) — `VERIFIED`; dirujuk, tidak didefinisikan ulang |
+| 3 | `LICENSE_MATRIX.md` | Matrix tier/extension, batas 5 kru *(angka historis — SUPERSEDED 2026-11-01 oleh ADR-027)*, siklus beli/renewal/expiry/grace/downgrade, perilaku data saat tier turun; pemisahan store publik vs Equipment Store in-app | Sudah ada (draft TARGET, tanpa harga) — `VERIFIED`; dirujuk, tidak didefinisikan ulang |
 | 4 | `PROCESS_MAP.md` | Event-to-cash/asset lifecycle & IMS process map | Belum ada saat penulisan |
 | 5 | `STANDARD_REGISTER.md` | Standar/edisi/amendment/status/source/verified date (tanpa teks berhak cipta) | Belum ada saat penulisan |
 | 6 | `DOCUMENT_EVIDENCE_MODEL.md` | Hirarki dokumen, ACL, lifecycle, evidence, approval/signature, auditor traceability | Belum ada saat penulisan |

@@ -47,7 +47,11 @@ NOT RUN (larangan platform); R2: production build exit 0 pada working copy teris
 suite bertambah menjadi **16 file / 145 test (semua PASS)** — 113 regresi Phase 4 + **32 test Phase 5-B**:
 **vocabulary** (`tests/unit/licensing-vocabulary.test.ts`, 11 — tepat 3 tier MC §2.1; `HI_RIDER`/`TOTAL_RIDER`
 bukan tier; **tanpa silent fallback**; kode language-neutral DMC §2.9; matriks = LICENSE_MATRIX §2; kuota
-miniRider 5 kru; OD-05 tidak dijawab), **domain** (`tests/integration/licensing-domain.test.ts`, 13 —
+miniRider 5 kru (historis — seed 5-B); OD-05 saat itu tidak dijawab — kini owner exclusion DIPUTUSKAN
+via ADR-027 (owner tidak dihitung member-seat)) *(catatan 2026-11-02 — FINAL PARITY RECONCILIATION: deskripsi suite 5-B
+ini historis — ekspektasi kuota angka 5 telah direkonsiliasi ke ADR-027 di canonical `d45e73e` (test `fee15bb`
+menghapus regresi kuota bernilai 5); base member quota belum ditetapkan untuk tier mana pun; owner tidak
+dihitung member-seat)* **[R1 2026-11-15 — deskripsi historis 5-B diberi bingkai historis eksplisit; bukan kuota aktif]**, **domain** (`tests/integration/licensing-domain.test.ts`, 13 —
 lisensi↔workspace Phase 4, **tepat satu ACTIVE per workspace** via partial unique index dibaca dari domain
 layer, histori non-ACTIVE tersimpan, onDelete Restrict REQ-099, CHECK closed-set tier DB-level, unique
 katalog CapabilityRule/TierQuota, DMMF himpunan model 11 Phase 4 + 8 fondasi tanpa duplikasi, co-exist

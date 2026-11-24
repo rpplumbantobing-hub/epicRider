@@ -35,9 +35,9 @@
 | `ExtensionType` | Closed-by-owner list 4 jenis | MC §2/§3; REQ-018; DMC §3.6 |
 | `ExtensionDefinition` | Katalog definisi (default `isActive=false` — tidak aktif sebelum disetujui owner) | DMC §3.6; OD-06 |
 | `ExtensionInstance` | Extension terprovisi per workspace; lifecycle LICENSE_MATRIX §5 | LICENSE_MATRIX §5; DMC §3.6; REQ-018 |
-| `TierQuota` | Definisi kuota per tier — satu-satunya nilai owner: miniRider 5 kru/workspace; `ownerCountedInQuota` NULL (OD-05) | MC §2.1; REQ-009; DMC §8 |
+| `TierQuota` | Definisi kuota per tier — seed historis Phase 5-B: tepat satu baris owner (miniRider, nilai angka 5, `ownerCountedInQuota` NULL) — **fakta data/implementasi historis yang dilaporkan, BUKAN kebijakan aktif** *(catatan 2026-11-02 — FINAL PARITY RECONCILIATION: nilai "miniRider 5 kru/workspace" = deskripsi historis seed Phase 5-B — SUPERSEDED oleh ADR-027 (ACCEPTED, owner directive 2026-11-01); base member quota kini TIDAK ditetapkan untuk tier mana pun; owner tidak dihitung member-seat; `TierQuota` tetap model konfigurasi generik)*. **[R1 2026-11-15 — makna NULL diperjelas:** `ownerCountedInQuota` NULL adalah kondisi data/implementasi historis seed 5-B (pertanyaan kebijakan saat itu sengaja tidak dikunci); setelah ADR-027, kebijakan owner exclusion SUDAH DIPUTUSKAN (owner TIDAK dihitung) — NULL tidak boleh dibaca sebagai bukti bahwa keputusan owner-counting masih OPEN; penerapan teknisnya tidak diklaim tanpa bukti**] | MC §2.1; REQ-009; DMC §8; ADR-027 |
 
-**Vocabulary domain** (`src/lib/licensing/vocabulary.ts`): `LICENSE_TIER_CODES`, `LICENSE_TIER_DISPLAY_NAMES`, `LICENSE_STATUSES` (PURCHASED/ACTIVE/RENEWAL_DUE/EXPIRED/GRACE/DOWNGRADED — DMC §6.2/REQ-098), `EXTENSION_TYPE_CODES`, `EXTENSION_INSTANCE_STATUSES` (LICENSE_MATRIX §5), `CAPABILITY_CODES`, `TIER_CAPABILITY_MATRIX`, konstanta kuota (5 kru; `crew_seats_per_workspace`; `CREW_SEAT`), guard `is*` tanpa normalisasi/fallback.
+**Vocabulary domain** (`src/lib/licensing/vocabulary.ts`): `LICENSE_TIER_CODES`, `LICENSE_TIER_DISPLAY_NAMES`, `LICENSE_STATUSES` (PURCHASED/ACTIVE/RENEWAL_DUE/EXPIRED/GRACE/DOWNGRADED — DMC §6.2/REQ-098), `EXTENSION_TYPE_CODES`, `EXTENSION_INSTANCE_STATUSES` (LICENSE_MATRIX §5), `CAPABILITY_CODES`, `TIER_CAPABILITY_MATRIX`, konstanta kuota (5 kru; `crew_seats_per_workspace`; `CREW_SEAT`) *(catatan 2026-11-02 — FINAL PARITY RECONCILIATION: konstanta kuota 5 kru di vocabulary 5-B = artefak historis seed Phase 5-B — SUPERSEDED oleh ADR-027 (ACCEPTED, owner directive 2026-11-01); base member quota belum ditetapkan; angka historis tidak boleh dibaca sebagai kuota aktif)*, guard `is*` tanpa normalisasi/fallback.
 
 **Migration aditif** `20261030124013_phase5b_licensing_domain_foundation` (237 baris): 8 CREATE TABLE, indeks (termasuk partial unique `License_workspaceId_active_key … WHERE status='ACTIVE'` — preseden live-membership Phase 4), CHECK `LicenseTier.code IN ('MINI_RIDER','MAX_RIDER','ISO_RIDER')`, seed referensi: 3 tier + 4 extension type + 10 capability + 24 capability rule + 1 TierQuota. **Tanpa** DROP/DELETE/ALTER/UPDATE (UPDATE hanya klausa FK `ON UPDATE CASCADE`).
 
@@ -122,7 +122,7 @@ Dokumen (modified): PHASE_STATUS.md, ROADMAP.md, TESTING.md, worklog.md
 
 | OD | Isu | Cara 5-B menjaga keterbukaan |
 |---|---|---|
-| **OD-05** | Owner dihitung sebagai seat / final seat counting | `TierQuota.ownerCountedInQuota` **NULL** (bukan false/true); tidak ada konstanta jawaban di vocabulary; tidak ada model Seat |
+| **OD-05** | Owner dihitung sebagai seat / final seat counting | `TierQuota.ownerCountedInQuota` **NULL** (bukan false/true); tidak ada konstanta jawaban di vocabulary; tidak ada model Seat. **[R1 2026-11-15 — konteks:** baris ini melaporkan kondisi teknis historis saat 5-B; kebijakan owner exclusion kini SUDAH DIPUTUSKAN via ADR-027 (owner TIDAK dihitung) — NULL bukan indikasi keputusan masih OPEN; penerapan teknis tidak diklaim**] |
 | **OD-06** | Harga/gateway/checkout/invoice/charging | Tidak ada field harga; `ExtensionDefinition.isActive=false` default; 0 definisi produk; tidak ada kode issuance |
 | **OD-108** | Expiry/grace/downgrade: durasi & kebijakan | Term/window hanya kolom struktur (semua NULL); tidak ada mekanika transisi/auto-convert/penghapusan; status vocabulary hanya struktur |
 
@@ -293,7 +293,7 @@ Client/UI tidak pernah menjadi sumber kebenaran (tidak ada kode entitlement di s
 
 | OD | Isu | Cara 5-C menjaga keterbukaan |
 |---|---|---|
-| **OD-05** | Owner dihitung sebagai seat / final counting | Engine TIDAK mengonsumsi `TierQuota`; tidak ada perhitungan seat/owner; `DENY_QUOTA_EXCEEDED` tetap tidak dievaluasi |
+| **OD-05** | Owner dihitung sebagai seat / final counting | Engine TIDAK mengonsumsi `TierQuota`; tidak ada perhitungan seat/owner; `DENY_QUOTA_EXCEEDED` tetap tidak dievaluasi. **[R1 2026-11-15 — konteks:** fakta implementasi historis 5-C (runtime quota enforcement tidak ada dan tidak diklaim); kebijakan owner exclusion sudah DIPUTUSKAN via ADR-027 — ketiadaan enforcement ini bukan indikasi keputusan masih OPEN**] |
 | **OD-06** | Harga/billing/checkout/issuance | Tidak ada kode komersial; extension hanya input status instance; tidak ada issuance/purchase |
 | **OD-108** | Expiry/grace/downgrade | Engine hanya membaca status data (ACTIVE vs bukan); tidak ada transisi/durasi/auto-downgrade; semua state non-ACTIVE → deny deterministik tanpa memilih kebijakan |
 
@@ -334,3 +334,39 @@ workspace diuji. Sumber: MC §2; ENTITLEMENT_MODEL §3/§4/§7/§10; AUTHORIZATI
    `DENY_TIER_ENTITLEMENT_MISSING` memakai capability di luar matriks tier; skenario rotasi status
    lisensi melengkapi langkah penurunan status sebelum evaluasi.
 3. Key metadata audit memakai nama aman-sanitizer (`tier`, bukan `tierCode`) — regex redaksi Phase 4.
+
+---
+
+## Klarifikasi Status (append-only — R1E, 2026-11-17)
+
+> **Task ID:** `R1E-FINAL-PHASE-STATUS-CONSISTENCY-CORRECTION-2026-11-17` · **Jenis entri:** klarifikasi status **append-only**, ditambahkan 2026-11-17. Seluruh isi laporan di atas — termasuk §M (status 5-B) dan §5C-M — **tidak diubah, tidak dihapus, dan tidak ditulis ulang**; semuanya dipertahankan apa adanya sebagai bukti historis eksekusi 5-B/5-C.
+
+### §R1E-A Status §M dan §5C-M adalah snapshot historis pada saat laporan dibuat
+
+Pernyataan berikut pada §M dan §5C-M —
+
+- `PHASE_5C_STATUS = IMPLEMENTATION PASS — LOCAL CANDIDATE — NOT INTEGRATED`;
+- "Phase 5 keseluruhan tetap IN PROGRESS";
+- "5-D/5-E NOT STARTED" (§5C-M) dan "5-C/D/E NOT STARTED" (§M);
+
+— menggambarkan keadaan **pada saat laporan Phase 5-B/5-C ini disusun (2026-10-30)**, yaitu sebelum integrasi 5-B/5-C ke `main`, sebelum eksekusi 5-D/5-E, dan sebelum penutupan fase. Pernyataan tersebut adalah **snapshot historis**, bukan status kanonik terakhir, dan telah **superseded** oleh penyelesaian serta penutupan Phase 5. Klarifikasi ini tidak mengubah, menambah, atau melemahkan bukti historis 5-B/5-C yang terdokumentasi di atas.
+
+### §R1E-B Status kanonik yang berlaku (sumber kontrol workspace — diverifikasi ada dan konsisten oleh R1E, 2026-11-17)
+
+| Item | Status kanonik | Sumber (terverifikasi ada & konsisten satu sama lain) |
+|---|---|---|
+| Phase 4 | **DONE — CLOSED** (2026-10-30) | `ROADMAP.md` (baris fase 4); `PHASE_STATUS.md`; `HANDOFF.md` §1 |
+| Phase 5 | **DONE — CLOSED** (2026-10-31) | `ROADMAP.md`; `PHASE_STATUS.md`; `HANDOFF.md` §1; `PHASE_5_CLOSURE_REPORT.md` |
+| Phase 6 | **NOT STARTED** (memerlukan otorisasi owner eksplisit) | `ROADMAP.md`; `PHASE_STATUS.md`; `HANDOFF.md` §1; `PHASE_5_CLOSURE_REPORT.md` §7 |
+
+Bukti penutupan Phase 5 sebagaimana tercatat di `PHASE_5_CLOSURE_REPORT.md` (dirujuk apa adanya; klarifikasi ini tidak menambahkan klaim penyelesaian baru): 5-B/5-C terintegrasi via PR #3 (`165b3ba`); 5-D via PR #4 (`aafcbe3`); 5-E di `897c7a9`; canonical main at closure `897c7a9`; CI owner-verified `#41193444454` tercatat Success; canonical re-run 361/361. `PHASE_5_CLOSURE_REPORT.md` juga mencatat bahwa ADR-023/024/025/026 tetap PROPOSED menunggu ratifikasi owner dan OD-05/OD-06/OD-108 (di antara OD lain) tetap OPEN — status keputusan tersebut tidak diubah dan tidak dibuka kembali oleh klarifikasi ini.
+
+### §R1E-C Ruang lingkup laporan ini
+
+Dokumen ini mendokumentasikan **bukti eksekusi subfase 5-B dan 5-C** (implementation evidence lokal pada saat eksekusi), **bukan** status keseluruhan Phase 5 saat ini. Status keseluruhan Phase 5 — serta status fase lainnya — bersumber dari dokumen kanonik pada §R1E-B, bukan dari §M/§5C-M dokumen ini.
+
+### §R1E-D Batas klarifikasi ini
+
+- Entri ini **append-only** (2026-11-17); tidak ada bagian lain dokumen ini yang diubah; tidak ada bukti historis yang dihapus atau ditulis ulang.
+- Klarifikasi ini tidak mengubah status fase apa pun (perubahan status terjadi melalui gate governance yang terdokumentasi pada sumber kanonik §R1E-B, bukan melalui entri ini) dan tidak membuka kembali keputusan yang sudah ditetapkan.
+- Tidak ada klaim implementasi atau pengujian baru; entri ini murni klarifikasi status.
