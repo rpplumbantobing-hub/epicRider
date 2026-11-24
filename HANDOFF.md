@@ -1,6 +1,6 @@
 # HANDOFF — epicRider
 
-**Diperbarui:** 2026-11-01 — Phase 5 closure reconciled and ADR-027 accepted.
+**Diperbarui:** 2026-11-24 — R1E governance snapshot imported and post-merge status reconciled.
 
 ## 1. Status fase
 
@@ -32,3 +32,16 @@ OD-01, OD-02, OD-03, OD-05, OD-06, OD-108, OD-115, OD-122 and other registered O
 2. When quota numbers are later decided, record them as an explicit owner decision and update the relevant tier configuration without rewriting historical migrations.
 3. Keep `ADR_REGISTER.md`, `ROADMAP.md`, `PHASE_STATUS.md`, `MASTER_CONTROL.md` and `LICENSE_MATRIX.md` synchronized at each governance gate.
 4. Treat `PHASE_5_CLOSURE_REPORT.md` as closure evidence; its 2026-11-01 addendum records ADR-027.
+
+
+## 5. 2026-11-24 — R1E transfer and canonical repository sync
+
+- R1E final transfer snapshot was merged into canonical `main` through [PR #8](https://github.com/rpplumbantobing-hub/epicRider/pull/8).
+- Merge commit: `f8395ed90484cd318f87aef2e0d13fd66c71a9df`. The import contains 18 governance documents plus `SNAPSHOT_REPORT.md`, `MANIFEST.txt` and `SHA256SUMS.txt` (21 files total).
+- PR #8 was documentation-only; no application source/runtime files were changed. PR CI run #62 completed successfully (lint, typecheck, test and build checks).
+- The R1E archive integrity was independently checked before import: ZIP SHA-256 matched the sidecar, ZIP CRC was clean, and all 20 internal checksums matched.
+- This synchronization records the import; it does not change any product decision, ADR status, open-decision status or phase acceptance.
+- Phase 4 and Phase 5 remain DONE/CLOSED. Phase 6 remains NOT STARTED and must not begin without explicit owner authorization.
+- PR #7 (`governance/zai-handoff-20261101`) remains OPEN and separate; this synchronization does not merge, close or modify it.
+
+The imported R1E snapshot is a governance evidence package. It is not a new implementation report and does not itself authorize Phase 6.
