@@ -26,7 +26,7 @@
 
 | # | Criterion | Required evidence | Status |
 |---|---|---|---|
-| B1 | Event is workspace-owned; fields cover name, schedule start/end, location, current version and audit attribution as justified by DMC | schema review + migration diff | NOT ASSESSED |
+| B1 | Event is workspace-owned; fields cover name, schedule start/end, location, current version and audit attribution as justified by DMC; past start date and end-before-start range are rejected per UC-2002 | schema review + migration diff | NOT ASSESSED |
 | B2 | EventAssignment links Event to Membership, never directly User; workspace consistency is enforced at DB/service boundary | schema constraints + cross-workspace negative tests | NOT ASSESSED |
 | B3 | Duplicate active assignment for the same event/member is prevented deterministically | unique constraint + concurrency/integration test | NOT ASSESSED |
 | B4 | Only provisional Event state `DRAFT` is used; no unapproved lifecycle transitions are implemented | schema/service/API/UI review | NOT ASSESSED |

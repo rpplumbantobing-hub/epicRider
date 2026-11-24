@@ -2,7 +2,7 @@
 
 **Sumber kebenaran:** `ROADMAP.md`. Dokumen ini adalah ringkasan status berbasis bukti dan tidak menggantikan roadmap. **Diperbarui:** 2026-11-24.
 
-**Sinkronisasi 2026-11-24:** Snapshot governance R1E telah diimpor melalui PR #8 ke `main` pada commit `f8395ed90484cd318f87aef2e0d13fd66c71a9df`. CI PR #8 (#62: lint, typecheck, test, build) berhasil. Perubahan ini hanya mengimpor/memperjelas dokumentasi; status fase pada tabel di bawah tetap sama dan Phase 6 tetap NOT STARTED sampai ada otorisasi eksplisit owner.
+**Sinkronisasi 2026-11-24:** Snapshot governance R1E telah diimpor melalui PR #8 ke `main` pada commit `f8395ed90484cd318f87aef2e0d13fd66c71a9df`. CI PR #8 (#62: lint, typecheck, test, build) berhasil. Perubahan ini hanya mengimpor/memperjelas dokumentasi. Pernyataan Phase 6 NOT STARTED mencerminkan status pada saat impor R1E, sebelum otorisasi owner dan verifikasi Entry Gate yang terpisah pada 2026-11-24; status terkini ada pada tabel di bawah.
 
 **Reassessment 2026-11-24:** Phase 3's previously missing build and remote-CI evidence is now verified by GitHub Actions runs #65 and #66. Phase 3 is DONE/CLOSED. Phase 2 remains PARTIAL because owner ratification of proposed ADRs and OD-01/OD-02 remain outstanding. Phase 6 is IN PROGRESS under explicit owner authorization dated 2026-11-24; scope limitations are in `PHASE_6_ENTRY_GATE.md`.
 

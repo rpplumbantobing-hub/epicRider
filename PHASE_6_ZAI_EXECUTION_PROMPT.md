@@ -70,7 +70,7 @@ Do NOT implement:
 
 ### Event and assignment minimal behavior
 
-- Event fields must follow DMC §3.4 and UC-2002: required name, schedule start/end and location as appropriate; validate start/end consistency. Do not add commercial, rider, media-kit, asset or chat fields.
+- Event fields must follow DMC §3.4 and UC-2002: required name, schedule start/end and location as appropriate; reject a past start date and end-before-start range per UC-2002. Preserve explicit timezone information; do not invent a workspace timezone. Do not add commercial, rider, media-kit, asset or chat fields.
 - New event starts in `DRAFT`; no lifecycle transitions are exposed.
 - Assignment may be represented only as `ASSIGNED` or `REVOKED`; no OFFERED/DECLINED/COMPLETED state machine.
 - Prevent duplicate active assignment for the same Event/Membership pair at the database boundary where supported.

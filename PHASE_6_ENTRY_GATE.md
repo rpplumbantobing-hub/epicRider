@@ -54,6 +54,7 @@ The current main source/runtime baseline has already passed the canonical CI wor
 - Pricing, payment, billing, renewal/grace/expiry decisions — OD-06 / OD-108 OPEN.
 - Full event lifecycle transitions (schedule/activate/complete/close/cancel/archive) — lifecycle is still PROPOSED and candidate C-3 in `DATA_MODEL_CONCEPT.md`; no ADR ID may be invented.
 - Double-assignment conflict policy — OD-130 OPEN. Do not block, rank, auto-resolve or label schedule conflicts as a decided policy.
+- Resource-create idempotency policy — ADR-017 PROPOSED (API D-2); no global registry, TTL or retention policy is ratified.
 - Chat/rundown permissions or data models — Phase 10.
 - Any new product tier or changes to miniRider/maxRider/ISOrider taxonomy.
 

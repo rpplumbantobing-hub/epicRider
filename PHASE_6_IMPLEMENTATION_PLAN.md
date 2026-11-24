@@ -16,7 +16,7 @@
 
 ## Workstream 6-B — Domain and persistence foundation
 
-1. Implement workspace-owned Event and EventAssignment models from `DATA_MODEL_CONCEPT.md` §3.4.
+1. Implement workspace-owned Event and EventAssignment models from `DATA_MODEL_CONCEPT.md` §3.4 and UC-2002. Reject past start dates and end-before-start ranges; do not invent a workspace timezone.
 2. Preserve `User != Membership != Role != Event Assignment`.
 3. Enforce same-workspace relationships and duplicate assignment protection at the database layer where Prisma supports it, with service validation as a second layer.
 4. Use only provisional Event `DRAFT` and assignment `ASSIGNED/REVOKED` subset. No other lifecycle transitions.
