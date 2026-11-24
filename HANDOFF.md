@@ -1,6 +1,6 @@
 # HANDOFF — epicRider
 
-**Diperbarui:** 2026-11-24 — R1E governance snapshot imported and post-merge status reconciled.
+**Diperbarui:** 2026-11-24 — Phase 6 Entry Gate and Acceptance Pack prepared; owner authorization recorded.
 
 ## 1. Status fase
 
@@ -12,7 +12,7 @@
 | 3 | DONE — 2026-11-24 | `PHASE_3_ACCEPTANCE.md` reassessment; CI #66; 354/354 tests; build passed |
 | 4 | DONE | PR #1 merge `a1af59d8e00d3a0d8e28b25f1a7f05961182a6a0`; CI `40928261468` |
 | 5 | DONE | `PHASE_5_CLOSURE_REPORT.md`; 5-E `897c7a9`; CI `41193444454`; 361/361 re-run |
-| 6 | NOT STARTED | Await explicit owner authorization |
+| 6 | IN PROGRESS — 2026-11-24 | Owner authorization received after Entry Gate/Acceptance Pack verification; implementation candidate pending |
 
 ## 2. Governing decisions
 
@@ -28,7 +28,7 @@ OD-01, OD-02, OD-03, OD-05, OD-06, OD-108, OD-115, OD-122 and other registered O
 
 ## 4. Next actions
 
-1. Do not start Phase 6 automatically; obtain explicit owner authorization.
+1. Execute Phase 6 within the verified bounded scope in `PHASE_6_ENTRY_GATE.md`; use `PHASE_6_ZAI_EXECUTION_PROMPT.md` in the z.ai workspace. ChatGPT performs independent audit and GitHub integration.
 2. When quota numbers are later decided, record them as an explicit owner decision and update the relevant tier configuration without rewriting historical migrations.
 3. Keep `ADR_REGISTER.md`, `ROADMAP.md`, `PHASE_STATUS.md`, `MASTER_CONTROL.md` and `LICENSE_MATRIX.md` synchronized at each governance gate.
 4. Treat `PHASE_5_CLOSURE_REPORT.md` as closure evidence; its 2026-11-01 addendum records ADR-027.
@@ -41,10 +41,10 @@ OD-01, OD-02, OD-03, OD-05, OD-06, OD-108, OD-115, OD-122 and other registered O
 - PR #8 was documentation-only; no application source/runtime files were changed. PR CI run #62 completed successfully (lint, typecheck, test and build checks).
 - The R1E archive integrity was independently checked before import: ZIP SHA-256 matched the sidecar, ZIP CRC was clean, and all 20 internal checksums matched.
 - This synchronization records the import; it does not change any product decision, ADR status, open-decision status or phase acceptance.
-- Phase 4 and Phase 5 remain DONE/CLOSED. Phase 6 remains NOT STARTED and must not begin without explicit owner authorization.
+- Phase 4 and Phase 5 remain DONE/CLOSED. Phase 6 is now IN PROGRESS under explicit owner authorization dated 2026-11-24, after Entry Gate verification.
 - PR #7 (`governance/zai-handoff-20261101`) remains OPEN and separate; this synchronization does not merge, close or modify it.
 
-The imported R1E snapshot is a governance evidence package. It is not a new implementation report and does not itself authorize Phase 6.
+The imported R1E snapshot is a governance evidence package; it did not itself authorize Phase 6. Explicit owner authorization was separately received on 2026-11-24 after the Phase 6 Entry Gate and Acceptance Pack were prepared and verified.
 
 
 ## 6. Operational boundaries and contracts
@@ -61,7 +61,7 @@ The imported R1E snapshot is a governance evidence package. It is not a new impl
 - Phase 2 remains PARTIAL: owner ratification/amendment of proposed Phase 2 ADRs and owner decisions OD-01/OD-02 remain outstanding. The CI/build evidence gap is now resolved.
 - OD-05 remains partially decided under ADR-027: owner exclusion is decided; numeric base quota per tier and remaining seat-counting/enforcement semantics remain open. OD-06 (commercial values), OD-108 (expiry/grace/renewal), OD-123 (workspace count), OD-137 (storage) remain scoped open decisions.
 - ISO catalogue verification remains BLOCKED under F0-012/OD-160; this does not imply ISO conformity or certification.
-- Phase 3 is DONE/CLOSED; Phase 4 and Phase 5 are DONE/CLOSED; Phase 6 is NOT STARTED. No later phase starts automatically.
+- Phase 3 is DONE/CLOSED; Phase 4 and Phase 5 are DONE/CLOSED; Phase 6 is IN PROGRESS within the verified scope. No later phase starts automatically.
 
 ## 8. Reproducible verification
 
@@ -87,4 +87,15 @@ Latest verified full workflow evidence for the current source/runtime tree:
 - Keep least-privilege access, tenant isolation, server-side authorization, auditability and controlled migrations as mandatory controls.
 - Do not use force-push, history rewrite, destructive branch/tag deletion or data-loss commands as routine repair methods.
 - Preserve append-only historical evidence. A newer status note supersedes a historical snapshot; it does not erase that snapshot.
-- Before starting Phase 6, complete a Phase 6 entry/readiness review and obtain explicit owner authorization. No implementation work is authorized by this handoff update.
+- Phase 6 Entry Gate and Acceptance Pack are prepared and verified; explicit owner authorization was received 2026-11-24. Implementation is authorized only within the bounded scope and stop conditions in `PHASE_6_ENTRY_GATE.md`.
+
+
+## 10. Phase 6 authorization and execution
+
+- Owner authorization: explicitly granted 2026-11-24 after preparation and verification of the Entry Gate and Acceptance Pack.
+- Entry gate: **PASS WITH LIMITATIONS** — `PHASE_6_ENTRY_GATE.md`.
+- Acceptance: `PHASE_6_ACCEPTANCE.md`; planned traceability: `PHASE_6_TRACEABILITY.md`; implementation sequence: `PHASE_6_IMPLEMENTATION_PLAN.md`.
+- z.ai execution prompt: `PHASE_6_ZAI_EXECUTION_PROMPT.md`. z.ai prepares a local candidate only; it must not commit/push/open PR/merge. ChatGPT audits and operates GitHub.
+- Scope: workspace Home/dashboard, basic Event and EventAssignment foundation, safe event context switch, core navigation shell.
+- Asset CRUD remains Phase 8; chat/rundown/reports remain Phase 10. Event lifecycle transitions, OD-130 overlap rules, dynamic roles, production DB/client/offline decisions and numeric quotas remain deferred.
+- Current Phase 6 status is IN PROGRESS, not DONE. No implementation evidence is claimed yet.

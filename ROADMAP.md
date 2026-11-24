@@ -16,9 +16,11 @@ Status is evidence-based and is the single dynamic phase-status source reference
 
 **2026-11-01 quota-policy reconciliation:** ADR-027 is accepted by explicit owner directive. It does not choose a numeric base member quota. The workspace owner is not counted as a non-owner member seat; base quota may later be set independently for miniRider, maxRider and ISOrider; `TierQuota` remains the generic configuration mechanism; purchased `seat_package` capacity remains additive. ADR-023 is superseded only for its fixed member-quota value/policy portion.
 
-**2026-11-24 R1E repository synchronization:** The verified R1E governance snapshot was imported through PR #8 and merged into canonical `main` at `f8395ed90484cd318f87aef2e0d13fd66c71a9df` (21 documentation/metadata files; no source/runtime changes). PR CI run #62 completed successfully (lint, typecheck, test and build). R1E clarifies the historical status text in `PHASE_5_REPORT.md`; it does not alter phase acceptance, ADR decisions or open-decision statuses. Phase 4 and Phase 5 remain DONE/CLOSED; Phase 6 remains NOT STARTED and still requires explicit owner authorization. PR #7 remains open and separate.
+**2026-11-24 R1E repository synchronization:** The verified R1E governance snapshot was imported through PR #8 and merged into canonical `main` at `f8395ed90484cd318f87aef2e0d13fd66c71a9df` (21 documentation/metadata files; no source/runtime changes). PR CI run #62 completed successfully (lint, typecheck, test and build). R1E clarifies the historical status text in `PHASE_5_REPORT.md`; it does not alter phase acceptance, ADR decisions or open-decision statuses. At the time of the R1E import, Phase 4 and Phase 5 were DONE/CLOSED and Phase 6 was still NOT STARTED pending owner authorization; this snapshot predates the separate owner authorization and Entry Gate verification later on 2026-11-24. PR #7 remains open and separate.
 
 **2026-11-24 Phase 2/3 evidence reassessment:** The CI/build evidence gap is now resolved by successful GitHub Actions runs #65 (push) and #66 (pull_request) on commit `fa144a0a5bbfe8275f0eb00cc8329217a0d2c354` (354/354 tests; build successful). Phase 3 is closed as DONE. Phase 2 remains PARTIAL because owner ratification of proposed ADRs and OD-01/OD-02 decisions remain outstanding; CI success does not make those owner decisions.
+
+**2026-11-24 Phase 6 entry authorization:** Owner explicitly authorized Phase 6 after preparation and verification of the Entry Gate and Acceptance Pack. The pack passed preflight against canonical main `bec9911862470796354e3175486b36d1b9d4a75e`; its PR CI and post-merge verification are the final publication checks. Phase 6 is IN PROGRESS only for the bounded Home/dashboard & Event Foundation scope. Asset CRUD remains Phase 8; chat/rundown/reports remain Phase 10; event lifecycle transitions, OD-130 overlap policy, OD-122 role catalog, OD-01 production DB, OD-02 client strategy, OD-05 numeric quota and OD-07 offline strategy remain unresolved and must not be invented.
 
 ## Phase table
 
@@ -30,7 +32,7 @@ Status is evidence-based and is the single dynamic phase-status source reference
 | 3 | Repository foundations, design system, i18n & CI/testing foundation | **DONE — closed 2026-11-24** | `PHASE_3_ACCEPTANCE.md` reassessment; GitHub Actions run #66; lint/typecheck/build pass; 30 test files / 354 tests pass; documented limitations retained |
 | 4 | Identity, authentication, workspace/tenant, memberships & permissions | **DONE — closed 2026-10-30** | PR #1 merge `a1af59d8e00d3a0d8e28b25f1a7f05961182a6a0`; post-merge CI run #5 / `40928261468` Success; closure 16/16 mandatory criteria PASS with limitations |
 | 5 | Licensing, entitlements, renewal/expiry & extensions model | **DONE — closed 2026-10-31** | 5-B/C PR #3 `165b3ba`; 5-D PR #4 `aafcbe3`; 5-E `897c7a9`; CI `41193444454` Success owner-verified; closure report; 361/361 final re-run; ADR-023/024/025/026 remain PROPOSED, ADR-027 ACCEPTED; OD-05/06/108/122/133/135 remain OPEN and non-blocking to Phase 5 closure |
-| 6 | Home/dashboard & event foundation | NOT STARTED | Requires explicit owner authorization; no Phase 5 blocker remains |
+| 6 | Home/dashboard & event foundation | **IN PROGRESS — authorized 2026-11-24** | Entry Gate PASS WITH LIMITATIONS; see `PHASE_6_ENTRY_GATE.md`, `PHASE_6_ACCEPTANCE.md`, `PHASE_6_IMPLEMENTATION_PLAN.md`; implementation candidate not yet evidenced |
 | 7 | Technical rider & templates | NOT STARTED | — |
 | 8 | Asset foundation & asset/set templates | NOT STARTED | — |
 | 9 | Media kit/templates | NOT STARTED | — |
@@ -58,4 +60,4 @@ Phase 5 DONE does **not** mean production commerce is complete. The integrated 5
 
 ## Current next-phase rule
 
-Phase 6 is `NOT STARTED` even though Phase 5 closure establishes readiness. Start only after explicit owner authorization.
+Phase 6 is `IN PROGRESS` under the explicit owner authorization dated 2026-11-24, after the Entry Gate and Acceptance Pack passed verification. This authorizes only the bounded scope in `PHASE_6_ENTRY_GATE.md`; it does not close Phase 6 or resolve OPEN decisions.
