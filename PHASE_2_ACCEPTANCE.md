@@ -95,3 +95,10 @@ Phase 2 is DONE only when evidence proves the following.
 > dicatat) tetap berlaku sebagai bukti arsitektur; koreksi ini hanya menyangkut **status fase**, bukan isi assessment.
 > REQ-101 (service offering) ditambahkan 2026-10-28 atas persetujuan owner via Obsolete Register dan dipetakan di
 > `PHASE_2_TRACEABILITY.md` addendum. Blok putusan asli dipertahankan sebagai sejarah — tidak dihapus.
+
+
+## 2026-11-24 — Build and remote-CI evidence update
+
+The build/remote-CI evidence gap referenced in the 2026-10-28 status correction is now resolved: GitHub Actions push run #65 and pull-request run #66 both completed successfully on commit `fa144a0a5bbfe8275f0eb00cc8329217a0d2c354`. The workflow executed frozen dependency installation, lint, typecheck, test (30 files / 354 tests passed) and production build (compiled successfully; 15/15 static pages generated). Run #66: https://github.com/rpplumbantobing-hub/epicRider/actions/runs/45323612054.
+
+**Phase 2 remains PARTIAL.** The remaining owner-governance items are not resolved by CI: ratification/amendment of the proposed Phase 2 ADRs and owner decisions for OD-01/OD-02 remain outstanding as recorded above. This addendum does not ratify an ADR, decide an OD, or change the Phase 2 status.

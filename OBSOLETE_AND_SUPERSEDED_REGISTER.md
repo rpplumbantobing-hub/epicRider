@@ -46,3 +46,16 @@ Before retiring a control file:
 3. Mark it `SUPERSEDED / HISTORICAL` with date and replacement path, or move it to the agreed archive location while retaining history.
 4. Rerun link/reference, requirement-ID and semantic contradiction scans.
 5. Record disposition in the change log / handoff. Never delete or recycle REQ/OD/ADR IDs.
+
+
+## 2026-11-24 — Current phase-status reassessment
+
+The status statement in the historical row above that grouped Phase 2 and Phase 3 as PARTIAL is superseded by the dated evidence reassessment:
+
+- Phase 2 = **PARTIAL**. Build and remote-CI evidence is now verified; owner ratification of proposed Phase 2 ADRs and owner decisions OD-01/OD-02 remain outstanding.
+- Phase 3 = **DONE / CLOSED (2026-11-24)**. GitHub Actions runs #65 and #66 passed lint, typecheck, 354 tests and production build; the current handoff was restored to a complete nine-section structure. See `PHASE_3_ACCEPTANCE.md` and `PHASE_3_REPORT.md`.
+- Phase 4 = **DONE / CLOSED (2026-10-30)**.
+- Phase 5 = **DONE / CLOSED (2026-10-31)**.
+- Phase 6 = **NOT STARTED** and still requires explicit owner authorization.
+
+This update changes no product taxonomy, ADR decision, OD status, requirement ID or implementation scope.
