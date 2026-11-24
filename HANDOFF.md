@@ -8,8 +8,8 @@
 |---|---|---|
 | 0 | DONE | `PHASE_0_ACCEPTANCE.md`, `03293b6` |
 | 1 | DONE — BASELINE | `PHASE_1_REPORT.md`, `938932f` |
-| 2 | PARTIAL | `PHASE_2_ACCEPTANCE.md` + reconciliation evidence |
-| 3 | PARTIAL | `PHASE_3_ACCEPTANCE.md` + remediation evidence |
+| 2 | PARTIAL | `PHASE_2_ACCEPTANCE.md`; CI/build evidence now verified; owner ratification and OD-01/OD-02 remain outstanding |
+| 3 | DONE — 2026-11-24 | `PHASE_3_ACCEPTANCE.md` reassessment; CI #66; 354/354 tests; build passed |
 | 4 | DONE | PR #1 merge `a1af59d8e00d3a0d8e28b25f1a7f05961182a6a0`; CI `40928261468` |
 | 5 | DONE | `PHASE_5_CLOSURE_REPORT.md`; 5-E `897c7a9`; CI `41193444454`; 361/361 re-run |
 | 6 | NOT STARTED | Await explicit owner authorization |
@@ -45,3 +45,46 @@ OD-01, OD-02, OD-03, OD-05, OD-06, OD-108, OD-115, OD-122 and other registered O
 - PR #7 (`governance/zai-handoff-20261101`) remains OPEN and separate; this synchronization does not merge, close or modify it.
 
 The imported R1E snapshot is a governance evidence package. It is not a new implementation report and does not itself authorize Phase 6.
+
+
+## 6. Operational boundaries and contracts
+
+- License tiers are exactly `miniRider`, `maxRider` and `ISOrider`; `totalRider` is retired.
+- `hiRider` is a marketplace/recruitment capability, not a license tier. `taskRider` and `siteRider` are capabilities/extensions, not tiers.
+- The workspace owner is excluded from the non-owner member-seat quota. Numeric base quotas remain TBD independently per tier; TBD does not mean unlimited. `TierQuota` remains generic; `seat_package` remains additive. No package size, price or stacking rule is invented.
+- Authorization and entitlement are enforced server-side. Identity, workspace membership, role/permission, event assignment and resource authorization remain distinct.
+- License & Extension Shop, Public Store and Developer Equipment Store are separate commerce surfaces with separate access policies.
+- Target-state rules are in `MASTER_CONTROL.md`; product capability and tier boundaries are in `LICENSE_MATRIX.md`; detailed contracts are in `ARCHITECTURE.md`, `API_ARCHITECTURE.md`, `AUTHORIZATION_MODEL.md` and `ENTITLEMENT_MODEL.md`.
+
+## 7. Current gaps and owner decisions
+
+- Phase 2 remains PARTIAL: owner ratification/amendment of proposed Phase 2 ADRs and owner decisions OD-01/OD-02 remain outstanding. The CI/build evidence gap is now resolved.
+- OD-05 remains partially decided under ADR-027: owner exclusion is decided; numeric base quota per tier and remaining seat-counting/enforcement semantics remain open. OD-06 (commercial values), OD-108 (expiry/grace/renewal), OD-123 (workspace count), OD-137 (storage) remain scoped open decisions.
+- ISO catalogue verification remains BLOCKED under F0-012/OD-160; this does not imply ISO conformity or certification.
+- Phase 3 is DONE/CLOSED; Phase 4 and Phase 5 are DONE/CLOSED; Phase 6 is NOT STARTED. No later phase starts automatically.
+
+## 8. Reproducible verification
+
+The canonical workflow is `.github/workflows/ci.yml` and runs:
+
+```bash
+bun install --frozen-lockfile
+bun run lint
+bun run typecheck
+bun run test
+bun run build
+```
+
+Latest verified full workflow evidence for the current source/runtime tree:
+- [CI run #65 — push](https://github.com/rpplumbantobing-hub/epicRider/actions/runs/45323584581) — success.
+- [CI run #66 — pull request](https://github.com/rpplumbantobing-hub/epicRider/actions/runs/45323612054) — success.
+- Tested commit: `fa144a0a5bbfe8275f0eb00cc8329217a0d2c354`; test suite: 30 files / 354 tests passed; production build compiled and generated 15/15 static pages.
+- Current `main` has no file-content delta from that tested head. These checks validate the current repository quality baseline; they do not prove future Phase 6 behavior, production database readiness or production deployment.
+
+## 9. Security, secrets and safe execution
+
+- Never commit or paste `.env`, credentials, access tokens, private keys, production data or secret-bearing logs. Keep real values local; `.env.example` contains placeholders only.
+- Keep least-privilege access, tenant isolation, server-side authorization, auditability and controlled migrations as mandatory controls.
+- Do not use force-push, history rewrite, destructive branch/tag deletion or data-loss commands as routine repair methods.
+- Preserve append-only historical evidence. A newer status note supersedes a historical snapshot; it does not erase that snapshot.
+- Before starting Phase 6, complete a Phase 6 entry/readiness review and obtain explicit owner authorization. No implementation work is authorized by this handoff update.

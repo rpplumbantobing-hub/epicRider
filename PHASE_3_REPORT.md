@@ -82,3 +82,12 @@ Phase 3 dikerjakan sebagai: **Gate A** (remediasi konsistensi Phase 2 — F-01..
 ## 9. Remediasi audit konsistensi Phase 3 (2026-10-28)
 
 Input: `upload/epicRider_phase3_consistency_audit.md` (putusan REWORK REQUIRED — remediasi kontrol, bukan rebuild). Eksekusi penuh F-01..F-08; peta tindakan+bukti per temuan, bukti audit regenerasi, dan rencana pengetatan lint/TypeScript ada di **`PHASE_3_REMEDIATION_REPORT.md`**; bukti mentah di `audit/phase3-remediation/` (diff, REQ integrity, contradiction scan, secret scan, quality gates). Dampak status: kriteria 12 → PARTIAL, kriteria 14 fakta dikoreksi; putusan acceptance → **PARTIAL**; ROADMAP/PHASE_STATUS/HANDOFF disinkronkan.
+
+
+## 2026-11-24 — Post-implementation quality-gate evidence addendum
+
+The statements in this report that production build was NOT RUN and remote CI was NOT TESTED describe the Phase 3 sandbox state on 2026-10-28. They are historical, not the current evidence state.
+
+GitHub Actions push run #65 and pull-request run #66 both completed successfully on commit `fa144a0a5bbfe8275f0eb00cc8329217a0d2c354`. The workflow executed `bun install --frozen-lockfile`, `bun run lint`, `bun run typecheck`, `bun run test` and `bun run build`. Test output: 30 files / 354 tests passed. Build output: compiled successfully and static page generation 15/15. Run #66: https://github.com/rpplumbantobing-hub/epicRider/actions/runs/45323612054.
+
+The tested change was documentation-only; no application source/runtime, schema, migration, seed, dependency or runtime configuration changed. The current `main` tree is content-identical to the tested head. Accordingly, the quality-gate evidence gap is closed and Phase 3 is **DONE / CLOSED effective 2026-11-24**, subject to the limitations already stated in the acceptance report. This does not claim Phase 6 implementation or production readiness. The Node.js 20 deprecation warning for `actions/checkout@v4` is a non-blocking maintenance observation.

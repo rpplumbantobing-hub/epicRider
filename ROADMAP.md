@@ -18,14 +18,16 @@ Status is evidence-based and is the single dynamic phase-status source reference
 
 **2026-11-24 R1E repository synchronization:** The verified R1E governance snapshot was imported through PR #8 and merged into canonical `main` at `f8395ed90484cd318f87aef2e0d13fd66c71a9df` (21 documentation/metadata files; no source/runtime changes). PR CI run #62 completed successfully (lint, typecheck, test and build). R1E clarifies the historical status text in `PHASE_5_REPORT.md`; it does not alter phase acceptance, ADR decisions or open-decision statuses. Phase 4 and Phase 5 remain DONE/CLOSED; Phase 6 remains NOT STARTED and still requires explicit owner authorization. PR #7 remains open and separate.
 
+**2026-11-24 Phase 2/3 evidence reassessment:** The CI/build evidence gap is now resolved by successful GitHub Actions runs #65 (push) and #66 (pull_request) on commit `fa144a0a5bbfe8275f0eb00cc8329217a0d2c354` (354/354 tests; build successful). Phase 3 is closed as DONE. Phase 2 remains PARTIAL because owner ratification of proposed ADRs and OD-01/OD-02 decisions remain outstanding; CI success does not make those owner decisions.
+
 ## Phase table
 
 | Phase | Nama | Status | Bukti / Blocker / Dependency |
 |---|---|---|---|
 | 0 | Audit repository, verifikasi bukti & penguncian control baseline | **DONE** | `PHASE_0_ACCEPTANCE.md` 9/9; commit `03293b6`; ISO verification remains BLOCKED (F0-012/OD-160) |
 | 1 | Discovery, personas, use cases, requirements & acceptance criteria | **DONE — BASELINE** | `PHASE_1_REPORT.md`; REQ-001..100; commit `938932f` |
-| 2 | Architecture/domain model, threat model, data model & ADR | **PARTIAL** | Architecture reconciled 2026-10-28; evidence gate/ratification and OD-01/OD-02 remain outstanding |
-| 3 | Repository foundations, design system, i18n & CI/testing foundation | **PARTIAL** | Remediation completed; current status remains PARTIAL pending its recorded governance reassessment |
+| 2 | Architecture/domain model, threat model, data model & ADR | **PARTIAL** | Architecture/reconciliation complete; build and remote-CI evidence verified 2026-11-24; owner ratification of proposed ADRs and OD-01/OD-02 remain outstanding |
+| 3 | Repository foundations, design system, i18n & CI/testing foundation | **DONE — closed 2026-11-24** | `PHASE_3_ACCEPTANCE.md` reassessment; GitHub Actions run #66; lint/typecheck/build pass; 30 test files / 354 tests pass; documented limitations retained |
 | 4 | Identity, authentication, workspace/tenant, memberships & permissions | **DONE — closed 2026-10-30** | PR #1 merge `a1af59d8e00d3a0d8e28b25f1a7f05961182a6a0`; post-merge CI run #5 / `40928261468` Success; closure 16/16 mandatory criteria PASS with limitations |
 | 5 | Licensing, entitlements, renewal/expiry & extensions model | **DONE — closed 2026-10-31** | 5-B/C PR #3 `165b3ba`; 5-D PR #4 `aafcbe3`; 5-E `897c7a9`; CI `41193444454` Success owner-verified; closure report; 361/361 final re-run; ADR-023/024/025/026 remain PROPOSED, ADR-027 ACCEPTED; OD-05/06/108/122/133/135 remain OPEN and non-blocking to Phase 5 closure |
 | 6 | Home/dashboard & event foundation | NOT STARTED | Requires explicit owner authorization; no Phase 5 blocker remains |

@@ -4,14 +4,16 @@
 
 **Sinkronisasi 2026-11-24:** Snapshot governance R1E telah diimpor melalui PR #8 ke `main` pada commit `f8395ed90484cd318f87aef2e0d13fd66c71a9df`. CI PR #8 (#62: lint, typecheck, test, build) berhasil. Perubahan ini hanya mengimpor/memperjelas dokumentasi; status fase pada tabel di bawah tetap sama dan Phase 6 tetap NOT STARTED sampai ada otorisasi eksplisit owner.
 
+**Reassessment 2026-11-24:** Phase 3's previously missing build and remote-CI evidence is now verified by GitHub Actions runs #65 and #66. Phase 3 is DONE/CLOSED. Phase 2 remains PARTIAL because owner ratification of proposed ADRs and OD-01/OD-02 remain outstanding. Phase 6 remains NOT STARTED.
+
 ## Current phase status
 
 | Phase | Status | Evidence / blocker |
 |---|---|---|
 | 0 | **DONE** | `PHASE_0_ACCEPTANCE.md` 9/9; `03293b6` |
 | 1 | **DONE — BASELINE** | `PHASE_1_REPORT.md`; REQ-001..100; `938932f` |
-| 2 | **PARTIAL** | Architecture/reconciliation complete; evidence gate and owner ratification/OD-01/OD-02 remain outstanding |
-| 3 | **PARTIAL** | Remediation complete; recorded governance reassessment remains separate |
+| 2 | **PARTIAL** | Build/remote-CI evidence verified 2026-11-24; owner ratification of proposed ADRs and OD-01/OD-02 remain outstanding |
+| 3 | **DONE — 2026-11-24** | `PHASE_3_ACCEPTANCE.md` reassessment; CI run #66; 30 test files / 354 tests passed; lint/typecheck/build passed |
 | 4 | **DONE — 2026-10-30** | PR #1 merge `a1af59d8e00d3a0d8e28b25f1a7f05961182a6a0`; CI run `40928261468` Success; closure 16/16 PASS with limitations |
 | 5 | **DONE — 2026-10-31** | 5-B/C `165b3ba`; 5-D `aafcbe3`; 5-E `897c7a9`; CI `41193444454` Success owner-verified; closure report; 361/361 final re-run |
 | 6 | **NOT STARTED** | Explicit owner authorization required |

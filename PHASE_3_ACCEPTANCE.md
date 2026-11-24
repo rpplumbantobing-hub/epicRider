@@ -61,3 +61,26 @@ Audit eksternal `epicRider_phase3_consistency_audit.md` (putusan: REWORK REQUIRE
 > prompt Phase 4 gated §1.3, kenaikan status Phase 3 ke `DONE` kini juga tunduk pada `PRE_PHASE_4_GATE.md`
 > (item build pada runner/working-copy terisolasi + eksekusi workflow CI pada runner sah). Assessment di atas
 > tidak berubah; gate Phase 4 menambah jalur bukti yang sah bagi owner (remote CI atau runner setara).
+
+
+## 2026-11-24 — Reassessment of Phase 3 quality-gate evidence
+
+The missing build/remote-CI evidence recorded in the 2026-10-28 reassessment has now been obtained on the canonical repository:
+
+- Workflow: `.github/workflows/ci.yml` (install → lint → typecheck → test → build).
+- Push run #65: [GitHub Actions run](https://github.com/rpplumbantobing-hub/epicRider/actions/runs/45323584581), commit `fa144a0a5bbfe8275f0eb00cc8329217a0d2c354`, conclusion **success**.
+- Pull-request run #66: [GitHub Actions run](https://github.com/rpplumbantobing-hub/epicRider/actions/runs/45323612054), same commit, conclusion **success**.
+- Executed commands: `bun install --frozen-lockfile`, `bun run lint`, `bun run typecheck`, `bun run test`, and `bun run build`; all steps completed successfully.
+- Test output: **30 test files passed; 354 tests passed**.
+- Build output: **Compiled successfully**; static page generation completed **15/15**.
+- The tested commit was a documentation-only change relative to its base (four governance/README files; no source/runtime, schema, migration, seed, dependency or configuration changes). The post-merge `main` tree is content-identical to that tested head; the merge added no file-content delta.
+- A non-blocking GitHub Actions warning notes that `actions/checkout@v4` is being forced from Node.js 20 to Node.js 24. This is recorded as maintenance follow-up, not a failed gate.
+
+### Acceptance reassessment
+
+- Criterion 7 remains PASS: the current `HANDOFF.md` now provides sections 1–9 covering phase status, governing decisions, open decisions, next actions, R1E transfer, operational boundaries, outstanding gaps, reproducible verification and security/secrets. Detailed controls remain in their linked canonical documents.
+- Criterion 12 is now **PASS**: lint, typecheck, test and production build were executed successfully on the legitimate GitHub Actions runner.
+- Criterion 13 is now **PASS**: the configured CI workflow was executed remotely on both push and pull-request events.
+- The previously recorded 2026-10-28 statements that build was NOT RUN and remote CI was NOT TESTED remain historical evidence of the state at that time; this reassessment supersedes them for current status.
+
+**Current verdict: Phase 3 = DONE / CLOSED effective 2026-11-24.** This closes only the repository-foundation/quality-gate phase. It does not claim Phase 6 functionality, formal WCAG audit, automated E2E coverage, ISO catalogue verification, or production readiness. Existing documented limitations and unrelated blockers remain.
